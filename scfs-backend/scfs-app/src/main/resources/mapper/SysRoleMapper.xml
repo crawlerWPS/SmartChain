@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.common.mapper.SysRoleMapper">
+
+    <resultMap id="RoleResultMap" type="com.scfs.common.entity.SysRole">
+        <id column="id" property="id"/>
+        <result column="role_code" property="roleCode"/>
+        <result column="role_name" property="roleName"/>
+        <result column="role_type" property="roleType"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <resultMap id="PermissionResultMap" type="com.scfs.common.entity.SysRolePermission">
+        <id column="id" property="id"/>
+        <result column="role_id" property="roleId"/>
+        <result column="module" property="module"/>
+        <result column="permissions" property="permissions"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="RoleResultMap">
+        SELECT id, role_code, role_name, role_type, description, status, created_at
+        FROM schema_common.sys_role WHERE id = #{id}
+    </select>
+
+    <select id="selectByCode" resultMap="RoleResultMap">
+        SELECT id, role_code, role_name, role_type, description, status, created_at
+        FROM schema_common.sys_role WHERE role_code = #{roleCode}
+    </select>
+
+    <select id="selectAll" resultMap="RoleResultMap">
+        SELECT id, role_code, role_name, role_type, description, status, created_at
+        FROM schema_common.sys_role ORDER BY id ASC
+    </select>
+
+    <select id="selectPermissionsByRoleId" resultMap="PermissionResultMap">
+        SELECT id, role_id, module, permissions
+        FROM schema_common.sys_role_permission WHERE role_id = #{roleId}
+    </select>
+
+    <insert id="insert" parameterType="com.scfs.common.entity.SysRole" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_common.sys_role (role_code, role_name, role_type, description, status)
+        VALUES (#{roleCode}, #{roleName}, #{roleType}, #{description}, COALESCE(#{status}, 1))
+    </insert>
+
+    <update id="update" parameterType="com.scfs.common.entity.SysRole">
+        UPDATE schema_common.sys_role
+        <set>
+            <if test="roleName != null">role_name = #{roleName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertPermission" parameterType="com.scfs.common.entity.SysRolePermission">
+        INSERT INTO schema_common.sys_role_permission (role_id, module, permissions)
+        VALUES (#{roleId}, #{module},
+                CAST(#{permissions, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb))
+    </insert>
+
+    <delete id="deletePermissionsByRoleId">
+        DELETE FROM schema_common.sys_role_permission WHERE role_id = #{roleId}
+    </delete>
+
+</mapper>

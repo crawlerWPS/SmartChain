@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.common.mapper.RuleDefinitionMapper">
+
+    <resultMap id="RuleResultMap" type="com.scfs.common.entity.RuleDefinition">
+        <id column="id" property="id"/>
+        <result column="rule_code" property="ruleCode"/>
+        <result column="rule_name" property="ruleName"/>
+        <result column="category" property="category"/>
+        <result column="drl_content" property="drlContent"/>
+        <result column="params" property="params"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="status" property="status"/>
+        <result column="version" property="version"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="ChangeLogResultMap" type="com.scfs.common.entity.RuleChangeLog">
+        <id column="id" property="id"/>
+        <result column="rule_id" property="ruleId"/>
+        <result column="rule_code" property="ruleCode"/>
+        <result column="change_type" property="changeType"/>
+        <result column="old_version" property="oldVersion"/>
+        <result column="new_version" property="newVersion"/>
+        <result column="old_content" property="oldContent"/>
+        <result column="new_content" property="newContent"/>
+        <result column="status" property="status"/>
+        <result column="maker_id" property="makerId"/>
+        <result column="checker_id" property="checkerId"/>
+        <result column="checked_at" property="checkedAt"/>
+        <result column="reject_reason" property="rejectReason"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="RuleResultMap">
+        SELECT * FROM schema_common.rule_definition WHERE id = #{id}
+    </select>
+
+    <select id="selectByCode" resultMap="RuleResultMap">
+        SELECT * FROM schema_common.rule_definition WHERE rule_code = #{ruleCode}
+    </select>
+
+    <select id="selectPage" resultMap="RuleResultMap">
+        SELECT * FROM schema_common.rule_definition
+        <where>
+            <if test="category != null and category != ''">AND category = #{category}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (rule_code LIKE CONCAT('%', #{keyword}, '%') OR rule_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY updated_at DESC LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM schema_common.rule_definition
+        <where>
+            <if test="category != null and category != ''">AND category = #{category}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (rule_code LIKE CONCAT('%', #{keyword}, '%') OR rule_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByCategory" resultMap="RuleResultMap">
+        SELECT * FROM schema_common.rule_definition WHERE category = #{category} AND status = 1
+    </select>
+
+    <insert id="insert" parameterType="com.scfs.common.entity.RuleDefinition" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_common.rule_definition (rule_code, rule_name, category, drl_content, params,
+            status, version, created_by)
+        VALUES (#{ruleCode}, #{ruleName}, #{category}, #{drlContent},
+                CAST(#{params, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+                #{status}, #{version}, #{createdBy})
+    </insert>
+
+    <update id="update" parameterType="com.scfs.common.entity.RuleDefinition">
+        UPDATE schema_common.rule_definition
+        <set>
+            <if test="ruleName != null">rule_name = #{ruleName},</if>
+            <if test="drlContent != null">drl_content = #{drlContent},</if>
+            <if test="params != null">params = CAST(#{params, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="version != null">version = #{version},</if>
+            updated_at = NOW(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE schema_common.rule_definition SET status = #{status},
+        <if test="version != null">version = #{version},</if>
+        updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <insert id="insertChangeLog" parameterType="com.scfs.common.entity.RuleChangeLog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_common.rule_change_log (rule_id, rule_code, change_type, old_version, new_version,
+            old_content, new_content, status, maker_id)
+        VALUES (#{ruleId}, #{ruleCode}, #{changeType}, #{oldVersion}, #{newVersion},
+            #{oldContent}, #{newContent}, #{status}, #{makerId})
+    </insert>
+
+    <select id="selectChangeLogById" resultMap="ChangeLogResultMap">
+        SELECT * FROM schema_common.rule_change_log WHERE id = #{id}
+    </select>
+
+    <select id="selectChangeLogsByRuleId" resultMap="ChangeLogResultMap">
+        SELECT * FROM schema_common.rule_change_log WHERE rule_id = #{ruleId} ORDER BY created_at DESC
+    </select>
+
+    <select id="selectPendingChangeLogs" resultMap="ChangeLogResultMap">
+        SELECT * FROM schema_common.rule_change_log WHERE status = 'PENDING'
+        ORDER BY created_at ASC LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countPendingChangeLogs" resultType="long">
+        SELECT COUNT(*) FROM schema_common.rule_change_log WHERE status = 'PENDING'
+    </select>
+
+    <update id="updateChangeLogStatus">
+        UPDATE schema_common.rule_change_log
+        SET status = #{status}, checker_id = #{checkerId},
+            checked_at = NOW(),
+            <if test="rejectReason != null">reject_reason = #{rejectReason},</if>
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper>

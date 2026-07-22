@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.module.preaudit.mapper.PreAuditMapper">
+
+    <resultMap id="CompletenessMap" type="com.scfs.module.preaudit.entity.MaterialCompletenessResult">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="required_count" property="requiredCount"/>
+        <result column="submitted_count" property="submittedCount"/>
+        <result column="completeness_pct" property="completenessPct"/>
+        <result column="missing_materials" property="missingMaterials"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="checked_at" property="checkedAt"/>
+    </resultMap>
+
+    <resultMap id="ValidityMap" type="com.scfs.module.preaudit.entity.MaterialValidityResult">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="total_files" property="totalFiles"/>
+        <result column="expired_count" property="expiredCount"/>
+        <result column="incomplete_count" property="incompleteCount"/>
+        <result column="abnormal_count" property="abnormalCount"/>
+        <result column="details" property="details"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="checked_at" property="checkedAt"/>
+    </resultMap>
+
+    <resultMap id="ConsistencyMap" type="com.scfs.module.preaudit.entity.EnterpriseInfoConsistencyResult">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="overall_consistent" property="overallConsistent"/>
+        <result column="name_consistent" property="nameConsistent"/>
+        <result column="uscc_consistent" property="usccConsistent"/>
+        <result column="legal_person_consistent" property="legalPersonConsistent"/>
+        <result column="address_consistent" property="addressConsistent"/>
+        <result column="mismatch_count" property="mismatchCount"/>
+        <result column="checked_at" property="checkedAt"/>
+    </resultMap>
+
+    <resultMap id="MismatchDetailMap" type="com.scfs.module.preaudit.entity.EnterpriseInfoMismatchDetail">
+        <id column="id" property="id"/>
+        <result column="result_id" property="resultId"/>
+        <result column="field_type" property="fieldType"/>
+        <result column="field_name" property="fieldName"/>
+        <result column="consistent" property="consistent"/>
+        <result column="source_values" property="sourceValues"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="mismatch_detail" property="mismatchDetail"/>
+    </resultMap>
+
+    <resultMap id="SupplementMap" type="com.scfs.module.preaudit.entity.SupplementList">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="supplement_items" property="supplementItems"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="status" property="status"/>
+        <result column="deadline" property="deadline"/>
+        <result column="generated_at" property="generatedAt"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <!-- 完整性 -->
+    <select id="selectCompleteness" resultMap="CompletenessMap">
+        SELECT * FROM schema_preaudit.material_completeness_result
+        WHERE application_id = #{applicationId} ORDER BY checked_at DESC LIMIT 1
+    </select>
+
+    <insert id="insertCompleteness" parameterType="com.scfs.module.preaudit.entity.MaterialCompletenessResult" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_preaudit.material_completeness_result (application_id, required_count, submitted_count,
+            completeness_pct, missing_materials)
+        VALUES (#{applicationId}, #{requiredCount}, #{submittedCount}, #{completenessPct},
+                CAST(#{missingMaterials, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb))
+    </insert>
+
+    <update id="updateCompleteness" parameterType="com.scfs.module.preaudit.entity.MaterialCompletenessResult">
+        UPDATE schema_preaudit.material_completeness_result
+        SET required_count = #{requiredCount}, submitted_count = #{submittedCount},
+            completeness_pct = #{completenessPct},
+            missing_materials = CAST(#{missingMaterials, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+            checked_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 有效性 -->
+    <select id="selectValidity" resultMap="ValidityMap">
+        SELECT * FROM schema_preaudit.material_validity_result
+        WHERE application_id = #{applicationId} ORDER BY checked_at DESC LIMIT 1
+    </select>
+
+    <insert id="insertValidity" parameterType="com.scfs.module.preaudit.entity.MaterialValidityResult" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_preaudit.material_validity_result (application_id, total_files, expired_count,
+            incomplete_count, abnormal_count, details)
+        VALUES (#{applicationId}, #{totalFiles}, #{expiredCount}, #{incompleteCount}, #{abnormalCount},
+                CAST(#{details, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb))
+    </insert>
+
+    <update id="updateValidity" parameterType="com.scfs.module.preaudit.entity.MaterialValidityResult">
+        UPDATE schema_preaudit.material_validity_result
+        SET total_files = #{totalFiles}, expired_count = #{expiredCount}, incomplete_count = #{incompleteCount},
+            abnormal_count = #{abnormalCount},
+            details = CAST(#{details, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+            checked_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 一致性 -->
+    <select id="selectConsistency" resultMap="ConsistencyMap">
+        SELECT * FROM schema_preaudit.enterprise_info_consistency_result
+        WHERE application_id = #{applicationId} ORDER BY checked_at DESC LIMIT 1
+    </select>
+
+    <insert id="insertConsistency" parameterType="com.scfs.module.preaudit.entity.EnterpriseInfoConsistencyResult" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_preaudit.enterprise_info_consistency_result (application_id, overall_consistent,
+            name_consistent, uscc_consistent, legal_person_consistent, address_consistent, mismatch_count)
+        VALUES (#{applicationId}, #{overallConsistent}, #{nameConsistent}, #{usccConsistent},
+            #{legalPersonConsistent}, #{addressConsistent}, #{mismatchCount})
+    </insert>
+
+    <select id="selectMismatchDetails" resultMap="MismatchDetailMap">
+        SELECT * FROM schema_preaudit.enterprise_info_mismatch_detail WHERE result_id = #{resultId}
+    </select>
+
+    <insert id="batchInsertMismatchDetails" parameterType="list">
+        INSERT INTO schema_preaudit.enterprise_info_mismatch_detail (result_id, field_type, field_name,
+            consistent, source_values, mismatch_detail)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.resultId}, #{item.fieldType}, #{item.fieldName}, #{item.consistent},
+             CAST(#{item.sourceValues, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+             #{item.mismatchDetail})
+        </foreach>
+    </insert>
+
+    <!-- 补正清单 -->
+    <select id="selectSupplementList" resultMap="SupplementMap">
+        SELECT * FROM schema_preaudit.supplement_list
+        WHERE application_id = #{applicationId} ORDER BY generated_at DESC LIMIT 1
+    </select>
+
+    <insert id="insertSupplementList" parameterType="com.scfs.module.preaudit.entity.SupplementList" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_preaudit.supplement_list (application_id, supplement_items, status, deadline)
+        VALUES (#{applicationId},
+                CAST(#{supplementItems, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+                #{status}, #{deadline})
+    </insert>
+
+    <update id="updateSupplementListStatus">
+        UPDATE schema_preaudit.supplement_list SET status = #{status} WHERE id = #{id}
+    </update>
+
+</mapper>

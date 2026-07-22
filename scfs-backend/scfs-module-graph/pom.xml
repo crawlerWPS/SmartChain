@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.scfs</groupId>
+        <artifactId>scfs-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>scfs-module-graph</artifactId>
+    <name>SCFS Module Graph (M1)</name>
+    <description>M1 供应链图谱模块：图谱构建/角色识别/位置分析/异常检测</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.scfs</groupId>
+            <artifactId>scfs-common</artifactId>
+        </dependency>
+    </dependencies>
+</project>

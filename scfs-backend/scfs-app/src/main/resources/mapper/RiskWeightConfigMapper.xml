@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.common.mapper.RiskWeightConfigMapper">
+
+    <resultMap id="WeightConfigMap" type="com.scfs.common.entity.RiskWeightConfig">
+        <id column="id" property="id"/>
+        <result column="config_name" property="configName"/>
+        <result column="supply_chain_weight" property="supplyChainWeight"/>
+        <result column="transaction_weight" property="transactionWeight"/>
+        <result column="material_weight" property="materialWeight"/>
+        <result column="low_risk_threshold" property="lowRiskThreshold"/>
+        <result column="mid_risk_threshold" property="midRiskThreshold"/>
+        <result column="high_risk_threshold" property="highRiskThreshold"/>
+        <result column="status" property="status"/>
+        <result column="version" property="version"/>
+        <result column="maker_id" property="makerId"/>
+        <result column="checker_id" property="checkerId"/>
+        <result column="checked_at" property="checkedAt"/>
+        <result column="reject_reason" property="rejectReason"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="TemplateMap" type="com.scfs.common.entity.MaterialChecklistTemplate">
+        <id column="id" property="id"/>
+        <result column="business_type" property="businessType"/>
+        <result column="required_materials" property="requiredMaterials"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="version" property="version"/>
+        <result column="status" property="status"/>
+        <result column="maker_id" property="makerId"/>
+        <result column="checker_id" property="checkerId"/>
+        <result column="checked_at" property="checkedAt"/>
+        <result column="reject_reason" property="rejectReason"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="WeightConfigMap">
+        SELECT * FROM schema_common.risk_weight_config WHERE id = #{id}
+    </select>
+
+    <select id="selectEnabled" resultMap="WeightConfigMap">
+        SELECT * FROM schema_common.risk_weight_config WHERE status = 'ENABLED' LIMIT 1
+    </select>
+
+    <select id="selectPage" resultMap="WeightConfigMap">
+        SELECT * FROM schema_common.risk_weight_config
+        <where>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+        </where>
+        ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM schema_common.risk_weight_config
+        <where>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="com.scfs.common.entity.RiskWeightConfig" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_common.risk_weight_config (config_name, supply_chain_weight, transaction_weight,
+            material_weight, low_risk_threshold, mid_risk_threshold, high_risk_threshold, status, version, maker_id)
+        VALUES (#{configName}, #{supplyChainWeight}, #{transactionWeight}, #{materialWeight},
+            #{lowRiskThreshold}, #{midRiskThreshold}, #{highRiskThreshold}, #{status}, #{version}, #{makerId})
+    </insert>
+
+    <update id="update" parameterType="com.scfs.common.entity.RiskWeightConfig">
+        UPDATE schema_common.risk_weight_config
+        <set>
+            <if test="configName != null">config_name = #{configName},</if>
+            <if test="supplyChainWeight != null">supply_chain_weight = #{supplyChainWeight},</if>
+            <if test="transactionWeight != null">transaction_weight = #{transactionWeight},</if>
+            <if test="materialWeight != null">material_weight = #{materialWeight},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="checkerId != null">checker_id = #{checkerId},</if>
+            <if test="checkedAt != null">checked_at = #{checkedAt},</if>
+            <if test="rejectReason != null">reject_reason = #{rejectReason},</if>
+            updated_at = NOW(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE schema_common.risk_weight_config SET status = #{status}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 材料清单模板 -->
+    <insert id="insertTemplate" parameterType="com.scfs.common.entity.MaterialChecklistTemplate" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_common.material_checklist_template (business_type, required_materials, version, status, maker_id)
+        VALUES (#{businessType},
+                CAST(#{requiredMaterials, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+                #{version}, #{status}, #{makerId})
+    </insert>
+
+    <select id="selectTemplateByBusinessType" resultMap="TemplateMap">
+        SELECT * FROM schema_common.material_checklist_template WHERE business_type = #{businessType}
+    </select>
+
+    <select id="selectAllTemplates" resultMap="TemplateMap">
+        SELECT * FROM schema_common.material_checklist_template ORDER BY business_type
+    </select>
+
+    <update id="updateTemplate" parameterType="com.scfs.common.entity.MaterialChecklistTemplate">
+        UPDATE schema_common.material_checklist_template
+        <set>
+            <if test="requiredMaterials != null">required_materials = CAST(#{requiredMaterials, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),</if>
+            <if test="version != null">version = #{version},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="checkerId != null">checker_id = #{checkerId},</if>
+            <if test="checkedAt != null">checked_at = #{checkedAt},</if>
+            <if test="rejectReason != null">reject_reason = #{rejectReason},</if>
+            updated_at = NOW(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

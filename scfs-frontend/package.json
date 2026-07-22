@@ -1,0 +1,41 @@
+{
+  "name": "scfs-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "供应链金融智能风控与尽调辅助平台 - 前端工程",
+  "scripts": {
+    "dev": "max dev",
+    "build": "max build",
+    "start": "npm run dev",
+    "lint": "max g tmp && tsc --noEmit",
+    "preview": "max preview"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.3.7",
+    "@ant-design/pro-components": "^2.7.10",
+    "@ant-design/pro-layout": "^7.19.4",
+    "@antv/g6": "^5.0.10",
+    "@umijs/max": "^4.3.18",
+    "antd": "^5.18.0",
+    "axios": "^1.7.2",
+    "dayjs": "^1.11.11",
+    "file-saver": "^2.0.5",
+    "js-cookie": "^3.0.5",
+    "jsencrypt": "^3.3.2",
+    "lodash": "^4.17.21",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/file-saver": "^2.0.7",
+    "@types/js-cookie": "^3.0.6",
+    "@types/lodash": "^4.17.4",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

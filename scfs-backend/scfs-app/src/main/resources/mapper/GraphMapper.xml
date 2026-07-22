@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.module.graph.mapper.GraphMapper">
+
+    <resultMap id="EnterpriseMap" type="com.scfs.module.graph.entity.Enterprise">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="uscc" property="uscc"/>
+        <result column="industry" property="industry"/>
+        <result column="legal_person" property="legalPerson"/>
+        <result column="registered_capital" property="registeredCapital"/>
+        <result column="establish_date" property="establishDate"/>
+        <result column="address" property="address"/>
+        <result column="data_source" property="dataSource"/>
+        <result column="last_synced_at" property="lastSyncedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="RelationMap" type="com.scfs.module.graph.entity.SupplyChainRelation">
+        <id column="id" property="id"/>
+        <result column="from_enterprise_id" property="fromEnterpriseId"/>
+        <result column="to_enterprise_id" property="toEnterpriseId"/>
+        <result column="relation_type" property="relationType"/>
+        <result column="first_coop_date" property="firstCoopDate"/>
+        <result column="last_coop_date" property="lastCoopDate"/>
+        <result column="total_transactions" property="totalTransactions"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="core_enterprise_id" property="coreEnterpriseId"/>
+        <result column="level" property="level"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="EnterpriseRoleMap" type="com.scfs.module.graph.entity.EnterpriseRole">
+        <id column="id" property="id"/>
+        <result column="enterprise_id" property="enterpriseId"/>
+        <result column="role" property="role"/>
+        <result column="core_enterprise_id" property="coreEnterpriseId"/>
+        <result column="coop_duration_years" property="coopDurationYears"/>
+        <result column="coop_enterprise_count" property="coopEnterpriseCount"/>
+        <result column="influence_level" property="influenceLevel"/>
+        <result column="credibility_level" property="credibilityLevel"/>
+        <result column="calculated_at" property="calculatedAt"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <resultMap id="PositionMap" type="com.scfs.module.graph.entity.EnterprisePositionAnalysis">
+        <id column="id" property="id"/>
+        <result column="enterprise_id" property="enterpriseId"/>
+        <result column="in_core_chain" property="inCoreChain"/>
+        <result column="distance_to_core" property="distanceToCore"/>
+        <result column="upstream_stable" property="upstreamStable"/>
+        <result column="downstream_stable" property="downstreamStable"/>
+        <result column="credibility" property="credibility"/>
+        <result column="credibility_reason" property="credibilityReason"/>
+        <result column="calculated_at" property="calculatedAt"/>
+    </resultMap>
+
+    <resultMap id="AbnormalMap" type="com.scfs.module.graph.entity.AbnormalRelation">
+        <id column="id" property="id"/>
+        <result column="enterprise_id" property="enterpriseId"/>
+        <result column="abnormal_type" property="abnormalType"/>
+        <result column="severity" property="severity"/>
+        <result column="description" property="description"/>
+        <result column="evidence" property="evidence"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="status" property="status"/>
+        <result column="detected_at" property="detectedAt"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <!-- 企业 -->
+    <select id="selectEnterpriseById" resultMap="EnterpriseMap">
+        SELECT * FROM schema_graph.enterprise WHERE id = #{id}
+    </select>
+
+    <select id="selectEnterpriseByUscc" resultMap="EnterpriseMap">
+        SELECT * FROM schema_graph.enterprise WHERE uscc = #{uscc}
+    </select>
+
+    <select id="searchEnterprises" resultMap="EnterpriseMap">
+        SELECT * FROM schema_graph.enterprise
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR uscc LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countEnterprises" resultType="long">
+        SELECT COUNT(*) FROM schema_graph.enterprise
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR uscc LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertEnterprise" parameterType="com.scfs.module.graph.entity.Enterprise" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_graph.enterprise (name, uscc, industry, legal_person, registered_capital,
+            establish_date, address, data_source, last_synced_at)
+        VALUES (#{name}, #{uscc}, #{industry}, #{legalPerson}, #{registeredCapital},
+            #{establishDate}, #{address}, #{dataSource}, #{lastSyncedAt})
+    </insert>
+
+    <update id="updateEnterprise" parameterType="com.scfs.module.graph.entity.Enterprise">
+        UPDATE schema_graph.enterprise
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="industry != null">industry = #{industry},</if>
+            <if test="legalPerson != null">legal_person = #{legalPerson},</if>
+            <if test="registeredCapital != null">registered_capital = #{registeredCapital},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="lastSyncedAt != null">last_synced_at = #{lastSyncedAt},</if>
+            updated_at = NOW(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 关系 -->
+    <select id="selectRelationsByEnterprise" resultMap="RelationMap">
+        SELECT * FROM schema_graph.supply_chain_relation
+        WHERE (from_enterprise_id = #{enterpriseId} OR to_enterprise_id = #{enterpriseId})
+        <if test="level != null">AND level = #{level}</if>
+    </select>
+
+    <select id="selectAllRelations" resultMap="RelationMap">
+        SELECT * FROM schema_graph.supply_chain_relation
+    </select>
+
+    <insert id="insertRelation" parameterType="com.scfs.module.graph.entity.SupplyChainRelation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_graph.supply_chain_relation (from_enterprise_id, to_enterprise_id, relation_type,
+            first_coop_date, last_coop_date, total_transactions, total_amount, core_enterprise_id, level)
+        VALUES (#{fromEnterpriseId}, #{toEnterpriseId}, #{relationType}, #{firstCoopDate}, #{lastCoopDate},
+            #{totalTransactions}, #{totalAmount}, #{coreEnterpriseId}, #{level})
+    </insert>
+
+    <insert id="batchInsertRelations" parameterType="list">
+        INSERT INTO schema_graph.supply_chain_relation (from_enterprise_id, to_enterprise_id, relation_type,
+            first_coop_date, last_coop_date, total_transactions, total_amount, core_enterprise_id, level)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.fromEnterpriseId}, #{item.toEnterpriseId}, #{item.relationType},
+             #{item.firstCoopDate}, #{item.lastCoopDate}, #{item.totalTransactions},
+             #{item.totalAmount}, #{item.coreEnterpriseId}, #{item.level})
+        </foreach>
+    </insert>
+
+    <!-- 角色 -->
+    <select id="selectRoleByEnterprise" resultMap="EnterpriseRoleMap">
+        SELECT * FROM schema_graph.enterprise_role WHERE enterprise_id = #{enterpriseId} LIMIT 1
+    </select>
+
+    <select id="selectRolesByCoreEnterprise" resultMap="EnterpriseRoleMap">
+        SELECT * FROM schema_graph.enterprise_role WHERE core_enterprise_id = #{coreEnterpriseId}
+    </select>
+
+    <insert id="insertEnterpriseRole" parameterType="com.scfs.module.graph.entity.EnterpriseRole" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_graph.enterprise_role (enterprise_id, role, core_enterprise_id, coop_duration_years,
+            coop_enterprise_count, influence_level, credibility_level)
+        VALUES (#{enterpriseId}, #{role}, #{coreEnterpriseId}, #{coopDurationYears},
+            #{coopEnterpriseCount}, #{influenceLevel}, #{credibilityLevel})
+    </insert>
+
+    <update id="updateEnterpriseRole" parameterType="com.scfs.module.graph.entity.EnterpriseRole">
+        UPDATE schema_graph.enterprise_role
+        SET role = #{role}, core_enterprise_id = #{coreEnterpriseId},
+            coop_duration_years = #{coopDurationYears}, coop_enterprise_count = #{coopEnterpriseCount},
+            influence_level = #{influenceLevel}, credibility_level = #{credibilityLevel},
+            calculated_at = NOW()
+        WHERE enterprise_id = #{enterpriseId}
+    </update>
+
+    <!-- 位置分析 -->
+    <select id="selectPositionAnalysis" resultMap="PositionMap">
+        SELECT * FROM schema_graph.enterprise_position_analysis WHERE enterprise_id = #{enterpriseId} LIMIT 1
+    </select>
+
+    <insert id="insertPositionAnalysis" parameterType="com.scfs.module.graph.entity.EnterprisePositionAnalysis" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_graph.enterprise_position_analysis (enterprise_id, in_core_chain, distance_to_core,
+            upstream_stable, downstream_stable, credibility, credibility_reason)
+        VALUES (#{enterpriseId}, #{inCoreChain}, #{distanceToCore}, #{upstreamStable},
+            #{downstreamStable}, #{credibility}, #{credibilityReason})
+    </insert>
+
+    <update id="updatePositionAnalysis" parameterType="com.scfs.module.graph.entity.EnterprisePositionAnalysis">
+        UPDATE schema_graph.enterprise_position_analysis
+        SET in_core_chain = #{inCoreChain}, distance_to_core = #{distanceToCore},
+            upstream_stable = #{upstreamStable}, downstream_stable = #{downstreamStable},
+            credibility = #{credibility}, credibility_reason = #{credibilityReason},
+            calculated_at = NOW()
+        WHERE enterprise_id = #{enterpriseId}
+    </update>
+
+    <!-- 异常关系 -->
+    <select id="selectAbnormalsByEnterprise" resultMap="AbnormalMap">
+        SELECT * FROM schema_graph.abnormal_relation WHERE enterprise_id = #{enterpriseId}
+        ORDER BY detected_at DESC
+    </select>
+
+    <insert id="insertAbnormalRelation" parameterType="com.scfs.module.graph.entity.AbnormalRelation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_graph.abnormal_relation (enterprise_id, abnormal_type, severity, description, evidence, status)
+        VALUES (#{enterpriseId}, #{abnormalType}, #{severity}, #{description},
+                CAST(#{evidence, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+                COALESCE(#{status}, 'OPEN'))
+    </insert>
+
+    <insert id="batchInsertAbnormals" parameterType="list">
+        INSERT INTO schema_graph.abnormal_relation (enterprise_id, abnormal_type, severity, description, evidence)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.enterpriseId}, #{item.abnormalType}, #{item.severity}, #{item.description},
+             CAST(#{item.evidence, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb))
+        </foreach>
+    </insert>
+
+    <update id="updateAbnormalStatus">
+        UPDATE schema_graph.abnormal_relation SET status = #{status} WHERE id = #{id}
+    </update>
+
+</mapper>

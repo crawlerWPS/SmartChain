@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.common.mapper.SysUserMapper">
+
+    <resultMap id="BaseResultMap" type="com.scfs.common.entity.SysUser">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password_hash" property="passwordHash"/>
+        <result column="real_name" property="realName"/>
+        <result column="role_code" property="roleCode"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">id, username, password_hash, real_name, role_code, email, phone, status, created_at, updated_at</sql>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM schema_common.sys_user
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM schema_common.sys_user
+        WHERE username = #{username}
+    </select>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM schema_common.sys_user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (username LIKE CONCAT('%', #{keyword}, '%')
+                  OR real_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="roleCode != null and roleCode != ''">
+                AND role_code = #{roleCode}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM schema_common.sys_user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (username LIKE CONCAT('%', #{keyword}, '%')
+                  OR real_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="roleCode != null and roleCode != ''">
+                AND role_code = #{roleCode}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="com.scfs.common.entity.SysUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_common.sys_user (username, password_hash, real_name, role_code, email, phone, status)
+        VALUES (#{username}, #{passwordHash}, #{realName}, #{roleCode}, #{email}, #{phone},
+                COALESCE(#{status}, 1))
+    </insert>
+
+    <update id="update" parameterType="com.scfs.common.entity.SysUser">
+        UPDATE schema_common.sys_user
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="passwordHash != null">password_hash = #{passwordHash},</if>
+            <if test="realName != null">real_name = #{realName},</if>
+            <if test="roleCode != null">role_code = #{roleCode},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = NOW(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE schema_common.sys_user SET status = #{status}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+</mapper>

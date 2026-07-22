@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.scfs</groupId>
+        <artifactId>scfs-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>scfs-module-risk</artifactId>
+    <name>SCFS Module Risk (M4)</name>
+    <description>M4 风险画像模块：风险评分/等级判定/画像生成</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.scfs</groupId>
+            <artifactId>scfs-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.scfs</groupId>
+            <artifactId>scfs-module-graph</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.scfs</groupId>
+            <artifactId>scfs-module-verify</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.scfs</groupId>
+            <artifactId>scfs-module-preaudit</artifactId>
+        </dependency>
+    </dependencies>
+</project>

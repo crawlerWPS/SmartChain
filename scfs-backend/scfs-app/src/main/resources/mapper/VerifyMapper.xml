@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.module.verify.mapper.VerifyMapper">
+
+    <resultMap id="ApplicationMap" type="com.scfs.module.verify.entity.FinancingApplication">
+        <id column="id" property="id"/>
+        <result column="app_no" property="appNo"/>
+        <result column="enterprise_id" property="enterpriseId"/>
+        <result column="business_type" property="businessType"/>
+        <result column="financing_amount" property="financingAmount"/>
+        <result column="submitted_by" property="submittedBy"/>
+        <result column="status" property="status"/>
+        <result column="current_handler" property="currentHandler"/>
+        <result column="submitted_at" property="submittedAt"/>
+        <result column="approved_at" property="approvedAt"/>
+        <result column="version" property="version"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="StatusHistoryMap" type="com.scfs.module.verify.entity.ApplicationStatusHistory">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="from_status" property="fromStatus"/>
+        <result column="to_status" property="toStatus"/>
+        <result column="operator_id" property="operatorId"/>
+        <result column="remark" property="remark"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <resultMap id="MaterialMap" type="com.scfs.module.verify.entity.ApplicationMaterial">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="file_object_id" property="fileObjectId"/>
+        <result column="material_type" property="materialType"/>
+        <result column="identified_by" property="identifiedBy"/>
+        <result column="confidence" property="confidence"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <resultMap id="RecognitionMap" type="com.scfs.module.verify.entity.MaterialRecognitionResult">
+        <id column="id" property="id"/>
+        <result column="application_material_id" property="applicationMaterialId"/>
+        <result column="buyer_name" property="buyerName"/>
+        <result column="buyer_uscc" property="buyerUscc"/>
+        <result column="seller_name" property="sellerName"/>
+        <result column="seller_uscc" property="sellerUscc"/>
+        <result column="commodity" property="commodity"/>
+        <result column="amount" property="amount"/>
+        <result column="amount_in_words" property="amountInWords"/>
+        <result column="contract_date" property="contractDate"/>
+        <result column="order_date" property="orderDate"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="logistics_date" property="logisticsDate"/>
+        <result column="acceptance_date" property="acceptanceDate"/>
+        <result column="payment_date" property="paymentDate"/>
+        <result column="contract_period" property="contractPeriod"/>
+        <result column="payment_term" property="paymentTerm"/>
+        <result column="transaction_no" property="transactionNo"/>
+        <result column="field_confidence" property="fieldConfidence"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="raw_ocr_result" property="rawOcrResult"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="field_positions" property="fieldPositions"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="recognized_at" property="recognizedAt"/>
+    </resultMap>
+
+    <resultMap id="CheckResultMap" type="com.scfs.module.verify.entity.VerifyCheckResult">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="check_type" property="checkType"/>
+        <result column="result" property="result"/>
+        <result column="details" property="details"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="executed_rules" property="executedRules"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="executed_at" property="executedAt"/>
+    </resultMap>
+
+    <resultMap id="ReportMap" type="com.scfs.module.verify.entity.VerifyReport">
+        <id column="id" property="id"/>
+        <result column="report_no" property="reportNo"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="version" property="version"/>
+        <result column="overall_assessment" property="overallAssessment"/>
+        <result column="abnormal_count" property="abnormalCount"/>
+        <result column="risk_hints" property="riskHints"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="content_snapshot" property="contentSnapshot"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="content_hash" property="contentHash"/>
+        <result column="generated_at" property="generatedAt"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <!-- 融资申请 -->
+    <select id="selectApplicationById" resultMap="ApplicationMap">
+        SELECT * FROM schema_verify.financing_application WHERE id = #{id}
+    </select>
+
+    <select id="selectApplicationByNo" resultMap="ApplicationMap">
+        SELECT * FROM schema_verify.financing_application WHERE app_no = #{appNo}
+    </select>
+
+    <select id="selectApplicationPage" resultMap="ApplicationMap">
+        SELECT * FROM schema_verify.financing_application
+        <where>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="submittedBy != null">AND submitted_by = #{submittedBy}</if>
+            <if test="enterpriseId != null">AND enterprise_id = #{enterpriseId}</if>
+        </where>
+        ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countApplications" resultType="long">
+        SELECT COUNT(*) FROM schema_verify.financing_application
+        <where>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="submittedBy != null">AND submitted_by = #{submittedBy}</if>
+            <if test="enterpriseId != null">AND enterprise_id = #{enterpriseId}</if>
+        </where>
+    </select>
+
+    <insert id="insertApplication" parameterType="com.scfs.module.verify.entity.FinancingApplication" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_verify.financing_application (app_no, enterprise_id, business_type, financing_amount,
+            submitted_by, status, current_handler, submitted_at, version)
+        VALUES (#{appNo}, #{enterpriseId}, #{businessType}, #{financingAmount},
+            #{submittedBy}, #{status}, #{currentHandler}, #{submittedAt}, #{version})
+    </insert>
+
+    <update id="updateApplication" parameterType="com.scfs.module.verify.entity.FinancingApplication">
+        UPDATE schema_verify.financing_application
+        <set>
+            <if test="businessType != null">business_type = #{businessType},</if>
+            <if test="financingAmount != null">financing_amount = #{financingAmount},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="currentHandler != null">current_handler = #{currentHandler},</if>
+            <if test="submittedAt != null">submitted_at = #{submittedAt},</if>
+            <if test="approvedAt != null">approved_at = #{approvedAt},</if>
+            <if test="version != null">version = #{version},</if>
+            updated_at = NOW(),
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateApplicationStatus">
+        UPDATE schema_verify.financing_application
+        SET status = #{status}, current_handler = #{currentHandler}, version = #{version}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 状态历史 -->
+    <insert id="insertStatusHistory" parameterType="com.scfs.module.verify.entity.ApplicationStatusHistory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_verify.application_status_history (application_id, from_status, to_status, operator_id, remark)
+        VALUES (#{applicationId}, #{fromStatus}, #{toStatus}, #{operatorId}, #{remark})
+    </insert>
+
+    <select id="selectStatusHistory" resultMap="StatusHistoryMap">
+        SELECT * FROM schema_verify.application_status_history
+        WHERE application_id = #{applicationId} ORDER BY created_at ASC
+    </select>
+
+    <!-- 材料 -->
+    <select id="selectMaterialsByApplication" resultMap="MaterialMap">
+        SELECT * FROM schema_verify.application_material WHERE application_id = #{applicationId}
+    </select>
+
+    <select id="selectMaterialById" resultMap="MaterialMap">
+        SELECT * FROM schema_verify.application_material WHERE id = #{id}
+    </select>
+
+    <insert id="insertMaterial" parameterType="com.scfs.module.verify.entity.ApplicationMaterial" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_verify.application_material (application_id, file_object_id, material_type,
+            identified_by, confidence, status)
+        VALUES (#{applicationId}, #{fileObjectId}, #{materialType}, #{identifiedBy}, #{confidence}, #{status})
+    </insert>
+
+    <update id="updateMaterialType">
+        UPDATE schema_verify.application_material
+        SET material_type = #{materialType}, identified_by = #{identifiedBy}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 识别结果 -->
+    <select id="selectRecognitionResult" resultMap="RecognitionMap">
+        SELECT * FROM schema_verify.material_recognition_result
+        WHERE application_material_id = #{applicationMaterialId} LIMIT 1
+    </select>
+
+    <insert id="insertRecognitionResult" parameterType="com.scfs.module.verify.entity.MaterialRecognitionResult" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_verify.material_recognition_result (application_material_id, buyer_name, buyer_uscc,
+            seller_name, seller_uscc, commodity, amount, amount_in_words, contract_date, order_date, invoice_date,
+            logistics_date, acceptance_date, payment_date, contract_period, payment_term, transaction_no,
+            field_confidence, raw_ocr_result, field_positions)
+        VALUES (#{applicationMaterialId}, #{buyerName}, #{buyerUscc}, #{sellerName}, #{sellerUscc},
+            #{commodity}, #{amount}, #{amountInWords}, #{contractDate}, #{orderDate}, #{invoiceDate},
+            #{logisticsDate}, #{acceptanceDate}, #{paymentDate}, #{contractPeriod}, #{paymentTerm}, #{transactionNo},
+            CAST(#{fieldConfidence, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+            CAST(#{rawOcrResult, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+            CAST(#{fieldPositions, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb))
+    </insert>
+
+    <update id="updateRecognitionResult" parameterType="com.scfs.module.verify.entity.MaterialRecognitionResult">
+        UPDATE schema_verify.material_recognition_result
+        SET buyer_name = #{buyerName}, buyer_uscc = #{buyerUscc}, seller_name = #{sellerName},
+            seller_uscc = #{sellerUscc}, commodity = #{commodity}, amount = #{amount},
+            amount_in_words = #{amountInWords}, contract_date = #{contractDate}, order_date = #{orderDate},
+            invoice_date = #{invoiceDate}, logistics_date = #{logisticsDate}, acceptance_date = #{acceptanceDate},
+            payment_date = #{paymentDate}, contract_period = #{contractPeriod}, payment_term = #{paymentTerm},
+            transaction_no = #{transactionNo},
+            field_confidence = CAST(#{fieldConfidence, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+            raw_ocr_result = CAST(#{rawOcrResult, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+            field_positions = CAST(#{fieldPositions, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb)
+        WHERE id = #{id}
+    </update>
+
+    <!-- 核验结果 -->
+    <select id="selectCheckResultsByApplication" resultMap="CheckResultMap">
+        SELECT * FROM schema_verify.verify_check_result WHERE application_id = #{applicationId}
+    </select>
+
+    <insert id="insertCheckResult" parameterType="com.scfs.module.verify.entity.VerifyCheckResult" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_verify.verify_check_result (application_id, check_type, result, details, executed_rules)
+        VALUES (#{applicationId}, #{checkType}, #{result},
+                CAST(#{details, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+                CAST(#{executedRules, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb))
+    </insert>
+
+    <!-- 报告 -->
+    <select id="selectReportByApplication" resultMap="ReportMap">
+        SELECT * FROM schema_verify.verify_report WHERE application_id = #{applicationId}
+        ORDER BY version DESC LIMIT 1
+    </select>
+
+    <select id="selectReportById" resultMap="ReportMap">
+        SELECT * FROM schema_verify.verify_report WHERE id = #{id}
+    </select>
+
+    <insert id="insertReport" parameterType="com.scfs.module.verify.entity.VerifyReport" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_verify.verify_report (report_no, application_id, version, overall_assessment,
+            abnormal_count, risk_hints, content_snapshot, content_hash)
+        VALUES (#{reportNo}, #{applicationId}, #{version}, #{overallAssessment},
+            #{abnormalCount},
+            CAST(#{riskHints, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+            CAST(#{contentSnapshot, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
+            #{contentHash})
+    </insert>
+
+    <!-- 重复融资查询 -->
+    <select id="countApprovedApplicationsByEnterprise" resultType="long">
+        SELECT COUNT(*) FROM schema_verify.financing_application
+        WHERE enterprise_id = #{enterpriseId} AND business_type = #{businessType} AND status = 'APPROVED'
+    </select>
+
+</mapper>

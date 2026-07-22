@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.common.mapper.FileObjectMapper">
+
+    <resultMap id="BaseResultMap" type="com.scfs.common.entity.FileObject">
+        <id column="id" property="id"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_type" property="fileType"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="minio_bucket" property="minioBucket"/>
+        <result column="minio_object_key" property="minioObjectKey"/>
+        <result column="content_hash" property="contentHash"/>
+        <result column="uploaded_by" property="uploadedBy"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM schema_common.file_object WHERE id = #{id}
+    </select>
+
+    <select id="selectByContentHash" resultMap="BaseResultMap">
+        SELECT * FROM schema_common.file_object WHERE content_hash = #{contentHash}
+    </select>
+
+    <select id="selectByApplicationId" resultMap="BaseResultMap">
+        SELECT f.* FROM schema_common.file_object f
+        INNER JOIN schema_verify.application_material m ON f.id = m.file_object_id
+        WHERE m.application_id = #{applicationId}
+    </select>
+
+    <insert id="insert" parameterType="com.scfs.common.entity.FileObject" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_common.file_object (file_name, file_type, file_size, minio_bucket,
+            minio_object_key, content_hash, uploaded_by)
+        VALUES (#{fileName}, #{fileType}, #{fileSize}, #{minioBucket}, #{minioObjectKey},
+            #{contentHash}, #{uploadedBy})
+    </insert>
+
+</mapper>

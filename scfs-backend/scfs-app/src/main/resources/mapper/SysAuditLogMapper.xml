@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.common.mapper.SysAuditLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.scfs.common.entity.SysAuditLog">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="module" property="module"/>
+        <result column="action" property="action"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="detail" property="detail"
+                typeHandler="com.scfs.common.mybatis.JsonMapTypeHandler"/>
+        <result column="ip_address" property="ipAddress"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.scfs.common.entity.SysAuditLog">
+        INSERT INTO schema_common.sys_audit_log (user_id, username, module, action, target_type,
+            target_id, detail, ip_address)
+        VALUES (#{userId}, #{username}, #{module}, #{action}, #{targetType}, #{targetId},
+                CAST(#{detail, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb), #{ipAddress})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM schema_common.sys_audit_log WHERE id = #{id}
+    </select>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM schema_common.sys_audit_log
+        <where>
+            <if test="module != null and module != ''">AND module = #{module}</if>
+            <if test="action != null and action != ''">AND action = #{action}</if>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="startTime != null">AND created_at &gt;= #{startTime}</if>
+            <if test="endTime != null">AND created_at &lt; #{endTime}</if>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM schema_common.sys_audit_log
+        <where>
+            <if test="module != null and module != ''">AND module = #{module}</if>
+            <if test="action != null and action != ''">AND action = #{action}</if>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="startTime != null">AND created_at &gt;= #{startTime}</if>
+            <if test="endTime != null">AND created_at &lt; #{endTime}</if>
+        </where>
+    </select>
+
+</mapper>

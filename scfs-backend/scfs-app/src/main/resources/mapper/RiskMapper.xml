@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scfs.module.risk.mapper.RiskMapper">
+
+    <resultMap id="RiskProfileMap" type="com.scfs.module.risk.entity.RiskProfile">
+        <id column="id" property="id"/>
+        <result column="application_id" property="applicationId"/>
+        <result column="enterprise_id" property="enterpriseId"/>
+        <result column="version" property="version"/>
+        <result column="supply_chain_score" property="supplyChainScore"/>
+        <result column="transaction_score" property="transactionScore"/>
+        <result column="material_score" property="materialScore"/>
+        <result column="weighted_config_id" property="weightedConfigId"/>
+        <result column="overall_score" property="overallScore"/>
+        <result column="risk_level" property="riskLevel"/>
+        <result column="risk_reasons" property="riskReasons"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="suggestions" property="suggestions"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="content_hash" property="contentHash"/>
+        <result column="generated_at" property="generatedAt"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <resultMap id="TransactionStabilityMap" type="com.scfs.module.risk.entity.TransactionStability">
+        <id column="id" property="id"/>
+        <result column="enterprise_id" property="enterpriseId"/>
+        <result column="score" property="score"/>
+        <result column="transaction_count_12m" property="transactionCount12m"/>
+        <result column="amount_std_dev" property="amountStdDev"/>
+        <result column="trend_data" property="trendData"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result column="calculated_at" property="calculatedAt"/>
+    </resultMap>
+
+    <select id="selectRiskProfileByApplication" resultMap="RiskProfileMap">
+        SELECT * FROM schema_risk.risk_profile WHERE application_id = #{applicationId}
+        ORDER BY version DESC LIMIT 1
+    </select>
+
+    <select id="selectRiskProfilesByEnterprise" resultMap="RiskProfileMap">
+        SELECT * FROM schema_risk.risk_profile WHERE enterprise_id = #{enterpriseId}
+        ORDER BY generated_at DESC
+    </select>
+
+    <insert id="insertRiskProfile" parameterType="com.scfs.module.risk.entity.RiskProfile" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_risk.risk_profile (application_id, enterprise_id, version, supply_chain_score,
+            transaction_score, material_score, weighted_config_id, overall_score, risk_level,
+            risk_reasons, suggestions, content_hash)
+        VALUES (#{applicationId}, #{enterpriseId}, #{version}, #{supplyChainScore}, #{transactionScore},
+            #{materialScore}, #{weightedConfigId}, #{overallScore}, #{riskLevel},
+            CAST(#{riskReasons, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+            CAST(#{suggestions, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+            #{contentHash})
+    </insert>
+
+    <select id="selectTransactionStability" resultMap="TransactionStabilityMap">
+        SELECT * FROM schema_risk.transaction_stability WHERE enterprise_id = #{enterpriseId}
+        ORDER BY calculated_at DESC LIMIT 1
+    </select>
+
+    <insert id="insertTransactionStability" parameterType="com.scfs.module.risk.entity.TransactionStability" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_risk.transaction_stability (enterprise_id, score, transaction_count_12m,
+            amount_std_dev, trend_data)
+        VALUES (#{enterpriseId}, #{score}, #{transactionCount12m}, #{amountStdDev},
+                CAST(#{trendData, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb))
+    </insert>
+
+    <update id="updateTransactionStability" parameterType="com.scfs.module.risk.entity.TransactionStability">
+        UPDATE schema_risk.transaction_stability
+        SET score = #{score}, transaction_count_12m = #{transactionCount12m}, amount_std_dev = #{amountStdDev},
+            trend_data = CAST(#{trendData, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+            calculated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper>
