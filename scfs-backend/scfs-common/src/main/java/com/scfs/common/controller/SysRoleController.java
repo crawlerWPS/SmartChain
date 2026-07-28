@@ -27,19 +27,19 @@ public class SysRoleController {
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping("/api/roles")
     public Result<List<SysRole>> listRoles() {
-        return Result.ok(roleService.listAll());
+        return Result.success(roleService.listAll());
     }
 
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping("/api/roles/{id}")
     public Result<SysRole> getRole(@PathVariable Long id) {
-        return Result.ok(roleService.getById(id));
+        return Result.success(roleService.getById(id));
     }
 
     @RequirePermission(module = "USER", permission = "create")
     @PostMapping("/api/roles")
     public Result<Long> createRole(@RequestBody SysRole role) {
-        return Result.ok(roleService.createRole(role));
+        return Result.success(roleService.createRole(role));
     }
 
     @RequirePermission(module = "USER", permission = "update")
@@ -47,33 +47,33 @@ public class SysRoleController {
     public Result<Void> updateRole(@PathVariable Long id, @RequestBody SysRole role) {
         role.setId(id);
         roleService.updateRole(role);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping("/api/roles/{id}/permissions")
     public Result<List<SysRolePermission>> getRolePermissions(@PathVariable Long id) {
-        return Result.ok(roleService.getPermissionsByRoleId(id));
+        return Result.success(roleService.getPermissionsByRoleId(id));
     }
 
     @RequirePermission(module = "USER", permission = "update")
     @PutMapping("/api/roles/{id}/permissions")
     public Result<Void> assignPermissions(@PathVariable Long id, @RequestBody List<SysRolePermission> permissions) {
         roleService.assignPermissions(id, permissions);
-        return Result.ok();
+        return Result.success();
     }
 
     // ========== 菜单 ==========
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping("/api/menus")
     public Result<List<Map<String, Object>>> listMenuTree() {
-        return Result.ok(roleService.buildMenuTree(roleService.listAllMenus()));
+        return Result.success(roleService.buildMenuTree(roleService.listAllMenus()));
     }
 
     @RequirePermission(module = "USER", permission = "create")
     @PostMapping("/api/menus")
     public Result<Long> createMenu(@RequestBody SysMenu menu) {
-        return Result.ok(roleService.createMenu(menu));
+        return Result.success(roleService.createMenu(menu));
     }
 
     @RequirePermission(module = "USER", permission = "update")
@@ -81,20 +81,20 @@ public class SysRoleController {
     public Result<Void> updateMenu(@PathVariable Long id, @RequestBody SysMenu menu) {
         menu.setId(id);
         roleService.updateMenu(menu);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "USER", permission = "delete")
     @DeleteMapping("/api/menus/{id}")
     public Result<Void> deleteMenu(@PathVariable Long id) {
         roleService.deleteMenu(id);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping("/api/roles/{id}/menus")
     public Result<List<Map<String, Object>>> getRoleMenus(@PathVariable Long id) {
-        return Result.ok(roleService.buildMenuTree(roleService.getMenusByRoleId(id)));
+        return Result.success(roleService.buildMenuTree(roleService.getMenusByRoleId(id)));
     }
 
     @RequirePermission(module = "USER", permission = "update")
@@ -102,7 +102,7 @@ public class SysRoleController {
     public Result<Void> assignMenus(@PathVariable Long id, @RequestBody Map<String, List<Long>> body) {
         List<Long> menuIds = body.get("menuIds");
         roleService.assignMenus(id, menuIds);
-        return Result.ok();
+        return Result.success();
     }
 
     /**
@@ -113,8 +113,8 @@ public class SysRoleController {
         String roleCode = securityContextHelper.getCurrentRoleCodeOrThrow();
         SysRole role = roleService.getByCode(roleCode);
         if (role == null) {
-            return Result.ok(List.of());
+            return Result.success(List.of());
         }
-        return Result.ok(roleService.buildMenuTree(roleService.getMenusByRoleId(role.getId())));
+        return Result.success(roleService.buildMenuTree(roleService.getMenusByRoleId(role.getId())));
     }
 }

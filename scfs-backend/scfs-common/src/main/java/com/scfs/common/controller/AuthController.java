@@ -25,7 +25,7 @@ public class AuthController {
             return Result.fail(400, "用户名或密码不能为空");
         }
         Map<String, Object> result = authService.login(username, password);
-        return Result.ok(result);
+        return Result.success(result);
     }
 
     @PostMapping("/refresh")
@@ -34,12 +34,12 @@ public class AuthController {
         if (refreshToken == null) {
             return Result.fail(400, "refreshToken 不能为空");
         }
-        return Result.ok(authService.refresh(refreshToken));
+        return Result.success(authService.refresh(refreshToken));
     }
 
     @PostMapping("/logout")
     public Result<Void> logout(@RequestHeader(value = "X-Refresh-Token", required = false) String refreshToken) {
         authService.logout(refreshToken);
-        return Result.ok();
+        return Result.success();
     }
 }

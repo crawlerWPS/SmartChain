@@ -26,65 +26,65 @@ public class PreAuditController {
     @RequirePermission(module = "PREAUDIT", permission = "view")
     @GetMapping("/completeness")
     public Result<MaterialCompletenessResult> getCompleteness(@PathVariable Long applicationId) {
-        return Result.ok(preAuditService.getCompleteness(applicationId));
+        return Result.success(preAuditService.getCompleteness(applicationId));
     }
 
     @RequirePermission(module = "PREAUDIT", permission = "update")
     @PostMapping("/completeness/check")
     public Result<MaterialCompletenessResult> checkCompleteness(@PathVariable Long applicationId) {
         FinancingApplication app = verifyMapper.selectApplicationById(applicationId);
-        return Result.ok(preAuditService.checkCompleteness(applicationId, app.getBusinessType()));
+        return Result.success(preAuditService.checkCompleteness(applicationId, app.getBusinessType()));
     }
 
     // ========== 有效性 ==========
     @RequirePermission(module = "PREAUDIT", permission = "view")
     @GetMapping("/validity")
     public Result<MaterialValidityResult> getValidity(@PathVariable Long applicationId) {
-        return Result.ok(preAuditService.getValidity(applicationId));
+        return Result.success(preAuditService.getValidity(applicationId));
     }
 
     @RequirePermission(module = "PREAUDIT", permission = "update")
     @PostMapping("/validity/check")
     public Result<MaterialValidityResult> checkValidity(@PathVariable Long applicationId) {
-        return Result.ok(preAuditService.checkValidity(applicationId));
+        return Result.success(preAuditService.checkValidity(applicationId));
     }
 
     // ========== 一致性 ==========
     @RequirePermission(module = "PREAUDIT", permission = "view")
     @GetMapping("/consistency")
     public Result<EnterpriseInfoConsistencyResult> getConsistency(@PathVariable Long applicationId) {
-        return Result.ok(preAuditService.getConsistency(applicationId));
+        return Result.success(preAuditService.getConsistency(applicationId));
     }
 
     @RequirePermission(module = "PREAUDIT", permission = "update")
     @PostMapping("/consistency/check")
     public Result<EnterpriseInfoConsistencyResult> checkConsistency(@PathVariable Long applicationId) {
-        return Result.ok(preAuditService.checkConsistency(applicationId));
+        return Result.success(preAuditService.checkConsistency(applicationId));
     }
 
     @RequirePermission(module = "PREAUDIT", permission = "view")
     @GetMapping("/consistency/{resultId}/mismatches")
     public Result<List<EnterpriseInfoMismatchDetail>> getMismatches(@PathVariable Long resultId) {
-        return Result.ok(preAuditService.getMismatchDetails(resultId));
+        return Result.success(preAuditService.getMismatchDetails(resultId));
     }
 
     // ========== 补正清单 ==========
     @RequirePermission(module = "PREAUDIT", permission = "view")
     @GetMapping("/supplement-list")
     public Result<SupplementList> getSupplementList(@PathVariable Long applicationId) {
-        return Result.ok(preAuditService.getSupplementList(applicationId));
+        return Result.success(preAuditService.getSupplementList(applicationId));
     }
 
     @RequirePermission(module = "PREAUDIT", permission = "update")
     @PostMapping("/supplement-list/generate")
     public Result<SupplementList> generateSupplementList(@PathVariable Long applicationId) {
-        return Result.ok(preAuditService.generateSupplementList(applicationId));
+        return Result.success(preAuditService.generateSupplementList(applicationId));
     }
 
     @RequirePermission(module = "PREAUDIT", permission = "update")
     @PostMapping("/supplement-list/complete")
     public Result<Void> markSupplementCompleted(@PathVariable Long applicationId) {
         preAuditService.markSupplementCompleted(applicationId);
-        return Result.ok();
+        return Result.success();
     }
 }

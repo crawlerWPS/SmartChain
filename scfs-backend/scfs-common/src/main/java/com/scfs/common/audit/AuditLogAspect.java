@@ -13,7 +13,6 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -27,7 +26,7 @@ import java.util.Map;
  * <p>关键策略：</p>
  * <ul>
  *   <li>基于 Spring AOP 自动记录 @Audit 注解的方法</li>
- *   <li>异步写入（@Async），不阻塞主业务</li>
+ *   <li>异步写入由 AuditLogService 实现，不阻塞主业务</li>
  *   <li>detail 字段存 JSONB，包含变更前后差异</li>
  * </ul>
  *
@@ -57,7 +56,12 @@ public class AuditLogAspect {
         return result;
     }
 
-    @Async
+    /**
+     * 构造审计日志条目并调用 AuditLogService 异步写入。
+     *
+     * <p>注意：此方法在主线程中同步执行，实际的异步写入由
+     * {@link AuditLogService#log(AuditEntry)} 提供。</p>
+     */
     protected void writeAuditLog(ProceedingJoinPoint pjp, Audit audit, Object result, Throwable error) {
         try {
             MethodSignature signature = (MethodSignature) pjp.getSignature();

@@ -61,7 +61,7 @@ public final class ScfsConstants {
     public static final String CACHE_USER_PERMISSION = "scfs:user:perm:";
     public static final String CACHE_RULE_VERSION = "scfs:rule:version:";
     public static final String CACHE_ENTERPRISE_GRAPH = "scfs:graph:enterprise:";
-
+    public static final String CACHE_REFRESH_TOKEN = "scfs:auth:refresh:";
     /** 图谱算法常量 */
     public static final int CORE_ENTERPRISE_DEGREE_THRESHOLD = 20;
     public static final int CORE_ENTERPRISE_OUT_DEGREE_MIN = 5;

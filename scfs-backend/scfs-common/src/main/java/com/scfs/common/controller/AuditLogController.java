@@ -31,14 +31,14 @@ public class AuditLogController {
                                                   @RequestParam(required = false) Long userId,
                                                   @RequestParam(required = false) Instant startTime,
                                                   @RequestParam(required = false) Instant endTime) {
-        return Result.ok(auditQueryService.search(module, action, userId, startTime, endTime,
+        return Result.success(auditQueryService.search(module, action, userId, startTime, endTime,
                 pageQuery.offset(), pageQuery.getSize()));
     }
 
     @RequirePermission(module = "AUDIT", permission = "view")
     @GetMapping("/{id}")
     public Result<SysAuditLog> get(@PathVariable Long id) {
-        return Result.ok(auditQueryService.getById(id));
+        return Result.success(auditQueryService.getById(id));
     }
 
     /**
@@ -50,7 +50,7 @@ public class AuditLogController {
                                                    @RequestParam String targetType,
                                                    @RequestParam String targetId) {
         // 简化：按 targetType 和 targetId 字段查询
-        return Result.ok(auditQueryService.search(null, null, null, null, null,
+        return Result.success(auditQueryService.search(null, null, null, null, null,
                 pageQuery.offset(), pageQuery.getSize()));
     }
 }

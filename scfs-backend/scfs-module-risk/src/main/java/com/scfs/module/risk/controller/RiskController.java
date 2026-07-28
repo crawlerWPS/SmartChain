@@ -22,18 +22,18 @@ public class RiskController {
     @RequirePermission(module = "RISK", permission = "view")
     @GetMapping
     public Result<RiskProfile> get(@PathVariable Long applicationId) {
-        return Result.ok(riskService.getProfileByApplication(applicationId));
+        return Result.success(riskService.getProfileByApplication(applicationId));
     }
 
     @RequirePermission(module = "RISK", permission = "update")
     @PostMapping("/calculate")
     public Result<RiskProfile> calculate(@PathVariable Long applicationId) {
-        return Result.ok(riskService.calculate(applicationId));
+        return Result.success(riskService.calculate(applicationId));
     }
 
     @RequirePermission(module = "RISK", permission = "view")
     @GetMapping("/enterprises/{enterpriseId}")
     public Result<List<RiskProfile>> getByEnterprise(@PathVariable Long enterpriseId) {
-        return Result.ok(riskService.getProfilesByEnterprise(enterpriseId));
+        return Result.success(riskService.getProfilesByEnterprise(enterpriseId));
     }
 }

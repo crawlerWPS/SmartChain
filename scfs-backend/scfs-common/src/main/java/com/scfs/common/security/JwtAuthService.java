@@ -74,7 +74,7 @@ public class JwtAuthService {
         String refreshToken = generateRefreshToken(user);
 
         // Refresh Token 存 Redis（用于校验有效性）
-        String redisKey = ScfsConstants.CacheKey.REFRESH_TOKEN + refreshToken;
+        String redisKey = ScfsConstants.CACHE_REFRESH_TOKEN + refreshToken;
         redisTemplate.opsForValue().set(redisKey, user.getId().toString(), refreshTokenExpire);
 
         Map<String, Object> result = new HashMap<>();
@@ -97,7 +97,7 @@ public class JwtAuthService {
      * Refresh Token 换 Access Token
      */
     public Map<String, Object> refresh(String refreshToken) {
-        String redisKey = ScfsConstants.CacheKey.REFRESH_TOKEN + refreshToken;
+        String redisKey = ScfsConstants.CACHE_REFRESH_TOKEN + refreshToken;
         String userIdStr = redisTemplate.opsForValue().get(redisKey);
         if (userIdStr == null) {
             throw new IllegalStateException("Refresh Token 无效或已过期");
@@ -127,7 +127,7 @@ public class JwtAuthService {
      */
     public void logout(String refreshToken) {
         if (refreshToken != null && !refreshToken.isEmpty()) {
-            String redisKey = ScfsConstants.CacheKey.REFRESH_TOKEN + refreshToken;
+            String redisKey = ScfsConstants.CACHE_REFRESH_TOKEN + refreshToken;
             redisTemplate.delete(redisKey);
         }
     }

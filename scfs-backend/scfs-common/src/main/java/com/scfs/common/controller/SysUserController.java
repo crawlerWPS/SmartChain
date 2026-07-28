@@ -26,19 +26,19 @@ public class SysUserController {
     public Result<PageResult<SysUser>> list(PageQuery pageQuery,
                                              @RequestParam(required = false) String keyword,
                                              @RequestParam(required = false) String roleCode) {
-        return Result.ok(userService.search(keyword, roleCode, pageQuery.offset(), pageQuery.getSize()));
+        return Result.success(userService.search(keyword, roleCode, pageQuery.offset(), pageQuery.getSize()));
     }
 
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping("/{id}")
     public Result<SysUser> get(@PathVariable Long id) {
-        return Result.ok(userService.getById(id));
+        return Result.success(userService.getById(id));
     }
 
     @RequirePermission(module = "USER", permission = "create")
     @PostMapping
     public Result<Long> create(@RequestBody SysUser user) {
-        return Result.ok(userService.createUser(user));
+        return Result.success(userService.createUser(user));
     }
 
     @RequirePermission(module = "USER", permission = "update")
@@ -46,13 +46,13 @@ public class SysUserController {
     public Result<Void> update(@PathVariable Long id, @RequestBody SysUser user) {
         user.setId(id);
         userService.updateUser(user);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "USER", permission = "update")
     @PutMapping("/{id}/toggle-status")
     public Result<Void> toggleStatus(@PathVariable Long id) {
         userService.toggleStatus(id);
-        return Result.ok();
+        return Result.success();
     }
 }

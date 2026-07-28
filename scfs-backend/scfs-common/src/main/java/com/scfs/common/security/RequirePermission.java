@@ -28,4 +28,7 @@ public @interface RequirePermission {
 
     /** 操作：view/create/update/delete/export/approve/reject */
     String action() default ScfsConstants.ACTION_VIEW;
+
+    /** 权限标识，默认与 action 一致 */
+    String permission() default ScfsConstants.ACTION_VIEW;
 }

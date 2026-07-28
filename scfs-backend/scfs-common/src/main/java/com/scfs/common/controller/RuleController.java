@@ -36,19 +36,19 @@ public class RuleController {
                                                           @RequestParam(required = false) Short status,
                                                           @RequestParam(required = false) String keyword) {
         RuleCategory cat = category == null ? null : RuleCategory.valueOf(category);
-        return Result.ok(ruleService.searchRules(cat, status, keyword, pageQuery.offset(), pageQuery.getSize()));
+        return Result.success(ruleService.searchRules(cat, status, keyword, pageQuery.offset(), pageQuery.getSize()));
     }
 
     @RequirePermission(module = "RULE", permission = "view")
     @GetMapping("/rules/{id}")
     public Result<RuleDefinition> getRule(@PathVariable Long id) {
-        return Result.ok(ruleService.getRuleById(id));
+        return Result.success(ruleService.getRuleById(id));
     }
 
     @RequirePermission(module = "RULE", permission = "create")
     @PostMapping("/rules")
     public Result<Long> createRule(@RequestBody RuleDefinition rule) {
-        return Result.ok(ruleService.createRule(rule));
+        return Result.success(ruleService.createRule(rule));
     }
 
     @RequirePermission(module = "RULE", permission = "update")
@@ -56,14 +56,14 @@ public class RuleController {
     public Result<Void> updateRule(@PathVariable Long id, @RequestBody RuleDefinition rule) {
         rule.setId(id);
         ruleService.updateRule(rule);
-        return Result.ok();
+        return Result.success();
     }
 
     // ========== 变更日志（双岗审批）==========
     @RequirePermission(module = "RULE", permission = "view")
     @GetMapping("/rule-changes/pending")
     public Result<PageResult<RuleChangeLog>> listPendingChanges(PageQuery pageQuery) {
-        return Result.ok(ruleService.listPendingChanges(pageQuery.offset(), pageQuery.getSize()));
+        return Result.success(ruleService.listPendingChanges(pageQuery.offset(), pageQuery.getSize()));
     }
 
     @RequirePermission(module = "RULE", permission = "approve")
@@ -72,13 +72,13 @@ public class RuleController {
         boolean approved = (boolean) body.get("approved");
         String rejectReason = (String) body.get("rejectReason");
         ruleService.reviewChange(id, approved, rejectReason);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "RULE", permission = "view")
     @GetMapping("/rules/{id}/changes")
     public Result<List<RuleChangeLog>> listRuleChanges(@PathVariable Long id) {
-        return Result.ok(ruleService.listRuleChangeHistory(id));
+        return Result.success(ruleService.listRuleChangeHistory(id));
     }
 
     // ========== 风险权重配置 ==========
@@ -86,19 +86,19 @@ public class RuleController {
     @GetMapping("/weights")
     public Result<PageResult<RiskWeightConfig>> listWeights(PageQuery pageQuery,
                                                               @RequestParam(required = false) String status) {
-        return Result.ok(ruleService.searchWeightConfigs(status, pageQuery.offset(), pageQuery.getSize()));
+        return Result.success(ruleService.searchWeightConfigs(status, pageQuery.offset(), pageQuery.getSize()));
     }
 
     @RequirePermission(module = "RULE", permission = "view")
     @GetMapping("/weights/enabled")
     public Result<RiskWeightConfig> getEnabledWeight() {
-        return Result.ok(ruleService.getEnabledWeightConfig());
+        return Result.success(ruleService.getEnabledWeightConfig());
     }
 
     @RequirePermission(module = "RULE", permission = "create")
     @PostMapping("/weights")
     public Result<Long> createWeight(@RequestBody RiskWeightConfig config) {
-        return Result.ok(ruleService.createWeightConfig(config));
+        return Result.success(ruleService.createWeightConfig(config));
     }
 
     @RequirePermission(module = "RULE", permission = "approve")
@@ -107,20 +107,20 @@ public class RuleController {
         boolean approved = (boolean) body.get("approved");
         String rejectReason = (String) body.get("rejectReason");
         ruleService.reviewWeightConfig(id, approved, rejectReason);
-        return Result.ok();
+        return Result.success();
     }
 
     // ========== 材料清单模板 ==========
     @RequirePermission(module = "RULE", permission = "view")
     @GetMapping("/templates")
     public Result<List<MaterialChecklistTemplate>> listTemplates() {
-        return Result.ok(ruleService.listAllTemplates());
+        return Result.success(ruleService.listAllTemplates());
     }
 
     @RequirePermission(module = "RULE", permission = "create")
     @PostMapping("/templates")
     public Result<Long> createTemplate(@RequestBody MaterialChecklistTemplate template) {
-        return Result.ok(ruleService.createTemplate(template));
+        return Result.success(ruleService.createTemplate(template));
     }
 
     @RequirePermission(module = "RULE", permission = "approve")
@@ -129,6 +129,6 @@ public class RuleController {
         boolean approved = (boolean) body.get("approved");
         String rejectReason = (String) body.get("rejectReason");
         ruleService.reviewTemplate(id, approved, rejectReason);
-        return Result.ok();
+        return Result.success();
     }
 }

@@ -85,7 +85,7 @@ public class SysRoleService {
             return false;
         }
         // ADMIN 默认拥有全部权限
-        if (ScfsConstants.Roles.ADMIN.equals(roleCode)) {
+        if (ScfsConstants.ROLE_ADMIN.equals(roleCode)) {
             return true;
         }
         List<SysRolePermission> perms = roleMapper.selectPermissionsByRoleId(role.getId());
@@ -170,7 +170,7 @@ public class SysRoleService {
         node.put("sort", menu.getSort());
         node.put("visible", menu.getVisible());
 
-        List<SysMenu> children = childrenMap.getOrDefault(menu.getId(), Collections.emptyList());
+        List<SysMenu> children = childrenMap.getOrDefault(menu.getId(), List.of());
         if (!children.isEmpty()) {
             List<Map<String, Object>> childNodes = children.stream()
                     .sorted((a, b) -> Integer.compare(

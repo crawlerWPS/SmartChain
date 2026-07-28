@@ -35,12 +35,12 @@ public class FileController {
     public Result<Long> upload(@RequestParam("file") MultipartFile file) {
         Long userId = securityContextHelper.getCurrentUserIdOrThrow();
         Long fileObjectId = fileStorageService.upload(file, userId);
-        return Result.ok(fileObjectId);
+        return Result.success(fileObjectId);
     }
 
     @GetMapping("/{id}/info")
     public Result<FileObject> getInfo(@PathVariable Long id) {
-        return Result.ok(fileStorageService.getFileInfo(id));
+        return Result.success(fileStorageService.getFileInfo(id));
     }
 
     @GetMapping("/{id}/download")

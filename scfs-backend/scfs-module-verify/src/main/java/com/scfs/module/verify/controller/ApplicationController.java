@@ -37,20 +37,20 @@ public class ApplicationController {
                                                            @RequestParam(required = false) String status,
                                                            @RequestParam(required = false) Long submittedBy,
                                                            @RequestParam(required = false) Long enterpriseId) {
-        return Result.ok(applicationService.search(status, submittedBy, enterpriseId,
+        return Result.success(applicationService.search(status, submittedBy, enterpriseId,
                 pageQuery.offset(), pageQuery.getSize()));
     }
 
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping("/{id}")
     public Result<FinancingApplication> get(@PathVariable Long id) {
-        return Result.ok(applicationService.getById(id));
+        return Result.success(applicationService.getById(id));
     }
 
     @RequirePermission(module = "VERIFY", permission = "create")
     @PostMapping
     public Result<Long> create(@RequestBody FinancingApplication application) {
-        return Result.ok(applicationService.createApplication(application));
+        return Result.success(applicationService.createApplication(application));
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
@@ -58,90 +58,90 @@ public class ApplicationController {
     public Result<Void> update(@PathVariable Long id, @RequestBody FinancingApplication application) {
         application.setId(id);
         applicationService.updateApplication(application);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/submit")
     public Result<Void> submit(@PathVariable Long id) {
         applicationService.submit(id);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/move-to-pre-audit")
     public Result<Void> moveToPreAudit(@PathVariable Long id) {
         applicationService.moveToPreAudit(id);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/move-to-verify")
     public Result<Void> moveToVerify(@PathVariable Long id) {
         applicationService.moveToVerify(id);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "approve")
     @PostMapping("/{id}/pre-audit-passed")
     public Result<Void> preAuditPassed(@PathVariable Long id) {
         applicationService.preAuditPassed(id);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "reject")
     @PostMapping("/{id}/pre-audit-failed")
     public Result<Void> preAuditFailed(@PathVariable Long id, @RequestBody Map<String, String> body) {
         applicationService.preAuditFailed(id, body.get("reason"));
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/move-to-risk-scoring")
     public Result<Void> moveToRiskScoring(@PathVariable Long id) {
         applicationService.moveToRiskScoring(id);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/move-to-pending-decision")
     public Result<Void> moveToPendingDecision(@PathVariable Long id) {
         applicationService.moveToPendingDecision(id);
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "approve")
     @PostMapping("/{id}/approve")
     public Result<Void> approve(@PathVariable Long id, @RequestBody Map<String, String> body) {
         applicationService.approve(id, body.get("remark"));
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "reject")
     @PostMapping("/{id}/reject")
     public Result<Void> reject(@PathVariable Long id, @RequestBody Map<String, String> body) {
         applicationService.reject(id, body.get("remark"));
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "approve")
     @PostMapping("/{id}/revoke")
     public Result<Void> revoke(@PathVariable Long id, @RequestBody Map<String, String> body) {
         applicationService.revokeApproval(id, body.get("reason"));
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping("/{id}/status-history")
     public Result<List<ApplicationStatusHistory>> statusHistory(@PathVariable Long id) {
-        return Result.ok(applicationService.getStatusHistory(id));
+        return Result.success(applicationService.getStatusHistory(id));
     }
 
     // ========== 材料 ==========
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping("/{id}/materials")
     public Result<?> listMaterials(@PathVariable Long id) {
-        return Result.ok(materialService.listByApplication(id));
+        return Result.success(materialService.listByApplication(id));
     }
 
     @RequirePermission(module = "VERIFY", permission = "create")
@@ -149,51 +149,51 @@ public class ApplicationController {
     public Result<Long> uploadMaterial(@PathVariable Long id,
                                         @RequestParam("file") MultipartFile file,
                                         @RequestParam String materialType) {
-        return Result.ok(materialService.uploadMaterial(id, file, materialType));
+        return Result.success(materialService.uploadMaterial(id, file, materialType));
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PutMapping("/materials/{id}/type")
     public Result<Void> updateMaterialType(@PathVariable Long id, @RequestBody Map<String, String> body) {
         materialService.updateMaterialType(id, body.get("materialType"));
-        return Result.ok();
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping("/materials/{id}/recognition")
     public Result<MaterialRecognitionResult> getRecognition(@PathVariable Long id) {
-        return Result.ok(materialService.getRecognitionResult(id));
+        return Result.success(materialService.getRecognitionResult(id));
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PutMapping("/materials/{id}/recognition")
     public Result<Void> updateRecognition(@PathVariable Long id, @RequestBody MaterialRecognitionResult result) {
         materialService.updateRecognitionResult(id, result);
-        return Result.ok();
+        return Result.success();
     }
 
     // ========== 核验 ==========
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping("/{id}/verify-results")
     public Result<List<VerifyCheckResult>> getVerifyResults(@PathVariable Long id) {
-        return Result.ok(verifyService.getCheckResults(id));
+        return Result.success(verifyService.getCheckResults(id));
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/verify")
     public Result<List<VerifyCheckResult>> verify(@PathVariable Long id) {
-        return Result.ok(verifyService.verifyAll(id));
+        return Result.success(verifyService.verifyAll(id));
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/verify-report")
     public Result<VerifyReport> generateReport(@PathVariable Long id) {
-        return Result.ok(verifyService.generateReport(id));
+        return Result.success(verifyService.generateReport(id));
     }
 
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping("/{id}/verify-report")
     public Result<VerifyReport> getReport(@PathVariable Long id) {
-        return Result.ok(verifyService.getReportByApplication(id));
+        return Result.success(verifyService.getReportByApplication(id));
     }
 }

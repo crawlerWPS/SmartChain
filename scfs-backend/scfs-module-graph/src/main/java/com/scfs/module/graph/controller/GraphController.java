@@ -30,13 +30,13 @@ public class GraphController {
     @GetMapping("/enterprises")
     public Result<PageResult<Enterprise>> searchEnterprises(PageQuery pageQuery,
                                                                @RequestParam(required = false) String keyword) {
-        return Result.ok(graphService.searchEnterprises(keyword, pageQuery.offset(), pageQuery.getSize()));
+        return Result.success(graphService.searchEnterprises(keyword, pageQuery.offset(), pageQuery.getSize()));
     }
 
     @RequirePermission(module = "GRAPH", permission = "view")
     @GetMapping("/enterprises/{id}")
     public Result<Enterprise> getEnterprise(@PathVariable Long id) {
-        return Result.ok(graphService.getEnterpriseById(id));
+        return Result.success(graphService.getEnterpriseById(id));
     }
 
     // ========== 关系图谱 ==========
@@ -44,39 +44,39 @@ public class GraphController {
     @GetMapping("/relations/{enterpriseId}")
     public Result<Map<String, Object>> getRelationGraph(@PathVariable Long enterpriseId,
                                                           @RequestParam(defaultValue = "1") int level) {
-        return Result.ok(graphService.getRelationGraph(enterpriseId, level));
+        return Result.success(graphService.getRelationGraph(enterpriseId, level));
     }
 
     @RequirePermission(module = "GRAPH", permission = "view")
     @GetMapping("/relations")
     public Result<List<?>> getAllRelations() {
-        return Result.ok(graphService.getAllRelations());
+        return Result.success(graphService.getAllRelations());
     }
 
     // ========== 企业角色 ==========
     @RequirePermission(module = "GRAPH", permission = "view")
     @GetMapping("/enterprises/{id}/role")
     public Result<EnterpriseRole> getEnterpriseRole(@PathVariable Long id) {
-        return Result.ok(graphService.getEnterpriseRole(id));
+        return Result.success(graphService.getEnterpriseRole(id));
     }
 
     @RequirePermission(module = "GRAPH", permission = "view")
     @GetMapping("/enterprises/{id}/position")
     public Result<EnterprisePositionAnalysis> getPosition(@PathVariable Long id) {
-        return Result.ok(graphService.getPositionAnalysis(id));
+        return Result.success(graphService.getPositionAnalysis(id));
     }
 
     // ========== 异常关系 ==========
     @RequirePermission(module = "GRAPH", permission = "view")
     @GetMapping("/enterprises/{id}/abnormals")
     public Result<List<AbnormalRelation>> getAbnormals(@PathVariable Long id) {
-        return Result.ok(graphService.getAbnormalsByEnterprise(id));
+        return Result.success(graphService.getAbnormalsByEnterprise(id));
     }
 
     @RequirePermission(module = "GRAPH", permission = "update")
     @PutMapping("/abnormals/{id}/status")
     public Result<Void> updateAbnormalStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
         graphService.updateAbnormalStatus(id, body.get("status"));
-        return Result.ok();
+        return Result.success();
     }
 }

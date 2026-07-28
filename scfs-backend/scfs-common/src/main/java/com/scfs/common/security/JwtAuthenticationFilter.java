@@ -58,11 +58,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(prefix.length()).trim();
         try {
             SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
 
             Long userId = claims.get("userId", Long.class);
             String username = claims.get("username", String.class);
@@ -84,7 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             log.warn("[JWT] 校验失败: {}", e.getMessage());
-            SecurityContextHolder.clear();
+            SecurityContextHolder.getContext().setAuthentication(null);
             securityContextHelper.clear();
         }
 
