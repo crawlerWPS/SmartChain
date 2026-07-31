@@ -6,27 +6,7 @@ import { history } from '@umijs/max';
 import { message as antdMessage, notification } from 'antd';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
 import { getCurrentUser, setCurrentUser, type CurrentUser } from '@/access/access';
-
-const TOKEN_KEY = 'scfs_jwt_token';
-const REFRESH_TOKEN_KEY = 'scfs_refresh_token';
-
-export function getAccessToken(): string {
-  return localStorage.getItem(TOKEN_KEY) || '';
-}
-
-export function getRefreshToken(): string {
-  return localStorage.getItem(REFRESH_TOKEN_KEY) || '';
-}
-
-export function setTokens(access: string, refresh: string) {
-  localStorage.setItem(TOKEN_KEY, access);
-  localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
-}
-
-export function clearTokens() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-}
+import { clearTokens, getAccessToken } from '@/utils/auth';
 
 /** 全局初始化 - 加载用户信息 */
 export async function getInitialState(): Promise<{ currentUser?: CurrentUser }> {

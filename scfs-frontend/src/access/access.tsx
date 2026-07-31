@@ -49,7 +49,7 @@ export default function access(initialState: { currentUser?: CurrentUser }) {
 
   return {
     // 菜单可见权限
-    canViewWorkspace: true, // 所有登录用户可见
+    canViewWorkspace: !!user, // 仅登录用户可见
     canViewGraph: !!user,
     canViewAudit: !!user,
     canViewRule: !!user && (isAdmin() || hasRole('RISK_MANAGER') || hasRole('COMPLIANCE_OFFICER')),

@@ -19,7 +19,7 @@ import java.util.Map;
  * 图谱 Controller - 对应 RFC 3.x /api/graph
  */
 @RestController
-@RequestMapping("/api/graph")
+@RequestMapping("/graph")
 @RequiredArgsConstructor
 public class GraphController {
 

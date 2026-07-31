@@ -1,5 +1,3 @@
-version: '3.8'
-
 # SCFS 供应链金融智能风控与尽调辅助平台 - 一体化部署编排
 # 对应 RFC 1.3 部署拓扑 / RFC 6.2 阶段 0 S0-4
 
@@ -63,7 +61,7 @@ services:
   # 4. Mock 外部数据源服务（Python Flask）
   scfs-mock:
     build:
-      context: ../scfs-mock-server
+      context: ./scfs-mock-server
       dockerfile: Dockerfile
     container_name: scfs-mock
     restart: unless-stopped
@@ -72,7 +70,7 @@ services:
     volumes:
       - mock-data:/app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9002/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9002/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -80,7 +78,7 @@ services:
   # 5. 后端业务应用（Spring Boot 3.x）
   scfs-app:
     build:
-      context: ../scfs-backend
+      context: ./scfs-backend
       dockerfile: scfs-app/src/main/resources/docker/Dockerfile
     container_name: scfs-app
     restart: unless-stopped
@@ -97,6 +95,7 @@ services:
       MINIO_SECRET_KEY: scfs123456
       OCR_ENDPOINT: http://scfs-mock:9002
       JWT_SECRET: scfs-secret-key-must-be-at-least-256-bits-long-for-HS256-algorithm-2026
+      SCFS_SECURITY_JWT_SECRET: scfs-secret-key-must-be-at-least-256-bits-long-for-HS256-algorithm-2026
       TZ: Asia/Shanghai
     ports:
       - "8080:8080"
@@ -113,7 +112,7 @@ services:
   # 6. 前端 React 静态托管 + 反向代理
   scfs-frontend:
     build:
-      context: ../scfs-frontend
+      context: ./scfs-frontend
       dockerfile: Dockerfile
     container_name: scfs-frontend
     restart: unless-stopped

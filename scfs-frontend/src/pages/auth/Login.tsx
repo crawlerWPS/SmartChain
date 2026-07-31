@@ -6,7 +6,7 @@ import { Card, Form, Input, Button, message, Typography, Layout } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import { login } from '@/api/auth';
-import { setTokens } from '@/app';
+import { setTokens } from '@/utils/auth';
 
 const { Title } = Typography;
 
@@ -19,7 +19,7 @@ const Login: React.FC = () => {
     try {
       const result = await login(values);
       setTokens(result.accessToken, result.refreshToken);
-      const user = result.user;
+      const user = result.userInfo;
       localStorage.setItem('scfs_current_user', JSON.stringify(user));
       await setInitialState({ currentUser: user });
       message.success('登录成功');

@@ -13,7 +13,7 @@ export interface LoginResult {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
-  user: {
+  userInfo: {
     userId: number;
     username: string;
     realName: string;

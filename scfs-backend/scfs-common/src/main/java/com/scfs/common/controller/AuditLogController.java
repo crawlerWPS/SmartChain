@@ -17,7 +17,7 @@ import java.time.Instant;
  * <p>AUDIT 角色专属</p>
  */
 @RestController
-@RequestMapping("/api/audit-logs")
+@RequestMapping("/audit-logs")
 @RequiredArgsConstructor
 public class AuditLogController {
 

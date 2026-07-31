@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
  * <p>ADMIN 角色专属</p>
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class SysUserController {
 

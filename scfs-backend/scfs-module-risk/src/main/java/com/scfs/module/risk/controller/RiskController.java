@@ -13,7 +13,7 @@ import java.util.List;
  * 风险评分 Controller - 对应 RFC 3.x /api/applications/{id}/risk
  */
 @RestController
-@RequestMapping("/api/applications/{applicationId}/risk")
+@RequestMapping("/applications/{applicationId}/risk")
 @RequiredArgsConstructor
 public class RiskController {
 

@@ -23,7 +23,7 @@ import java.util.Map;
  * 融资申请 Controller - 对应 RFC 3.x /api/applications
  */
 @RestController
-@RequestMapping("/api/applications")
+@RequestMapping("/applications")
 @RequiredArgsConstructor
 public class ApplicationController {
 

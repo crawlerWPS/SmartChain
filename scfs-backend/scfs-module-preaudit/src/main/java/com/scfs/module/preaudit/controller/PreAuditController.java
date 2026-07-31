@@ -15,7 +15,7 @@ import java.util.List;
  * 预审 Controller - 对应 RFC 3.x /api/applications/{id}/pre-audit/*
  */
 @RestController
-@RequestMapping("/api/applications/{applicationId}/pre-audit")
+@RequestMapping("/applications/{applicationId}/pre-audit")
 @RequiredArgsConstructor
 public class PreAuditController {
 

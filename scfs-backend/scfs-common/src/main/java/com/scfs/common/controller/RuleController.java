@@ -22,7 +22,7 @@ import java.util.Map;
  * <p>双岗审批流程：OPS_MAKER 经办 → OPS_CHECKER 复核</p>
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping
 @RequiredArgsConstructor
 public class RuleController {
 

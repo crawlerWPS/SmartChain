@@ -6,17 +6,17 @@ import type { RiskProfile, TransactionStability, RiskWeightConfig, MaterialCheck
 
 /** IF-RISK-001 风险评分 */
 export async function calculateRiskScore(applicationId: number): Promise<RiskProfile> {
-  return request(`/risk/applications/${applicationId}/score`, { method: 'POST' });
+  return request(`/applications/${applicationId}/risk/calculate`, { method: 'POST' });
 }
 
 /** IF-RISK-002 查询画像 */
 export async function getRiskProfile(id: number): Promise<RiskProfile> {
-  return request(`/risk/profiles/${id}`, { method: 'GET' });
+  return request(`/applications/${id}/risk`, { method: 'GET' });
 }
 
 /** IF-RISK-003 按申请查询画像 */
 export async function getRiskProfileByApplication(applicationId: number): Promise<RiskProfile | null> {
-  return request(`/risk/applications/${applicationId}/profile`, { method: 'GET' });
+  return request(`/applications/${applicationId}/risk`, { method: 'GET' });
 }
 
 /** IF-RISK-004 企业历史画像 */
@@ -26,12 +26,12 @@ export async function listRiskProfilesByEnterprise(enterpriseId: number): Promis
 
 /** IF-RISK-005 风险权重列表 */
 export async function listWeightConfigs(): Promise<RiskWeightConfig[]> {
-  return request('/risk/weights', { method: 'GET' });
+  return request('/weights', { method: 'GET' });
 }
 
 /** IF-RISK-006 当前生效权重 */
 export async function getEnabledWeightConfig(): Promise<RiskWeightConfig | null> {
-  return request('/risk/weights/enabled', { method: 'GET' });
+  return request('/weights/enabled', { method: 'GET' });
 }
 
 /** IF-RISK-007 创建权重草稿 */
@@ -44,22 +44,22 @@ export async function createWeightConfig(data: {
   midRiskThreshold: number;
   highRiskThreshold: number;
 }) {
-  return request('/risk/weights', { method: 'POST', data });
+  return request('/weights', { method: 'POST', data });
 }
 
 /** IF-RISK-008 提交权重审核 */
 export async function submitWeightConfig(id: number) {
-  return request(`/risk/weights/${id}/submit`, { method: 'POST' });
+  return request(`/weights/${id}/review`, { method: 'POST', data: { approved: false } });
 }
 
 /** IF-RISK-009 审批通过权重 */
 export async function approveWeightConfig(id: number, remark?: string) {
-  return request(`/risk/weights/${id}/approve`, { method: 'POST', data: { remark } });
+  return request(`/weights/${id}/review`, { method: 'POST', data: { approved: true, remark } });
 }
 
 /** IF-RISK-010 驳回权重 */
 export async function rejectWeightConfig(id: number, reason: string) {
-  return request(`/risk/weights/${id}/reject`, { method: 'POST', data: { reason } });
+  return request(`/weights/${id}/review`, { method: 'POST', data: { approved: false, rejectReason: reason } });
 }
 
 /** IF-RISK-011 交易稳定性 */
@@ -70,12 +70,12 @@ export async function getTransactionStability(enterpriseId: number): Promise<Tra
 // ========== 材料模板 ==========
 /** IF-TPL-001 模板列表 */
 export async function listTemplates(): Promise<MaterialChecklistTemplate[]> {
-  return request('/risk/templates', { method: 'GET' });
+  return request('/templates', { method: 'GET' });
 }
 
 /** IF-TPL-002 创建模板草稿 */
 export async function createTemplate(data: { businessType: string; requiredMaterials: string[] }) {
-  return request('/risk/templates', { method: 'POST', data });
+  return request('/templates', { method: 'POST', data });
 }
 
 /** IF-TPL-003 提交模板 */

@@ -41,12 +41,12 @@ export async function getEnterprise(id: number): Promise<Enterprise> {
 
 /** IF-GRAPH-003 关系列表 */
 export async function getRelations(enterpriseId: number, level?: number): Promise<SupplyChainRelation[]> {
-  return request(`/graph/enterprises/${enterpriseId}/relations`, { method: 'GET', params: { level } });
+  return request(`/graph/relations/${enterpriseId}`, { method: 'GET', params: { level } });
 }
 
 /** IF-GRAPH-004 完整图谱（nodes + edges） */
 export async function getGraphData(enterpriseId: number, level = 2): Promise<GraphData> {
-  return request(`/graph/enterprises/${enterpriseId}/graph`, { method: 'GET', params: { level } });
+  return request(`/graph/relations/${enterpriseId}`, { method: 'GET', params: { level } });
 }
 
 /** IF-GRAPH-005 企业角色 */

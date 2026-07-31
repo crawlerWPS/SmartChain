@@ -64,7 +64,7 @@ export async function assignRoleMenus(roleId: number, menuIds: number[]) {
 
 /** IF-MENU-001 菜单树 */
 export async function getMenuTree(): Promise<SysMenu[]> {
-  return request('/menus/tree', { method: 'GET' });
+  return request('/menus', { method: 'GET' });
 }
 
 /** IF-MENU-002 创建菜单 */
