@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户 Mapper - 对应 RFC 表1 sys_user
@@ -28,4 +29,9 @@ public interface SysUserMapper {
     int update(SysUser user);
 
     int updateStatus(@Param("id") Long id, @Param("status") Short status);
+
+    /**
+     * 查询用户角色的权限列表（module -> permissions[]）
+     */
+    List<Map<String, Object>> selectPermissionsByUserId(@Param("userId") Long userId);
 }

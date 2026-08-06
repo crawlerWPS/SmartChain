@@ -39,7 +39,8 @@ const AbnormalList: React.FC = () => {
 
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
-    { title: '企业ID', dataIndex: 'enterpriseId', key: 'enterpriseId' },
+    { title: '企业ID', dataIndex: 'enterpriseId', key: 'enterpriseId', width: 80 },
+    { title: '企业名称', dataIndex: 'enterpriseName', key: 'enterpriseName' },
     { title: '异常类型', dataIndex: 'abnormalType', key: 'abnormalType' },
     { title: '严重度', dataIndex: 'severity', key: 'severity', render: (v: string) => {
       const color = v === 'DANGER' ? 'red' : v === 'WARN' ? 'orange' : 'blue';

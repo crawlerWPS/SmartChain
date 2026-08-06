@@ -53,6 +53,12 @@ public class GraphController {
         return Result.success(graphService.getAllRelations());
     }
 
+    @RequirePermission(module = "GRAPH", permission = "view")
+    @GetMapping("/full")
+    public Result<Map<String, Object>> getAllRelationGraph() {
+        return Result.success(graphService.getAllRelationGraph());
+    }
+
     // ========== 企业角色 ==========
     @RequirePermission(module = "GRAPH", permission = "view")
     @GetMapping("/enterprises/{id}/role")
@@ -61,15 +67,36 @@ public class GraphController {
     }
 
     @RequirePermission(module = "GRAPH", permission = "view")
+    @GetMapping("/roles")
+    public Result<List<EnterpriseRole>> getAllEnterpriseRoles() {
+        return Result.success(graphService.getAllEnterpriseRoles());
+    }
+
+    @RequirePermission(module = "GRAPH", permission = "view")
     @GetMapping("/enterprises/{id}/position")
     public Result<EnterprisePositionAnalysis> getPosition(@PathVariable Long id) {
         return Result.success(graphService.getPositionAnalysis(id));
     }
 
+    @RequirePermission(module = "GRAPH", permission = "view")
+    @GetMapping("/positions")
+    public Result<List<EnterprisePositionAnalysis>> getAllPositionAnalyses() {
+        return Result.success(graphService.getAllPositionAnalyses());
+    }
+
     // ========== 异常关系 ==========
     @RequirePermission(module = "GRAPH", permission = "view")
+    @GetMapping("/abnormals")
+    public Result<List<AbnormalRelation>> getAbnormals(@RequestParam(required = false) Long enterpriseId) {
+        if (enterpriseId != null) {
+            return Result.success(graphService.getAbnormalsByEnterprise(enterpriseId));
+        }
+        return Result.success(graphService.getAllAbnormals());
+    }
+
+    @RequirePermission(module = "GRAPH", permission = "view")
     @GetMapping("/enterprises/{id}/abnormals")
-    public Result<List<AbnormalRelation>> getAbnormals(@PathVariable Long id) {
+    public Result<List<AbnormalRelation>> getAbnormalsByEnterprise(@PathVariable Long id) {
         return Result.success(graphService.getAbnormalsByEnterprise(id));
     }
 
@@ -77,6 +104,13 @@ public class GraphController {
     @PutMapping("/abnormals/{id}/status")
     public Result<Void> updateAbnormalStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
         graphService.updateAbnormalStatus(id, body.get("status"));
+        return Result.success();
+    }
+
+    @RequirePermission(module = "GRAPH", permission = "update")
+    @PostMapping("/abnormals/{id}/resolve")
+    public Result<Void> resolveAbnormal(@PathVariable Long id) {
+        graphService.resolveAbnormal(id);
         return Result.success();
     }
 }

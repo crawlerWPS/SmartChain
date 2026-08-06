@@ -18,8 +18,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 图谱服务 - 对应 RFC 4.2.1 GraphService
@@ -110,8 +112,32 @@ public class GraphService {
             allEdges.addAll(level2);
         }
 
-        graph.put("nodes", new ArrayList<>(nodesMap.values()));
-        graph.put("edges", allEdges);
+        // 组装为前端 G6 期望的格式：nodes[{id,label,isCore,data}], edges[{source,target,label,relationType,data}]
+        List<Map<String, Object>> nodes = new ArrayList<>();
+        for (Enterprise ent : nodesMap.values()) {
+            Map<String, Object> node = new HashMap<>();
+            node.put("id", String.valueOf(ent.getId()));
+            node.put("label", ent.getName());
+            node.put("enterpriseId", ent.getId());
+            node.put("isCore", ent.getId().equals(enterpriseId));
+            node.put("data", ent);
+            nodes.add(node);
+        }
+
+        List<Map<String, Object>> edges = new ArrayList<>();
+        for (SupplyChainRelation rel : allEdges) {
+            Map<String, Object> edge = new HashMap<>();
+            edge.put("source", String.valueOf(rel.getFromEnterpriseId()));
+            edge.put("target", String.valueOf(rel.getToEnterpriseId()));
+            edge.put("label", rel.getRelationType());
+            edge.put("relationType", rel.getRelationType());
+            edge.put("weight", rel.getTotalTransactions());
+            edge.put("data", rel);
+            edges.add(edge);
+        }
+
+        graph.put("nodes", nodes);
+        graph.put("edges", edges);
         return graph;
     }
 
@@ -119,10 +145,69 @@ public class GraphService {
         return graphMapper.selectAllRelations();
     }
 
+    /**
+     * 获取全部企业与关系图谱（不指定起点企业）
+     * @return 节点 + 边
+     */
+    public Map<String, Object> getAllRelationGraph() {
+        Map<String, Object> graph = new HashMap<>();
+
+        // 全部企业作为节点
+        List<Enterprise> enterprises = graphMapper.searchEnterprises(null, 0, 1000);
+        Map<Long, Enterprise> nodesMap = new HashMap<>();
+        for (Enterprise ent : enterprises) {
+            nodesMap.put(ent.getId(), ent);
+        }
+
+        // 全部关系作为边
+        List<SupplyChainRelation> allEdges = graphMapper.selectAllRelations();
+
+        // 查询所有企业角色，找出核心企业 ID 集合
+        Set<Long> coreIds = new HashSet<>();
+        for (Enterprise ent : enterprises) {
+            EnterpriseRole role = graphMapper.selectRoleByEnterprise(ent.getId());
+            if (role != null && "CORE".equals(role.getRole())) {
+                coreIds.add(ent.getId());
+            }
+        }
+
+        // 组装为前端 G6 期望的格式
+        List<Map<String, Object>> nodes = new ArrayList<>();
+        for (Enterprise ent : nodesMap.values()) {
+            Map<String, Object> node = new HashMap<>();
+            node.put("id", String.valueOf(ent.getId()));
+            node.put("label", ent.getName());
+            node.put("enterpriseId", ent.getId());
+            node.put("isCore", coreIds.contains(ent.getId()));
+            node.put("data", ent);
+            nodes.add(node);
+        }
+
+        List<Map<String, Object>> edges = new ArrayList<>();
+        for (SupplyChainRelation rel : allEdges) {
+            Map<String, Object> edge = new HashMap<>();
+            edge.put("source", String.valueOf(rel.getFromEnterpriseId()));
+            edge.put("target", String.valueOf(rel.getToEnterpriseId()));
+            edge.put("label", rel.getRelationType());
+            edge.put("relationType", rel.getRelationType());
+            edge.put("weight", rel.getTotalTransactions());
+            edge.put("data", rel);
+            edges.add(edge);
+        }
+
+        graph.put("nodes", nodes);
+        graph.put("edges", edges);
+        return graph;
+    }
+
     // ========== 企业角色识别 ==========
 
     public EnterpriseRole getEnterpriseRole(Long enterpriseId) {
         return graphMapper.selectRoleByEnterprise(enterpriseId);
+    }
+
+    public List<EnterpriseRole> getAllEnterpriseRoles() {
+        return graphMapper.selectAllRoles();
     }
 
     /**
@@ -200,6 +285,10 @@ public class GraphService {
         return graphMapper.selectPositionAnalysis(enterpriseId);
     }
 
+    public List<EnterprisePositionAnalysis> getAllPositionAnalyses() {
+        return graphMapper.selectAllPositionAnalyses();
+    }
+
     @Transactional
     public void analyzeEnterprisePosition(Long enterpriseId, Long coreEnterpriseId) {
         EnterprisePositionAnalysis existing = graphMapper.selectPositionAnalysis(enterpriseId);
@@ -256,8 +345,17 @@ public class GraphService {
         return graphMapper.selectAbnormalsByEnterprise(enterpriseId);
     }
 
+    public List<AbnormalRelation> getAllAbnormals() {
+        return graphMapper.selectAllAbnormals();
+    }
+
     @Transactional
     public void updateAbnormalStatus(Long id, String status) {
         graphMapper.updateAbnormalStatus(id, status);
+    }
+
+    @Transactional
+    public void resolveAbnormal(Long id) {
+        graphMapper.updateAbnormalStatus(id, "RESOLVED");
     }
 }

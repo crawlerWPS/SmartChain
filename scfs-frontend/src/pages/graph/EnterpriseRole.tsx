@@ -1,52 +1,95 @@
 /**
- * 企业角色页 - 简化实现
+ * 企业角色识别页 - 列表展示 + 搜索过滤
  */
-import React, { useState } from 'react';
-import { Card, Input, Button, Empty, Descriptions, Tag, message } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Card, Input, Table, Tag, message } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { pageEnterprises, getEnterpriseRole } from '@/api/graph';
-import { maskName } from '@/utils';
+import { listEnterpriseRoles } from '@/api/graph';
+import type { EnterpriseRole } from '@/types';
 
-const EnterpriseRole: React.FC = () => {
+const roleColors: Record<string, string> = {
+  CORE: 'red',
+  KEY_SUPPLIER: 'orange',
+  TIER1: 'blue',
+  TIER2: 'cyan',
+  NORMAL: 'default',
+};
+
+const roleLabels: Record<string, string> = {
+  CORE: '核心企业',
+  KEY_SUPPLIER: '关键供应商',
+  TIER1: '一级供应商',
+  TIER2: '二级供应商',
+  NORMAL: '普通企业',
+};
+
+const EnterpriseRolePage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
-  const [role, setRole] = useState<any>(null);
+  const [list, setList] = useState<EnterpriseRole[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSearch = async () => {
-    if (!keyword) return;
+  const load = async () => {
+    setLoading(true);
     try {
-      const result = await pageEnterprises({ page: 1, size: 1, keyword });
-      if (!result.list?.length) {
-        message.warning('未找到企业');
-        return;
-      }
-      const r = await getEnterpriseRole(result.list[0].id);
-      setRole(r);
+      const result = await listEnterpriseRoles();
+      setList(result || []);
     } catch (e: any) {
-      message.error(e.message);
+      message.error(e.message || '加载失败');
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    load();
+  }, []);
+
+  const filtered = list.filter(
+    (r) =>
+      !keyword ||
+      r.enterpriseName?.toLowerCase().includes(keyword.toLowerCase()) ||
+      String(r.enterpriseId).includes(keyword),
+  );
+
+  const columns = [
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
+    { title: '企业ID', dataIndex: 'enterpriseId', key: 'enterpriseId', width: 80 },
+    { title: '企业名称', dataIndex: 'enterpriseName', key: 'enterpriseName' },
+    {
+      title: '角色',
+      dataIndex: 'role',
+      key: 'role',
+      render: (v: string) => <Tag color={roleColors[v] || 'default'}>{roleLabels[v] || v}</Tag>,
+    },
+    { title: '核心企业ID', dataIndex: 'coreEnterpriseId', key: 'coreEnterpriseId' },
+    { title: '合作年限', dataIndex: 'coopDurationYears', key: 'coopDurationYears' },
+    { title: '合作企业数', dataIndex: 'coopEnterpriseCount', key: 'coopEnterpriseCount' },
+    { title: '影响力', dataIndex: 'influenceLevel', key: 'influenceLevel' },
+    { title: '信誉等级', dataIndex: 'credibilityLevel', key: 'credibilityLevel' },
+  ];
+
   return (
-    <Card title="企业角色识别" extra={
-      <Input.Search placeholder="企业名称/USCC" style={{ width: 240 }} prefix={<SearchOutlined />}
-        onChange={(e) => setKeyword(e.target.value)} onSearch={handleSearch} />
-    }>
-      {role ? (
-        <Descriptions bordered column={2}>
-          <Descriptions.Item label="企业ID">{role.enterpriseId}</Descriptions.Item>
-          <Descriptions.Item label="角色"><Tag color="blue">{role.role}</Tag></Descriptions.Item>
-          <Descriptions.Item label="核心企业ID">{role.coreEnterpriseId || '-'}</Descriptions.Item>
-          <Descriptions.Item label="合作年限">{role.coopDurationYears || 0} 年</Descriptions.Item>
-          <Descriptions.Item label="合作企业数">{role.coopEnterpriseCount || 0}</Descriptions.Item>
-          <Descriptions.Item label="影响力等级">{role.influenceLevel || '-'}</Descriptions.Item>
-          <Descriptions.Item label="信誉等级">{role.credibilityLevel || '-'}</Descriptions.Item>
-          <Descriptions.Item label="计算时间">{role.calculatedAt || '-'}</Descriptions.Item>
-        </Descriptions>
-      ) : (
-        <Empty description="请搜索企业查看角色信息" />
-      )}
+    <Card
+      title="企业角色识别"
+      extra={
+        <Input.Search
+          placeholder="搜索企业名称/ID"
+          style={{ width: 240 }}
+          prefix={<SearchOutlined />}
+          allowClear
+          onChange={(e) => setKeyword(e.target.value)}
+        />
+      }
+    >
+      <Table
+        columns={columns}
+        dataSource={filtered}
+        rowKey="id"
+        loading={loading}
+        pagination={{ pageSize: 10 }}
+      />
     </Card>
   );
 };
 
-export default EnterpriseRole;
+export default EnterpriseRolePage;

@@ -16,6 +16,7 @@ public class EnterpriseRole extends com.scfs.common.entity.BaseEntity {
     private static final long serialVersionUID = 1L;
 
     private Long enterpriseId;
+    private String enterpriseName;
     /** CORE/KEY_SUPPLIER/TIER1/TIER2/NORMAL/EDGE */
     private String role;
     private Long coreEnterpriseId;

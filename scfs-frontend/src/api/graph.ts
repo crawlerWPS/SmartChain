@@ -49,14 +49,29 @@ export async function getGraphData(enterpriseId: number, level = 2): Promise<Gra
   return request(`/graph/relations/${enterpriseId}`, { method: 'GET', params: { level } });
 }
 
-/** IF-GRAPH-005 企业角色 */
+/** IF-GRAPH-004b 全部企业图谱（不指定起点企业，返回全部节点和边） */
+export async function getAllGraphData(): Promise<GraphData> {
+  return request('/graph/full', { method: 'GET' });
+}
+
+/** IF-GRAPH-005 企业角色（单企业） */
 export async function getEnterpriseRole(enterpriseId: number): Promise<EnterpriseRole> {
   return request(`/graph/enterprises/${enterpriseId}/role`, { method: 'GET' });
 }
 
-/** IF-GRAPH-006 位置分析 */
+/** IF-GRAPH-005b 全部企业角色 */
+export async function listEnterpriseRoles(): Promise<EnterpriseRole[]> {
+  return request('/graph/roles', { method: 'GET' });
+}
+
+/** IF-GRAPH-006 位置分析（单企业） */
 export async function getPositionAnalysis(enterpriseId: number): Promise<EnterprisePositionAnalysis> {
   return request(`/graph/enterprises/${enterpriseId}/position`, { method: 'GET' });
+}
+
+/** IF-GRAPH-006b 全部位置分析 */
+export async function listPositionAnalyses(): Promise<EnterprisePositionAnalysis[]> {
+  return request('/graph/positions', { method: 'GET' });
 }
 
 /** IF-GRAPH-007 异常列表 */

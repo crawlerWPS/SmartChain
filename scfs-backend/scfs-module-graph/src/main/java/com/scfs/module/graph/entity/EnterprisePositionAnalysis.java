@@ -15,6 +15,7 @@ public class EnterprisePositionAnalysis extends com.scfs.common.entity.BaseEntit
     private static final long serialVersionUID = 1L;
 
     private Long enterpriseId;
+    private String enterpriseName;
     /** 是否在核心企业体系 */
     private Boolean inCoreChain;
     /** 距核心企业层级 */

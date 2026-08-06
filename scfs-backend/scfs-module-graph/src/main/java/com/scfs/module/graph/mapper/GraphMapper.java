@@ -46,6 +46,8 @@ public interface GraphMapper {
 
     List<EnterpriseRole> selectRolesByCoreEnterprise(@Param("coreEnterpriseId") Long coreEnterpriseId);
 
+    List<EnterpriseRole> selectAllRoles();
+
     int insertEnterpriseRole(EnterpriseRole role);
 
     int updateEnterpriseRole(EnterpriseRole role);
@@ -53,12 +55,16 @@ public interface GraphMapper {
     // 位置分析
     EnterprisePositionAnalysis selectPositionAnalysis(@Param("enterpriseId") Long enterpriseId);
 
+    List<EnterprisePositionAnalysis> selectAllPositionAnalyses();
+
     int insertPositionAnalysis(EnterprisePositionAnalysis analysis);
 
     int updatePositionAnalysis(EnterprisePositionAnalysis analysis);
 
     // 异常关系
     List<AbnormalRelation> selectAbnormalsByEnterprise(@Param("enterpriseId") Long enterpriseId);
+
+    List<AbnormalRelation> selectAllAbnormals();
 
     int insertAbnormalRelation(AbnormalRelation abnormal);
 

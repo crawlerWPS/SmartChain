@@ -3,6 +3,7 @@ package com.scfs.common.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scfs.common.constant.ScfsConstants;
 import com.scfs.common.entity.SysUser;
+import com.scfs.common.mapper.SysUserMapper;
 import com.scfs.common.service.SysUserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -21,6 +22,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,8 +43,10 @@ import java.util.UUID;
 public class JwtAuthService {
 
     private final SysUserService userService;
+    private final SysUserMapper userMapper;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final SecurityContextHelper securityContextHelper;
 
     @Value("${scfs.security.jwt.secret}")
     private String secret;
@@ -88,9 +93,34 @@ public class JwtAuthService {
         userInfo.put("username", user.getUsername());
         userInfo.put("realName", user.getRealName());
         userInfo.put("roleCode", user.getRoleCode());
+        // 查询并填充 permissions（module -> [action,...]）
+        Map<String, List<String>> permissions = loadPermissions(user.getId());
+        userInfo.put("permissions", permissions);
+        // 同步写入 Redis 缓存，供 PermissionCheckerAspect 后续校验使用
+        securityContextHelper.cacheRolePermissions(user.getRoleCode(), permissions);
         result.put("userInfo", userInfo);
 
         return result;
+    }
+
+    /**
+     * 加载用户角色的权限映射：module -> permissions[]
+     */
+    private Map<String, List<String>> loadPermissions(Long userId) {
+        List<Map<String, Object>> rows = userMapper.selectPermissionsByUserId(userId);
+        Map<String, List<String>> permissions = new LinkedHashMap<>();
+        if (rows != null) {
+            for (Map<String, Object> row : rows) {
+                String module = (String) row.get("module");
+                Object perms = row.get("permissions");
+                if (module != null && perms instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<String> permList = (List<String>) perms;
+                    permissions.put(module, permList);
+                }
+            }
+        }
+        return permissions;
     }
 
     /**

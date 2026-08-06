@@ -83,4 +83,19 @@
         UPDATE schema_common.sys_user SET status = #{status}, updated_at = NOW() WHERE id = #{id}
     </update>
 
+    <!-- 查询用户角色的权限列表（module -> permissions[]） -->
+    <resultMap id="PermMap" type="java.util.LinkedHashMap">
+        <result column="module" property="module"/>
+        <result column="permissions" property="permissions"
+                typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+    </resultMap>
+
+    <select id="selectPermissionsByUserId" resultMap="PermMap">
+        SELECT rp.module AS "module", rp.permissions AS "permissions"
+        FROM schema_common.sys_role_permission rp
+        JOIN schema_common.sys_role r ON rp.role_id = r.id
+        JOIN schema_common.sys_user u ON u.role_code = r.role_code
+        WHERE u.id = #{userId}
+    </select>
+
 </mapper>

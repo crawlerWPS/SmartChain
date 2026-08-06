@@ -185,6 +185,7 @@ export interface SupplyChainRelation extends BaseEntity {
 export interface EnterpriseRole {
   id: number;
   enterpriseId: number;
+  enterpriseName?: string;
   role: EnterpriseRoleEnum;
   coreEnterpriseId?: number;
   coopDurationYears?: number;
@@ -197,6 +198,7 @@ export interface EnterpriseRole {
 export interface EnterprisePositionAnalysis {
   id: number;
   enterpriseId: number;
+  enterpriseName?: string;
   inCoreChain: boolean;
   distanceToCore: number;
   upstreamStable: boolean;
@@ -209,6 +211,7 @@ export interface EnterprisePositionAnalysis {
 export interface AbnormalRelation {
   id: number;
   enterpriseId: number;
+  enterpriseName?: string;
   abnormalType: AbnormalType;
   severity: 'INFO' | 'WARN' | 'DANGER';
   description: string;

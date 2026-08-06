@@ -1,6 +1,6 @@
 /**
  * RBAC 权限鉴权 - 对齐后端 sys_role_permission / sys_role_menu
- * 角色编码：ADMIN / RISK_MANAGER / COMPLIANCE_OFFICER / BUSINESS_USER
+ * 角色编码：ADMIN / RM / RCO / OPS_MAKER / OPS_CHECKER / OPS / AUDIT
  */
 import type { AccessParams } from '@umijs/max';
 
@@ -48,48 +48,48 @@ export default function access(initialState: { currentUser?: CurrentUser }) {
   setCurrentUser(user || null);
 
   return {
-    // 菜单可见权限
-    canViewWorkspace: !!user, // 仅登录用户可见
-    canViewGraph: !!user,
-    canViewAudit: !!user,
-    canViewRule: !!user && (isAdmin() || hasRole('RISK_MANAGER') || hasRole('COMPLIANCE_OFFICER')),
-    canViewAuditTrail: !!user && (isAdmin() || hasRole('COMPLIANCE_OFFICER')),
+    // 菜单可见权限 - 基于角色代码
+    canViewWorkspace: !!user,
+    canViewGraph: !!user && (isAdmin() || hasRole('RM') || hasRole('RCO') || hasRole('AUDIT')),
+    canViewAudit: !!user && (isAdmin() || hasRole('RM') || hasRole('RCO')),
+    canViewRule: !!user && (isAdmin() || hasRole('OPS_MAKER') || hasRole('OPS_CHECKER') || hasRole('OPS')),
+    canViewAuditTrail: !!user && (isAdmin() || hasRole('AUDIT') || hasRole('OPS')),
     canViewSystem: !!user && isAdmin(),
 
     // 按钮权限 - 严格匹配后端 @RequirePermission
-    'graph:view': () => can('graph', 'view'),
-    'application:view': () => can('application', 'view'),
-    'application:create': () => can('application', 'create'),
-    'application:submit': () => can('application', 'submit'),
-    'application:approve': () => can('application', 'approve'),
-    'application:reject': () => can('application', 'reject'),
-    'material:view': () => can('material', 'view'),
-    'material:upload': () => can('material', 'upload'),
-    'material:re-recognize': () => can('material', 're-recognize'),
-    'preaudit:view': () => can('preaudit', 'view'),
-    'preaudit:check': () => can('preaudit', 'check'),
-    'verify:view': () => can('verify', 'view'),
-    'verify:check': () => can('verify', 'check'),
-    'verify:report': () => can('verify', 'report'),
-    'risk:view': () => can('risk', 'view'),
-    'risk:score': () => can('risk', 'score'),
-    'rule:view': () => can('rule', 'view'),
-    'rule:create': () => can('rule', 'create'),
-    'rule:edit': () => can('rule', 'edit'),
-    'rule:submit': () => can('rule', 'submit'),
-    'rule:approve': () => can('rule', 'approve'),
-    'weight:view': () => can('weight', 'view'),
-    'weight:submit': () => can('weight', 'submit'),
-    'weight:approve': () => can('weight', 'approve'),
-    'template:view': () => can('template', 'view'),
-    'template:submit': () => can('template', 'submit'),
-    'template:approve': () => can('template', 'approve'),
-    'audit:view': () => can('audit', 'view'),
-    'audit:export': () => can('audit', 'export'),
-    'system:user:view': () => can('system', 'user:view'),
-    'system:user:create': () => can('system', 'user:create'),
-    'system:role:view': () => can('system', 'role:view'),
-    'system:menu:view': () => can('system', 'menu:view'),
+    'graph:view': () => can('GRAPH', 'view'),
+    'application:view': () => can('VERIFY', 'view'),
+    'application:create': () => can('VERIFY', 'create'),
+    'application:submit': () => can('VERIFY', 'create'),
+    'application:approve': () => can('VERIFY', 'approve'),
+    'application:reject': () => can('VERIFY', 'reject'),
+    'material:view': () => can('VERIFY', 'view'),
+    'material:upload': () => can('VERIFY', 'create'),
+    'material:re-recognize': () => can('VERIFY', 'update'),
+    'preaudit:view': () => can('PREAUDIT', 'view'),
+    'preaudit:check': () => can('PREAUDIT', 'view'),
+    'verify:view': () => can('VERIFY', 'view'),
+    'verify:check': () => can('VERIFY', 'update'),
+    'verify:report': () => can('VERIFY', 'view'),
+    'risk:view': () => can('RISK', 'view'),
+    'risk:score': () => can('RISK', 'view'),
+    'rule:view': () => can('RULE', 'view'),
+    'rule:create': () => can('RULE', 'create'),
+    'rule:edit': () => can('RULE', 'update'),
+    'rule:submit': () => can('RULE', 'create'),
+    'rule:approve': () => can('RULE', 'approve'),
+    'weight:view': () => can('RULE', 'view'),
+    'weight:submit': () => can('RULE', 'create'),
+    'weight:approve': () => can('RULE', 'approve'),
+    'template:view': () => can('RULE', 'view'),
+    'template:submit': () => can('RULE', 'create'),
+    'template:approve': () => can('RULE', 'approve'),
+    'audit:view': () => can('AUDIT', 'view'),
+    'audit:export': () => can('AUDIT', 'export'),
+    'system:user:view': () => can('USER', 'view'),
+    'system:user:create': () => can('USER', 'create'),
+    'system:role:view': () => can('USER', 'view'),
+    'system:menu:view': () => can('USER', 'view'),
   } satisfies Record<string, ((...args: AccessParams) => boolean) | boolean>;
 }
 

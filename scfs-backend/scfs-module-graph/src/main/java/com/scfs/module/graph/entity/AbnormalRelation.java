@@ -16,6 +16,7 @@ public class AbnormalRelation extends com.scfs.common.entity.BaseEntity {
     private static final long serialVersionUID = 1L;
 
     private Long enterpriseId;
+    private String enterpriseName;
     /** RAPID_EXPANSION/CIRCULAR/RELATED_PARTY */
     private String abnormalType;
     /** HIGH/MID/LOW */

@@ -35,6 +35,7 @@
     <resultMap id="EnterpriseRoleMap" type="com.scfs.module.graph.entity.EnterpriseRole">
         <id column="id" property="id"/>
         <result column="enterprise_id" property="enterpriseId"/>
+        <result column="enterprise_name" property="enterpriseName"/>
         <result column="role" property="role"/>
         <result column="core_enterprise_id" property="coreEnterpriseId"/>
         <result column="coop_duration_years" property="coopDurationYears"/>
@@ -48,6 +49,7 @@
     <resultMap id="PositionMap" type="com.scfs.module.graph.entity.EnterprisePositionAnalysis">
         <id column="id" property="id"/>
         <result column="enterprise_id" property="enterpriseId"/>
+        <result column="enterprise_name" property="enterpriseName"/>
         <result column="in_core_chain" property="inCoreChain"/>
         <result column="distance_to_core" property="distanceToCore"/>
         <result column="upstream_stable" property="upstreamStable"/>
@@ -60,6 +62,7 @@
     <resultMap id="AbnormalMap" type="com.scfs.module.graph.entity.AbnormalRelation">
         <id column="id" property="id"/>
         <result column="enterprise_id" property="enterpriseId"/>
+        <result column="enterprise_name" property="enterpriseName"/>
         <result column="abnormal_type" property="abnormalType"/>
         <result column="severity" property="severity"/>
         <result column="description" property="description"/>
@@ -83,7 +86,7 @@
         SELECT * FROM schema_graph.enterprise
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (name LIKE CONCAT('%', #{keyword}, '%') OR uscc LIKE CONCAT('%', #{keyword}, '%'))
+                AND (name LIKE '%' || #{keyword} || '%' OR uscc LIKE '%' || #{keyword} || '%')
             </if>
         </where>
         ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}
@@ -93,7 +96,7 @@
         SELECT COUNT(*) FROM schema_graph.enterprise
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (name LIKE CONCAT('%', #{keyword}, '%') OR uscc LIKE CONCAT('%', #{keyword}, '%'))
+                AND (name LIKE '%' || #{keyword} || '%' OR uscc LIKE '%' || #{keyword} || '%')
             </if>
         </where>
     </select>
@@ -157,6 +160,13 @@
         SELECT * FROM schema_graph.enterprise_role WHERE core_enterprise_id = #{coreEnterpriseId}
     </select>
 
+    <select id="selectAllRoles" resultMap="EnterpriseRoleMap">
+        SELECT r.*, e.name as enterprise_name
+        FROM schema_graph.enterprise_role r
+        JOIN schema_graph.enterprise e ON r.enterprise_id = e.id
+        ORDER BY r.calculated_at DESC
+    </select>
+
     <insert id="insertEnterpriseRole" parameterType="com.scfs.module.graph.entity.EnterpriseRole" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO schema_graph.enterprise_role (enterprise_id, role, core_enterprise_id, coop_duration_years,
             coop_enterprise_count, influence_level, credibility_level)
@@ -176,6 +186,13 @@
     <!-- 位置分析 -->
     <select id="selectPositionAnalysis" resultMap="PositionMap">
         SELECT * FROM schema_graph.enterprise_position_analysis WHERE enterprise_id = #{enterpriseId} LIMIT 1
+    </select>
+
+    <select id="selectAllPositionAnalyses" resultMap="PositionMap">
+        SELECT p.*, e.name as enterprise_name
+        FROM schema_graph.enterprise_position_analysis p
+        JOIN schema_graph.enterprise e ON p.enterprise_id = e.id
+        ORDER BY p.calculated_at DESC
     </select>
 
     <insert id="insertPositionAnalysis" parameterType="com.scfs.module.graph.entity.EnterprisePositionAnalysis" useGeneratedKeys="true" keyProperty="id">
@@ -198,6 +215,13 @@
     <select id="selectAbnormalsByEnterprise" resultMap="AbnormalMap">
         SELECT * FROM schema_graph.abnormal_relation WHERE enterprise_id = #{enterpriseId}
         ORDER BY detected_at DESC
+    </select>
+
+    <select id="selectAllAbnormals" resultMap="AbnormalMap">
+        SELECT a.*, e.name as enterprise_name
+        FROM schema_graph.abnormal_relation a
+        JOIN schema_graph.enterprise e ON a.enterprise_id = e.id
+        ORDER BY a.detected_at DESC
     </select>
 
     <insert id="insertAbnormalRelation" parameterType="com.scfs.module.graph.entity.AbnormalRelation" useGeneratedKeys="true" keyProperty="id">

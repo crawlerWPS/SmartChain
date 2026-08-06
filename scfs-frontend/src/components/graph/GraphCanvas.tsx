@@ -9,11 +9,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Graph, Tooltip as G6Tooltip, Menu } from '@antv/g6';
 import { Spin, Button, Space, message } from 'antd';
-import { ZoomInOutlined, ZoomOutOutlined, ExportOutlined, ReloadOutlined } from '@ant-design/icons';
-import { getGraphData, type GraphData } from '@/api/graph';
+import { ZoomInOutlined, ZoomOutOutlined, ExportOutlined, ReloadOutlined, SwapOutlined, DragOutlined } from '@ant-design/icons';
+import { getGraphData, getAllGraphData, type GraphData } from '@/api/graph';
 
 interface Props {
-  enterpriseId: number;
+  enterpriseId?: number;
   level?: number;
   height?: number;
 }
@@ -23,6 +23,39 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
   const graphRef = useRef<Graph | null>(null);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<GraphData>({ nodes: [], edges: [] });
+  const [layoutMode, setLayoutMode] = useState<'force' | 'radial'>('force');
+
+  const getLayoutConfig = (g6Data: GraphData) => {
+    const coreNode = g6Data.nodes.find((n) => n.isCore);
+    const focusNodeId = coreNode?.id || g6Data.nodes[0]?.id;
+
+    if (layoutMode === 'force') {
+      return {
+        type: 'force',
+        nodeStrength: -400,
+        linkDistance: 220,
+        preventOverlap: true,
+        nodeSize: 60,
+        nodeSpacing: 50,
+        edgeStrength: 0.4,
+        gravity: 8,
+        alphaDecay: 0.028,
+        maxIteration: 800,
+      };
+    }
+
+    return {
+      type: 'radial',
+      focusNode: focusNodeId,
+      unitRadius: 180,
+      linkDistance: 200,
+      preventOverlap: true,
+      nodeSize: 60,
+      nodeSpacing: 40,
+      maxIteration: 1000,
+      strictRadial: true,
+    };
+  };
 
   const buildGraph = (g6Data: GraphData) => {
     if (!containerRef.current) return;
@@ -31,13 +64,14 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
       graphRef.current = null;
     }
 
+    const containerWidth = containerRef.current.offsetWidth || 1000;
+
     const graph = new Graph({
       container: containerRef.current,
-      width: containerRef.current.offsetWidth,
+      width: containerWidth,
       height,
-      modes: {
-        default: ['drag-canvas', 'zoom-canvas', 'drag-node', 'brush-select'],
-      },
+      autoFit: 'view',
+      behaviors: ['drag-canvas', 'zoom-canvas', 'drag-node', 'brush-select'],
       plugins: [
         {
           type: 'tooltip',
@@ -76,38 +110,49 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
           endArrow: true,
         },
       },
-      layout: {
-        type: 'force',
-        preventOverlap: true,
-        nodeSize: 40,
-        linkDistance: 120,
-        nodeStrength: -50,
-        edgeStrength: 0.7,
-      },
+      layout: getLayoutConfig(g6Data) as any,
     });
 
     graph.setData({
       nodes: g6Data.nodes.map((n) => ({
         id: n.id,
         data: { ...n, ...(n.data || {}) },
-        style: { isCore: n.isCore },
+        // 将 isCore/relationType 放到顶层，供 style 回调读取
+        isCore: n.isCore,
+        label: n.label,
       })),
       edges: g6Data.edges.map((e, i) => ({
         id: `e${i}-${e.source}-${e.target}`,
         source: e.source,
         target: e.target,
         data: { ...e },
+        relationType: e.relationType,
+        label: e.label,
       })),
     });
 
     graph.render();
+
+    // PaperConnect 自由拖动：初始布局结束后停止 force 动画，避免节点被拉回
+    graph.on('afterlayout', () => graph.stopLayout());
+    // 拖动开始时若布局仍在运行也停止
+    graph.on('node:dragstart', () => graph.stopLayout());
+    // 拖动结束后固定节点位置
+    graph.on('node:dragend', (e: any) => {
+      const model = e.item?.getModel?.();
+      if (!model) return;
+      graph.updateData('node', [{ id: model.id, fx: model.x, fy: model.y }]);
+    });
+
     graphRef.current = graph;
   };
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const result = await getGraphData(enterpriseId, level);
+      const result = enterpriseId
+        ? await getGraphData(enterpriseId, level)
+        : await getAllGraphData();
       setData(result);
       buildGraph(result);
     } catch (e: any) {
@@ -123,7 +168,7 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
       graphRef.current?.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enterpriseId, level]);
+  }, [enterpriseId, level, layoutMode]);
 
   const handleZoomIn = () => graphRef.current?.zoomTo(1.5);
   const handleZoomOut = () => graphRef.current?.zoomTo(0.5);
@@ -134,7 +179,7 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
     if (url) {
       const a = document.createElement('a');
       a.href = url;
-      a.download = `graph_${enterpriseId}.png`;
+      a.download = `graph_${enterpriseId || 'all'}.png`;
       a.click();
       message.success('图谱已导出');
     }
@@ -147,6 +192,12 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
           <Button icon={<ZoomInOutlined />} onClick={handleZoomIn}>放大</Button>
           <Button icon={<ZoomOutOutlined />} onClick={handleZoomOut}>缩小</Button>
           <Button icon={<ReloadOutlined />} onClick={handleReload}>重新加载</Button>
+          <Button icon={<SwapOutlined />} onClick={() => setLayoutMode(m => m === 'force' ? 'radial' : 'force')}>
+            {layoutMode === 'force' ? '径向布局' : '自由布局'}
+          </Button>
+          <Button icon={<DragOutlined />} onClick={() => message.info('当前为自由布局模式，可直接拖动节点')}>
+            拖动说明
+          </Button>
           <Button icon={<ExportOutlined />} onClick={handleExport}>导出图片</Button>
         </Space>
         <span style={{ marginLeft: 16, color: '#999' }}>
