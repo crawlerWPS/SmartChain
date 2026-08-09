@@ -27,8 +27,8 @@ const ApprovalBar: React.FC<Props> = ({
   onSubmit,
   onApprove,
   onReject,
-  submitPerm = ['rule', 'submit'],
-  approvePerm = ['rule', 'approve'],
+  submitPerm = ['RULE', 'create'],
+  approvePerm = ['RULE', 'approve'],
 }) => {
   const { initialState } = useAccess();
   const currentUser = initialState?.currentUser;

@@ -74,7 +74,8 @@ const ApplicationList: React.FC = () => {
       title="融资申请列表"
       extra={
         <Space>
-          <Permission perm={['application', 'create']}>
+          {/* 客户经理的申请创建权限对应后端 VERIFY.create */}
+          <Permission perm={['VERIFY', 'create']}>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>新建申请</Button>
           </Permission>
           <Button icon={<ReloadOutlined />} onClick={load}>刷新</Button>

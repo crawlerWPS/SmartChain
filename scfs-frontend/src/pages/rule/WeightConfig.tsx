@@ -85,12 +85,12 @@ const WeightConfig: React.FC = () => {
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <>
         {r.status === 'DRAFT' && (
-          <Permission perm={['weight', 'submit']}>
+          <Permission perm={['RULE', 'create']}>
             <a onClick={() => handleSubmit(r.id)}>提交</a>
           </Permission>
         )}
         {r.status === 'PENDING' && r.makerId && (
-          <Permission perm={['weight', 'approve']}>
+          <Permission perm={['RULE', 'approve']}>
             <a onClick={() => handleApprove(r.id)} style={{ marginRight: 8 }}>通过</a>
             <a style={{ color: '#ff4d4f' }} onClick={() => handleReject(r.id)}>驳回</a>
           </Permission>
@@ -101,7 +101,7 @@ const WeightConfig: React.FC = () => {
 
   return (
     <Card title="风险权重配置" extra={
-      <Permission perm={['weight', 'submit']}>
+      <Permission perm={['RULE', 'create']}>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>新建权重</Button>
       </Permission>
     }>

@@ -13,7 +13,8 @@ export default defineConfig({
     title: 'SCFS 供应链金融风控平台',
     logo: '/logo.svg',
     menu: { locale: false },
-    siderWidth: 230,
+    // 保证平台标题和底部用户信息在侧边栏中保持单行展示
+    siderWidth: 300,
     layout: 'mix',
     fixedHeader: true,
     fixSiderbar: true,

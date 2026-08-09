@@ -33,6 +33,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
     title: 'SCFS 供应链金融风控平台',
     logo: '/logo.svg',
+    siderWidth: 300,
     avatarProps: {
       title: initialState?.currentUser?.realName || '未登录',
       size: 'small',

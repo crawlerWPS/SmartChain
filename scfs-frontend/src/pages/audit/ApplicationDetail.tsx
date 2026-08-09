@@ -97,22 +97,22 @@ const ApplicationDetail: React.FC = () => {
 
         <Space style={{ marginTop: 16 }}>
           {canSubmit(detail.status) && (
-            <Permission perm={['application', 'submit']}>
+            <Permission perm={['VERIFY', 'create']}>
               <Button type="primary" onClick={handleSubmit}>提交申请</Button>
             </Permission>
           )}
           {canAssign(detail.status) && (
-            <Permission perm={['application', 'approve']}>
+            <Permission perm={['VERIFY', 'approve']}>
               <Button onClick={handleAssign}>分配审核人</Button>
             </Permission>
           )}
           {canReject(detail.status) && (
-            <Permission perm={['application', 'reject']}>
+            <Permission perm={['VERIFY', 'reject']}>
               <Button danger onClick={handleReject}>驳回</Button>
             </Permission>
           )}
           {canApprove(detail.status) && (
-            <Permission perm={['application', 'approve']}>
+            <Permission perm={['VERIFY', 'approve']}>
               <Button type="primary" onClick={handleApprove}>审批通过</Button>
             </Permission>
           )}

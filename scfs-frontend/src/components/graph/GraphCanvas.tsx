@@ -25,6 +25,13 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
   const [data, setData] = useState<GraphData>({ nodes: [], edges: [] });
   const [layoutMode, setLayoutMode] = useState<'force' | 'radial'>('force');
 
+  const destroyGraph = () => {
+    // 先清空引用，避免 effect 清理和下一次建图重复销毁同一个实例
+    const graph = graphRef.current;
+    graphRef.current = null;
+    graph?.destroy();
+  };
+
   const getLayoutConfig = (g6Data: GraphData) => {
     const coreNode = g6Data.nodes.find((n) => n.isCore);
     const focusNodeId = coreNode?.id || g6Data.nodes[0]?.id;
@@ -59,10 +66,7 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
 
   const buildGraph = (g6Data: GraphData) => {
     if (!containerRef.current) return;
-    if (graphRef.current) {
-      graphRef.current.destroy();
-      graphRef.current = null;
-    }
+    destroyGraph();
 
     const containerWidth = containerRef.current.offsetWidth || 1000;
 
@@ -71,7 +75,8 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
       width: containerWidth,
       height,
       autoFit: 'view',
-      behaviors: ['drag-canvas', 'zoom-canvas', 'drag-node', 'brush-select'],
+      // G6 v5 使用 drag-element 实现节点拖动，drag-node 是旧版本行为名
+      behaviors: ['drag-canvas', 'zoom-canvas', 'drag-element', 'brush-select'],
       plugins: [
         {
           type: 'tooltip',
@@ -131,8 +136,6 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
       })),
     });
 
-    graph.render();
-
     // PaperConnect 自由拖动：初始布局结束后停止 force 动画，避免节点被拉回
     graph.on('afterlayout', () => graph.stopLayout());
     // 拖动开始时若布局仍在运行也停止
@@ -144,15 +147,18 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
       graph.updateData('node', [{ id: model.id, fx: model.x, fy: model.y }]);
     });
 
+    graph.render();
+
     graphRef.current = graph;
   };
 
-  const loadData = async () => {
+  const loadData = async (isActive?: () => boolean) => {
     setLoading(true);
     try {
       const result = enterpriseId
         ? await getGraphData(enterpriseId, level)
         : await getAllGraphData();
+      if (isActive && !isActive()) return;
       setData(result);
       buildGraph(result);
     } catch (e: any) {
@@ -163,9 +169,12 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
   };
 
   useEffect(() => {
-    loadData();
+    let active = true;
+
+    loadData(() => active);
     return () => {
-      graphRef.current?.destroy();
+      active = false;
+      destroyGraph();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enterpriseId, level, layoutMode]);

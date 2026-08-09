@@ -106,10 +106,10 @@ const RuleList: React.FC = () => {
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
-        <Permission perm={['rule', 'submit']}>
+        <Permission perm={['RULE', 'create']}>
           <a onClick={() => handleSubmit(r.id)}>提交</a>
         </Permission>
-        <Permission perm={['rule', 'edit']}>
+        <Permission perm={['RULE', 'update']}>
           <a onClick={() => handleToggleStatus(r.id, r.status === 1 ? 0 : 1)}>{r.status === 1 ? '禁用' : '启用'}</a>
         </Permission>
       </Space>
@@ -124,10 +124,10 @@ const RuleList: React.FC = () => {
     { title: '经办人', dataIndex: 'makerId', key: 'makerId' },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
-        <Permission perm={['rule', 'approve']}>
+        <Permission perm={['RULE', 'approve']}>
           <a onClick={() => handleApprove(r.id)}>通过</a>
         </Permission>
-        <Permission perm={['rule', 'approve']}>
+        <Permission perm={['RULE', 'approve']}>
           <a style={{ color: '#ff4d4f' }} onClick={() => handleReject(r.id)}>驳回</a>
         </Permission>
       </Space>
@@ -136,7 +136,7 @@ const RuleList: React.FC = () => {
 
   return (
     <Card title="规则管理" extra={
-      <Permission perm={['rule', 'create']}>
+      <Permission perm={['RULE', 'create']}>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>新建规则</Button>
       </Permission>
     }>

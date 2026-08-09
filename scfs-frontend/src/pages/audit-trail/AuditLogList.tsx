@@ -58,7 +58,7 @@ const AuditLogList: React.FC = () => {
   return (
     <Card title="审计日志查询" extra={
       <Space>
-        <Permission perm={['audit', 'export']}>
+        <Permission perm={['AUDIT', 'export']}>
           <Button icon={<ExportOutlined />} onClick={handleExportApi}>导出 Excel</Button>
         </Permission>
         <Button icon={<ReloadOutlined />} onClick={load}>刷新</Button>

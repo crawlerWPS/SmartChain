@@ -75,10 +75,10 @@ const UserList: React.FC = () => {
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
-        <Permission perm={['system', 'user:create']}>
+        <Permission perm={['USER', 'update']}>
           <a onClick={() => handleEdit(r)}>编辑</a>
         </Permission>
-        <Permission perm={['system', 'user:create']}>
+        <Permission perm={['USER', 'update']}>
           <a onClick={() => handleToggle(r.id, r.status === 1 ? 0 : 1)}>{r.status === 1 ? '禁用' : '启用'}</a>
         </Permission>
       </Space>
@@ -87,7 +87,7 @@ const UserList: React.FC = () => {
 
   return (
     <Card title="用户管理" extra={
-      <Permission perm={['system', 'user:create']}>
+      <Permission perm={['USER', 'create']}>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => handleEdit()}>新建用户</Button>
       </Permission>
     }>

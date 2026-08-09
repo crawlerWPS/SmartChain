@@ -63,9 +63,9 @@ const TemplateList: React.FC = () => {
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <>
-        {r.status === 'DRAFT' && <Permission perm={['template', 'submit']}><a onClick={() => handleSubmit(r.id)}>提交</a></Permission>}
+        {r.status === 'DRAFT' && <Permission perm={['RULE', 'create']}><a onClick={() => handleSubmit(r.id)}>提交</a></Permission>}
         {r.status === 'PENDING' && (
-          <Permission perm={['template', 'approve']}>
+          <Permission perm={['RULE', 'approve']}>
             <a onClick={() => handleApprove(r.id)} style={{ marginRight: 8 }}>通过</a>
             <a style={{ color: '#ff4d4f' }} onClick={() => handleReject(r.id)}>驳回</a>
           </Permission>
@@ -78,7 +78,7 @@ const TemplateList: React.FC = () => {
 
   return (
     <Card title="材料清单模板" extra={
-      <Permission perm={['template', 'submit']}>
+      <Permission perm={['RULE', 'create']}>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>新建模板</Button>
       </Permission>
     }>
