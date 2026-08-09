@@ -4,19 +4,20 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Descriptions, Tag, message, Empty, Typography } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
-import { useSearchParams } from '@umijs/max';
+import { useParams } from '@umijs/max';
 import { getReport, generateReport, exportReportPdf } from '@/api/verify';
 import { formatDate, downloadBlob } from '@/utils';
 
 const { Paragraph } = Typography;
 
 const VerifyReport: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const appId = Number(searchParams.get('appId') || 0);
+  const params = useParams();
+  const appId = Number(params?.appId || 0);
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
+    if (!appId) return;
     try {
       const r = await getReport(appId);
       setReport(r);

@@ -104,6 +104,7 @@ export function canReject(status: ApplicationStatus): boolean {
     ApplicationStatus.MATERIAL_REVIEW,
     ApplicationStatus.PREAUDIT,
     ApplicationStatus.VERIFYING,
+    ApplicationStatus.PENDING_DECISION,
   ].includes(status);
 }
 
@@ -112,6 +113,7 @@ export function canApprove(status: ApplicationStatus): boolean {
   return [
     ApplicationStatus.VERIFY_PASSED,
     ApplicationStatus.RISK_SCORING,
+    ApplicationStatus.PENDING_DECISION,
   ].includes(status);
 }
 

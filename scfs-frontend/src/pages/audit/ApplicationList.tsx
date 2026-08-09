@@ -46,7 +46,7 @@ const ApplicationList: React.FC = () => {
       setCreateVisible(false);
       createForm.resetFields();
       load();
-      history.push(`/audit/application?appId=${result.id}`);
+      history.push(`/audit/application/detail?appId=${result.id}`);
     } catch (e: any) {
       message.error(e.message);
     }
@@ -64,7 +64,7 @@ const ApplicationList: React.FC = () => {
       title: '操作',
       key: 'action',
       render: (_: any, record: any) => (
-        <a onClick={() => history.push(`/audit/application?appId=${record.id}`)}>详情</a>
+        <a onClick={() => history.push(`/audit/application/detail?appId=${record.id}`)}>详情</a>
       ),
     },
   ];

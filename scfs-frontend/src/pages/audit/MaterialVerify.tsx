@@ -4,15 +4,15 @@
 import React, { useState } from 'react';
 import { Card, Tabs, Button, message, List, Tag, Empty, Row, Col, Progress } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
-import { useSearchParams } from '@umijs/max';
+import { useParams } from '@umijs/max';
 import FileUpload from '@/components/upload/FileUpload';
 import { listMaterials, getRecognitionResult } from '@/api/application';
 import { verifyAll } from '@/api/verify';
 import { MATERIAL_TYPE_MAP, formatFileSize, formatDate } from '@/utils';
 
 const MaterialVerify: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const appId = Number(searchParams.get('appId') || 0);
+  const params = useParams();
+  const appId = Number(params?.appId || 0);
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [verifyResults, setVerifyResults] = useState<any[]>([]);
@@ -31,6 +31,7 @@ const MaterialVerify: React.FC = () => {
   };
 
   const handleVerify = async () => {
+    if (!appId) return;
     try {
       const results = await verifyAll(appId);
       setVerifyResults(results || []);

@@ -3,19 +3,20 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Descriptions, Progress, Row, Col, Tag, message, Empty } from 'antd';
-import { useSearchParams } from '@umijs/max';
+import { useParams } from '@umijs/max';
 import { getRiskProfileByApplication, calculateRiskScore } from '@/api/risk';
 import { RiskLevelTag } from '@/components/common/StatusTag';
 import { formatDate } from '@/utils';
 import { RiskLevel } from '@/types';
 
 const RiskProfile: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const appId = Number(searchParams.get('appId') || 0);
+  const params = useParams();
+  const appId = Number(params?.appId || 0);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
+    if (!appId) return;
     try {
       const r = await getRiskProfileByApplication(appId);
       setProfile(r);

@@ -69,6 +69,13 @@ const routes: RouteConfig[] = [
         access: 'application:view',
       },
       {
+        name: '融资申请详情',
+        path: '/audit/application/detail',
+        component: '@/pages/audit/ApplicationDetail',
+        access: 'application:view',
+        hideInMenu: true,
+      },
+      {
         name: '材料核验',
         path: '/audit/material/:appId',
         component: '@/pages/audit/MaterialVerify',

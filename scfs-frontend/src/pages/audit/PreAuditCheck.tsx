@@ -3,19 +3,20 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Card, Tabs, Button, Descriptions, Progress, Tag, message, List, Empty } from 'antd';
-import { useSearchParams } from '@umijs/max';
+import { useParams } from '@umijs/max';
 import { checkCompleteness, checkValidity, checkConsistency, getCompletenessResult, getValidityResult, getConsistencyResult } from '@/api/preaudit';
 import { formatDate } from '@/utils';
 
 const PreAuditCheck: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const appId = Number(searchParams.get('appId') || 0);
+  const params = useParams();
+  const appId = Number(params?.appId || 0);
   const [completeness, setCompleteness] = useState<any>(null);
   const [validity, setValidity] = useState<any>(null);
   const [consistency, setConsistency] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const loadResults = async () => {
+    if (!appId) return;
     try {
       const [c, v, con] = await Promise.all([
         getCompletenessResult(appId),
