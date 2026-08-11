@@ -6,6 +6,7 @@ import { Card, Input, Table, Tag, message } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { listPositionAnalyses } from '@/api/graph';
 import type { EnterprisePositionAnalysis } from '@/types';
+import { CodeTag } from '@/components/common/CodeTag';
 
 const PositionAnalysisPage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
@@ -62,10 +63,7 @@ const PositionAnalysisPage: React.FC = () => {
       title: '可靠性',
       dataIndex: 'credibility',
       key: 'credibility',
-      render: (v: string) => {
-        const color = v === 'HIGH' ? 'green' : v === 'MID' ? 'orange' : 'red';
-        return <Tag color={color}>{v}</Tag>;
-      },
+      render: (v: string) => <CodeTag type="CREDIBILITY_LEVEL" code={v} />,
     },
     { title: '分析原因', dataIndex: 'credibilityReason', key: 'credibilityReason', ellipsis: true },
   ];

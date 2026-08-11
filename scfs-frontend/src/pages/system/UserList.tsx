@@ -2,11 +2,13 @@
  * 用户管理页
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Button, Space, Input, Tag, Modal, Form, Select, message } from 'antd';
+import { Card, Table, Button, Space, Input, Modal, Form, Select, message } from 'antd';
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { pageUsers, createUser, updateUser, toggleUserStatus } from '@/api/system';
 import { Permission } from '@/components/common/Permission';
 import { formatDate, maskPhone, maskName } from '@/utils';
+import { CodeTag } from '@/components/common/CodeTag';
+import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 
 const UserList: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
@@ -17,6 +19,7 @@ const UserList: React.FC = () => {
   const [editForm] = Form.useForm();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [roles, setRoles] = useState<any[]>([]);
+  const dictionary = useCodeDictionary();
 
   const load = async () => {
     setLoading(true);
@@ -68,10 +71,10 @@ const UserList: React.FC = () => {
     { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
     { title: '用户名', dataIndex: 'username', key: 'username' },
     { title: '真实姓名', dataIndex: 'realName', key: 'realName', render: (v: string) => maskName(v) },
-    { title: '角色', dataIndex: 'roleCode', key: 'roleCode', render: (v: string) => <Tag color="blue">{v}</Tag> },
+    { title: '角色', dataIndex: 'roleCode', key: 'roleCode', render: (v: string) => <CodeTag type="ROLE_CODE" code={v} /> },
     { title: '邮箱', dataIndex: 'email', key: 'email' },
     { title: '手机', dataIndex: 'phone', key: 'phone', render: (v: string) => maskPhone(v) },
-    { title: '状态', dataIndex: 'status', key: 'status', render: (v: number) => <Tag color={v === 1 ? 'green' : 'red'}>{v === 1 ? '启用' : '禁用'}</Tag> },
+    { title: '状态', dataIndex: 'status', key: 'status', render: (v: number) => <CodeTag type="ENABLE_STATUS" code={v} /> },
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
@@ -104,12 +107,7 @@ const UserList: React.FC = () => {
           <Form.Item name="username" label="用户名" rules={[{ required: true }]}><Input disabled={!!editingId} /></Form.Item>
           <Form.Item name="realName" label="真实姓名" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="roleCode" label="角色" rules={[{ required: true }]}>
-            <Select options={[
-              { label: '管理员', value: 'ADMIN' },
-              { label: '风控经理', value: 'RISK_MANAGER' },
-              { label: '合规官', value: 'COMPLIANCE_OFFICER' },
-              { label: '业务用户', value: 'BUSINESS_USER' },
-            ]} />
+            <Select options={dictionary.options('ROLE_CODE')} />
           </Form.Item>
           <Form.Item name="email" label="邮箱"><Input /></Form.Item>
           <Form.Item name="phone" label="手机"><Input /></Form.Item>

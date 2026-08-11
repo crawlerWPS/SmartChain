@@ -1,0 +1,8 @@
+node_modules
+dist
+.umi
+.cache
+coverage
+*.log
+vitest-*.txt
+vitest-*.json

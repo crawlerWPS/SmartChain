@@ -26,12 +26,12 @@ export async function verifyLogicCheck(applicationId: number): Promise<VerifyChe
 
 /** IF-VER-005 全部核验 */
 export async function verifyAll(applicationId: number): Promise<VerifyCheckResult[]> {
-  return request(`/applications/${applicationId}/verify/all`, { method: 'POST' });
+  return request(`/applications/${applicationId}/verify`, { method: 'POST' });
 }
 
 /** IF-VER-006 查询核验结果 */
 export async function getCheckResults(applicationId: number): Promise<VerifyCheckResult[]> {
-  return request(`/applications/${applicationId}/verify/results`, { method: 'GET' });
+  return request(`/applications/${applicationId}/verify-results`, { method: 'GET' });
 }
 
 /** IF-VER-007 生成核验报告 */

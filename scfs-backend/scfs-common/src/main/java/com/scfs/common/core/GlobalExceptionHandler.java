@@ -83,6 +83,13 @@ public class GlobalExceptionHandler {
                 .body(Result.fail(ErrorCode.PARAM_ERROR, ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Result<Void>> handleIllegalState(IllegalStateException ex) {
+        log.warn("[IllegalState] {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Result.fail(ErrorCode.STATE_CONFLICT, ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleUnknown(Exception ex) {
         log.error("[UnknownException]", ex);

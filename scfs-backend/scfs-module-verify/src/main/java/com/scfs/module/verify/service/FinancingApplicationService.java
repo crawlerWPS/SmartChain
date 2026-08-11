@@ -41,13 +41,13 @@ public class FinancingApplicationService {
         return verifyMapper.selectApplicationByNo(appNo);
     }
 
-    public PageResult<FinancingApplication> search(String status, Long submittedBy, Long enterpriseId,
+    public PageResult<FinancingApplication> search(String status, Long submittedBy, Long enterpriseId, String keyword,
                                                     long offset, int size) {
-        long total = verifyMapper.countApplications(status, submittedBy, enterpriseId);
+        long total = verifyMapper.countApplications(status, submittedBy, enterpriseId, keyword);
         if (total == 0) {
             return PageResult.empty();
         }
-        return PageResult.of(verifyMapper.selectApplicationPage(status, submittedBy, enterpriseId, offset, size),
+        return PageResult.of(verifyMapper.selectApplicationPage(status, submittedBy, enterpriseId, keyword, offset, size),
                 total);
     }
 
@@ -58,6 +58,7 @@ public class FinancingApplicationService {
     @Transactional
     public Long createApplication(FinancingApplication application) {
         Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
+        validateTradeParties(application);
         application.setAppNo(generateAppNo());
         application.setSubmittedBy(currentUserId);
         application.setStatus(ApplicationStatus.DRAFT.name());
@@ -81,8 +82,35 @@ public class FinancingApplicationService {
         if (!ApplicationStatus.DRAFT.name().equals(existing.getStatus())) {
             throw new IllegalStateException("仅草稿状态可修改");
         }
+        validateTradeParties(application);
         application.setVersion(existing.getVersion());
         verifyMapper.updateApplication(application);
+    }
+
+    public List<ApplicationCustomer> searchCustomers(String keyword) {
+        return verifyMapper.selectApplicationCustomers(keyword);
+    }
+
+    private void validateTradeParties(FinancingApplication application) {
+        Long buyer = application.getBuyerEnterpriseId();
+        Long seller = application.getSellerEnterpriseId();
+        if (buyer == null || seller == null) {
+            throw new IllegalArgumentException("请选择买方和卖方");
+        }
+        if (buyer.equals(seller)) {
+            throw new IllegalArgumentException("买方和卖方不能相同");
+        }
+        if (verifyMapper.countEnterpriseById(buyer) == 0) {
+            throw new IllegalArgumentException("买方客户不存在");
+        }
+        if (verifyMapper.countEnterpriseById(seller) == 0) {
+            throw new IllegalArgumentException("卖方客户不存在");
+        }
+        if (verifyMapper.countRelationByEnterpriseIds(buyer, seller) == 0) {
+            throw new IllegalArgumentException("买方和卖方不存在供应链关系");
+        }
+        // 融资客户即卖方，兼容既有 enterprise_id 业务逻辑。
+        application.setEnterpriseId(seller);
     }
 
     /**

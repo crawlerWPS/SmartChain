@@ -6,6 +6,7 @@ services:
   scfs-postgres:
     image: postgres:15
     container_name: scfs-postgres
+    platform: linux/amd64
     restart: unless-stopped
     environment:
       POSTGRES_DB: scfs_db
@@ -26,6 +27,7 @@ services:
   scfs-redis:
     image: redis:7-alpine
     container_name: scfs-redis
+    platform: linux/amd64
     restart: unless-stopped
     command: redis-server --appendonly yes
     ports:
@@ -42,6 +44,7 @@ services:
   scfs-minio:
     image: minio/minio
     container_name: scfs-minio
+    platform: linux/amd64
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -64,6 +67,7 @@ services:
       context: ./scfs-mock-server
       dockerfile: Dockerfile
     container_name: scfs-mock
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - "9002:9002"
@@ -81,6 +85,7 @@ services:
       context: ./scfs-backend
       dockerfile: scfs-app/src/main/resources/docker/Dockerfile
     container_name: scfs-app
+    platform: linux/amd64
     restart: unless-stopped
     environment:
       DB_HOST: scfs-postgres
@@ -115,6 +120,7 @@ services:
       context: ./scfs-frontend
       dockerfile: Dockerfile
     container_name: scfs-frontend
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - "80:80"

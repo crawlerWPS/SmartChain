@@ -6,6 +6,10 @@
         <id column="id" property="id"/>
         <result column="app_no" property="appNo"/>
         <result column="enterprise_id" property="enterpriseId"/>
+        <result column="buyer_enterprise_id" property="buyerEnterpriseId"/>
+        <result column="seller_enterprise_id" property="sellerEnterpriseId"/>
+        <result column="buyer_name" property="buyerName"/>
+        <result column="seller_name" property="sellerName"/>
         <result column="business_type" property="businessType"/>
         <result column="financing_amount" property="financingAmount"/>
         <result column="submitted_by" property="submittedBy"/>
@@ -32,6 +36,9 @@
         <id column="id" property="id"/>
         <result column="application_id" property="applicationId"/>
         <result column="file_object_id" property="fileObjectId"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_type" property="fileType"/>
+        <result column="file_size" property="fileSize"/>
         <result column="material_type" property="materialType"/>
         <result column="identified_by" property="identifiedBy"/>
         <result column="confidence" property="confidence"/>
@@ -97,36 +104,59 @@
 
     <!-- 融资申请 -->
     <select id="selectApplicationById" resultMap="ApplicationMap">
-        SELECT * FROM schema_verify.financing_application WHERE id = #{id}
+        SELECT a.*, buyer.name AS buyer_name, seller.name AS seller_name
+        FROM schema_verify.financing_application a
+        LEFT JOIN schema_graph.enterprise buyer ON buyer.id = a.buyer_enterprise_id
+        LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
+        WHERE a.id = #{id}
     </select>
 
     <select id="selectApplicationByNo" resultMap="ApplicationMap">
-        SELECT * FROM schema_verify.financing_application WHERE app_no = #{appNo}
+        SELECT a.*, buyer.name AS buyer_name, seller.name AS seller_name
+        FROM schema_verify.financing_application a
+        LEFT JOIN schema_graph.enterprise buyer ON buyer.id = a.buyer_enterprise_id
+        LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
+        WHERE a.app_no = #{appNo}
     </select>
 
     <select id="selectApplicationPage" resultMap="ApplicationMap">
-        SELECT * FROM schema_verify.financing_application
+        SELECT a.*, buyer.name AS buyer_name, seller.name AS seller_name
+        FROM schema_verify.financing_application a
+        LEFT JOIN schema_graph.enterprise buyer ON buyer.id = a.buyer_enterprise_id
+        LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
         <where>
-            <if test="status != null and status != ''">AND status = #{status}</if>
-            <if test="submittedBy != null">AND submitted_by = #{submittedBy}</if>
-            <if test="enterpriseId != null">AND enterprise_id = #{enterpriseId}</if>
+            <if test="status != null and status != ''">AND a.status = #{status}</if>
+            <if test="submittedBy != null">AND a.submitted_by = #{submittedBy}</if>
+            <if test="enterpriseId != null">AND a.enterprise_id = #{enterpriseId}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (a.app_no ILIKE '%' || #{keyword} || '%'
+                    OR buyer.name ILIKE '%' || #{keyword} || '%'
+                    OR seller.name ILIKE '%' || #{keyword} || '%')
+            </if>
         </where>
-        ORDER BY created_at DESC LIMIT #{size} OFFSET #{offset}
+        ORDER BY a.created_at DESC LIMIT #{size} OFFSET #{offset}
     </select>
 
     <select id="countApplications" resultType="long">
-        SELECT COUNT(*) FROM schema_verify.financing_application
+        SELECT COUNT(*) FROM schema_verify.financing_application a
+        LEFT JOIN schema_graph.enterprise buyer ON buyer.id = a.buyer_enterprise_id
+        LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
         <where>
-            <if test="status != null and status != ''">AND status = #{status}</if>
-            <if test="submittedBy != null">AND submitted_by = #{submittedBy}</if>
-            <if test="enterpriseId != null">AND enterprise_id = #{enterpriseId}</if>
+            <if test="status != null and status != ''">AND a.status = #{status}</if>
+            <if test="submittedBy != null">AND a.submitted_by = #{submittedBy}</if>
+            <if test="enterpriseId != null">AND a.enterprise_id = #{enterpriseId}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (a.app_no ILIKE '%' || #{keyword} || '%'
+                    OR buyer.name ILIKE '%' || #{keyword} || '%'
+                    OR seller.name ILIKE '%' || #{keyword} || '%')
+            </if>
         </where>
     </select>
 
     <insert id="insertApplication" parameterType="com.scfs.module.verify.entity.FinancingApplication" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO schema_verify.financing_application (app_no, enterprise_id, business_type, financing_amount,
+        INSERT INTO schema_verify.financing_application (app_no, enterprise_id, buyer_enterprise_id, seller_enterprise_id, business_type, financing_amount,
             submitted_by, status, current_handler, submitted_at, version)
-        VALUES (#{appNo}, #{enterpriseId}, #{businessType}, #{financingAmount},
+        VALUES (#{appNo}, #{enterpriseId}, #{buyerEnterpriseId}, #{sellerEnterpriseId}, #{businessType}, #{financingAmount},
             #{submittedBy}, #{status}, #{currentHandler}, #{submittedAt}, #{version})
     </insert>
 
@@ -135,6 +165,8 @@
         <set>
             <if test="businessType != null">business_type = #{businessType},</if>
             <if test="financingAmount != null">financing_amount = #{financingAmount},</if>
+            <if test="buyerEnterpriseId != null">buyer_enterprise_id = #{buyerEnterpriseId},</if>
+            <if test="sellerEnterpriseId != null">seller_enterprise_id = #{sellerEnterpriseId},</if>
             <if test="status != null">status = #{status},</if>
             <if test="currentHandler != null">current_handler = #{currentHandler},</if>
             <if test="submittedAt != null">submitted_at = #{submittedAt},</if>
@@ -144,6 +176,29 @@
         </set>
         WHERE id = #{id}
     </update>
+
+    <select id="selectApplicationCustomers" resultType="com.scfs.module.verify.entity.ApplicationCustomer">
+        SELECT id AS enterpriseId, name, uscc
+        FROM schema_graph.enterprise
+        <where>
+            <if test="keyword != null and keyword != ''">
+                CAST(id AS VARCHAR) LIKE '%' || #{keyword} || '%'
+                OR name ILIKE '%' || #{keyword} || '%'
+                OR uscc ILIKE '%' || #{keyword} || '%'
+            </if>
+        </where>
+        ORDER BY id
+    </select>
+
+    <select id="countEnterpriseById" resultType="long">
+        SELECT COUNT(*) FROM schema_graph.enterprise WHERE id = #{enterpriseId}
+    </select>
+
+    <select id="countRelationByEnterpriseIds" resultType="long">
+        SELECT COUNT(*) FROM schema_graph.supply_chain_relation
+        WHERE (from_enterprise_id = #{buyerEnterpriseId} AND to_enterprise_id = #{sellerEnterpriseId})
+           OR (from_enterprise_id = #{sellerEnterpriseId} AND to_enterprise_id = #{buyerEnterpriseId})
+    </select>
 
     <update id="updateApplicationStatus">
         UPDATE schema_verify.financing_application
@@ -164,11 +219,18 @@
 
     <!-- 材料 -->
     <select id="selectMaterialsByApplication" resultMap="MaterialMap">
-        SELECT * FROM schema_verify.application_material WHERE application_id = #{applicationId}
+        SELECT m.*, f.file_name, f.file_type, f.file_size
+        FROM schema_verify.application_material m
+        JOIN schema_common.file_object f ON f.id = m.file_object_id
+        WHERE m.application_id = #{applicationId}
+        ORDER BY m.created_at DESC
     </select>
 
     <select id="selectMaterialById" resultMap="MaterialMap">
-        SELECT * FROM schema_verify.application_material WHERE id = #{id}
+        SELECT m.*, f.file_name, f.file_type, f.file_size
+        FROM schema_verify.application_material m
+        JOIN schema_common.file_object f ON f.id = m.file_object_id
+        WHERE m.id = #{id}
     </select>
 
     <insert id="insertMaterial" parameterType="com.scfs.module.verify.entity.ApplicationMaterial" useGeneratedKeys="true" keyProperty="id">
@@ -188,6 +250,11 @@
         SELECT * FROM schema_verify.material_recognition_result
         WHERE application_material_id = #{applicationMaterialId} LIMIT 1
     </select>
+
+    <delete id="deleteRecognitionResult">
+        DELETE FROM schema_verify.material_recognition_result
+        WHERE application_material_id = #{applicationMaterialId}
+    </delete>
 
     <insert id="insertRecognitionResult" parameterType="com.scfs.module.verify.entity.MaterialRecognitionResult" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO schema_verify.material_recognition_result (application_material_id, buyer_name, buyer_uscc,

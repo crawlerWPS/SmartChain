@@ -2,7 +2,7 @@
  * 风险画像 API - 对应后端 RiskController
  */
 import { request } from '@umijs/max';
-import type { RiskProfile, TransactionStability, RiskWeightConfig, MaterialChecklistTemplate } from '@/types';
+import type { PageResult, RiskProfile, TransactionStability, RiskWeightConfig, MaterialChecklistTemplate } from '@/types';
 
 /** IF-RISK-001 风险评分 */
 export async function calculateRiskScore(applicationId: number): Promise<RiskProfile> {
@@ -25,7 +25,7 @@ export async function listRiskProfilesByEnterprise(enterpriseId: number): Promis
 }
 
 /** IF-RISK-005 风险权重列表 */
-export async function listWeightConfigs(): Promise<RiskWeightConfig[]> {
+export async function listWeightConfigs(): Promise<PageResult<RiskWeightConfig>> {
   return request('/weights', { method: 'GET' });
 }
 

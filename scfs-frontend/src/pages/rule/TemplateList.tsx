@@ -7,13 +7,15 @@ import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { listTemplates, createTemplate, submitTemplate, approveTemplate, rejectTemplate } from '@/api/risk';
 import { Permission } from '@/components/common/Permission';
 import { formatDate } from '@/utils';
-import { BUSINESS_TYPE_MAP } from '@/utils';
+import { useCodeDictionary } from '@/hooks/useCodeDictionary';
+import { CodeTag } from '@/components/common/CodeTag';
 
 const TemplateList: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [createVisible, setCreateVisible] = useState(false);
   const [createForm] = Form.useForm();
+  const dictionary = useCodeDictionary();
 
   const load = async () => {
     setLoading(true);
@@ -53,12 +55,11 @@ const TemplateList: React.FC = () => {
   };
 
   const columns = [
-    { title: '业务类型', dataIndex: 'businessType', key: 'businessType', render: (v: string) => BUSINESS_TYPE_MAP[v] || v },
-    { title: '必需材料', dataIndex: 'requiredMaterials', key: 'requiredMaterials', render: (v: string[]) => v?.join(', ') },
+    { title: '业务类型', dataIndex: 'businessType', key: 'businessType', render: (v: string) => dictionary.label('BUSINESS_TYPE', v) },
+    { title: '必需材料', dataIndex: 'requiredMaterials', key: 'requiredMaterials', render: (v: string[]) => v?.map((x) => dictionary.label('MATERIAL_TYPE', x)).join('、') },
     { title: '版本', dataIndex: 'version', key: 'version', render: (v: number) => `v${v}` },
     { title: '状态', dataIndex: 'status', key: 'status', render: (v: string) => {
-      const color = v === 'ENABLED' ? 'green' : v === 'PENDING' ? 'orange' : 'default';
-      return <Tag color={color}>{v}</Tag>;
+      return <CodeTag type="DUAL_CONTROL_STATUS" code={v} />;
     }},
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
@@ -74,7 +75,7 @@ const TemplateList: React.FC = () => {
     )},
   ];
 
-  const materialOptions = ['CONTRACT', 'ORDER', 'INVOICE', 'LOGISTICS_DOC', 'ACCEPTANCE_CERT', 'PAYMENT_VOUCHER', 'BUSINESS_LICENSE'].map((v) => ({ label: v, value: v }));
+  const materialOptions = dictionary.options('MATERIAL_TYPE');
 
   return (
     <Card title="材料清单模板" extra={
@@ -88,7 +89,7 @@ const TemplateList: React.FC = () => {
       <Modal title="新建材料清单模板" open={createVisible} onOk={handleCreate} onCancel={() => { setCreateVisible(false); createForm.resetFields(); }}>
         <Form form={createForm} layout="vertical">
           <Form.Item name="businessType" label="业务类型" rules={[{ required: true }]}>
-            <Select options={Object.entries(BUSINESS_TYPE_MAP).map(([k, v]) => ({ label: v, value: k }))} />
+            <Select options={dictionary.options('BUSINESS_TYPE')} />
           </Form.Item>
           <Form.Item name="requiredMaterials" label="必需材料" rules={[{ required: true }]}>
             <Select mode="multiple" options={materialOptions} />

@@ -5,6 +5,7 @@ import com.scfs.common.core.PageResult;
 import com.scfs.common.core.Result;
 import com.scfs.common.security.RequirePermission;
 import com.scfs.module.verify.entity.ApplicationStatusHistory;
+import com.scfs.module.verify.entity.ApplicationCustomer;
 import com.scfs.module.verify.entity.FinancingApplication;
 import com.scfs.module.verify.entity.MaterialRecognitionResult;
 import com.scfs.module.verify.entity.VerifyCheckResult;
@@ -36,9 +37,16 @@ public class ApplicationController {
     public Result<PageResult<FinancingApplication>> list(PageQuery pageQuery,
                                                            @RequestParam(required = false) String status,
                                                            @RequestParam(required = false) Long submittedBy,
-                                                           @RequestParam(required = false) Long enterpriseId) {
-        return Result.success(applicationService.search(status, submittedBy, enterpriseId,
+                                                           @RequestParam(required = false) Long enterpriseId,
+                                                           @RequestParam(required = false) String keyword) {
+        return Result.success(applicationService.search(status, submittedBy, enterpriseId, keyword,
                 pageQuery.offset(), pageQuery.getSize()));
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "view")
+    @GetMapping("/customers")
+    public Result<List<ApplicationCustomer>> customers(@RequestParam(required = false) String keyword) {
+        return Result.success(applicationService.searchCustomers(keyword));
     }
 
     @RequirePermission(module = "VERIFY", permission = "view")
@@ -163,6 +171,13 @@ public class ApplicationController {
     @GetMapping("/materials/{id}/recognition")
     public Result<MaterialRecognitionResult> getRecognition(@PathVariable Long id) {
         return Result.success(materialService.getRecognitionResult(id));
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "update")
+    @PostMapping("/materials/{id}/re-recognize")
+    public Result<Void> reRecognize(@PathVariable Long id) {
+        materialService.reRecognize(id);
+        return Result.success();
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")

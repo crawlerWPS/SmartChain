@@ -133,7 +133,7 @@ export interface RiskWeightConfig {
   lowRiskThreshold: number;
   midRiskThreshold: number;
   highRiskThreshold: number;
-  status: 'DRAFT' | 'ENABLED' | 'DISABLED';
+  status: 'PENDING' | 'REJECTED' | 'ENABLED' | 'DISABLED';
   version: number;
   makerId?: number;
   checkerId?: number;
@@ -225,6 +225,10 @@ export interface AbnormalRelation {
 export interface FinancingApplication extends BaseEntity {
   appNo: string;
   enterpriseId: number;
+  buyerEnterpriseId: number;
+  sellerEnterpriseId: number;
+  buyerName?: string;
+  sellerName?: string;
   businessType: BusinessType;
   financingAmount: number;
   submittedBy?: number;
@@ -248,6 +252,9 @@ export interface ApplicationStatusHistory {
 export interface ApplicationMaterial extends BaseEntity {
   applicationId: number;
   fileObjectId: number;
+  fileName?: string;
+  fileType?: string;
+  fileSize?: number;
   materialType?: MaterialType;
   identifiedBy?: 'OCR' | 'MANUAL';
   confidence?: number;

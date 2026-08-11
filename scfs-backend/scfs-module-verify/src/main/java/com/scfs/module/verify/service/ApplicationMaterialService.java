@@ -2,6 +2,7 @@ package com.scfs.module.verify.service;
 
 import com.scfs.common.entity.FileObject;
 import com.scfs.common.service.FileStorageService;
+import com.scfs.common.security.SecurityContextHelper;
 import com.scfs.module.verify.entity.ApplicationMaterial;
 import com.scfs.module.verify.entity.MaterialRecognitionResult;
 import com.scfs.module.verify.mapper.VerifyMapper;
@@ -32,6 +33,7 @@ public class ApplicationMaterialService {
     private final VerifyMapper verifyMapper;
     private final FileStorageService fileStorageService;
     private final OcrRecognitionService ocrRecognitionService;
+    private final SecurityContextHelper securityContextHelper;
 
     public List<ApplicationMaterial> listByApplication(Long applicationId) {
         return verifyMapper.selectMaterialsByApplication(applicationId);
@@ -42,7 +44,8 @@ public class ApplicationMaterialService {
     }
 
     public MaterialRecognitionResult getRecognitionResult(Long applicationMaterialId) {
-        return verifyMapper.selectRecognitionResult(applicationMaterialId);
+        ApplicationMaterial material = requireMaterial(applicationMaterialId);
+        return verifyMapper.selectRecognitionResult(material.getId());
     }
 
     /**
@@ -50,7 +53,13 @@ public class ApplicationMaterialService {
      */
     @Transactional
     public Long uploadMaterial(Long applicationId, MultipartFile file, String materialType) {
-        Long fileObjectId = fileStorageService.upload(file, null);
+        if (verifyMapper.selectApplicationById(applicationId) == null) {
+            throw new IllegalArgumentException("融资申请不存在");
+        }
+        if (materialType == null || materialType.isBlank()) {
+            throw new IllegalArgumentException("请选择材料类型");
+        }
+        Long fileObjectId = fileStorageService.upload(file, securityContextHelper.getCurrentUserIdOrThrow());
         FileObject fileObject = fileStorageService.getFileInfo(fileObjectId);
 
         ApplicationMaterial material = new ApplicationMaterial();
@@ -69,6 +78,23 @@ public class ApplicationMaterialService {
             log.warn("[Material] OCR 异步识别启动失败: materialId={}, error={}", material.getId(), e.getMessage());
         }
         return material.getId();
+    }
+
+    @Transactional
+    public void reRecognize(Long id) {
+        ApplicationMaterial material = requireMaterial(id);
+        FileObject fileObject = fileStorageService.getFileInfo(material.getFileObjectId());
+        verifyMapper.deleteRecognitionResult(id);
+        verifyMapper.updateMaterialType(id, material.getMaterialType(), "AUTO");
+        ocrRecognitionService.recognizeAsync(id, fileObject);
+    }
+
+    private ApplicationMaterial requireMaterial(Long id) {
+        ApplicationMaterial material = verifyMapper.selectMaterialById(id);
+        if (material == null) {
+            throw new IllegalArgumentException("材料不存在");
+        }
+        return material;
     }
 
     /**

@@ -18,7 +18,8 @@ export interface ApplicationQuery extends PageQuery {
 }
 
 export interface ApplicationCreate {
-  enterpriseId: number;
+  buyerEnterpriseId: number;
+  sellerEnterpriseId: number;
   businessType: string;
   financingAmount: number;
 }
@@ -34,7 +35,17 @@ export async function getApplication(id: number): Promise<FinancingApplication> 
 }
 
 /** IF-APP-003 创建草稿 */
-export async function createApplication(data: ApplicationCreate): Promise<FinancingApplication> {
+export interface ApplicationCustomer {
+  enterpriseId: number;
+  name: string;
+  uscc: string;
+}
+
+export async function listApplicationCustomers(keyword?: string): Promise<ApplicationCustomer[]> {
+  return request('/applications/customers', { method: 'GET', params: { keyword } });
+}
+
+export async function createApplication(data: ApplicationCreate): Promise<number> {
   return request('/applications', { method: 'POST', data });
 }
 
@@ -78,10 +89,12 @@ export async function listMaterials(applicationId: number): Promise<ApplicationM
 export async function uploadMaterial(
   applicationId: number,
   file: File,
+  materialType: string,
   onProgress?: (percent: number) => void
 ) {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('materialType', materialType);
   return request(`/applications/${applicationId}/materials`, {
     method: 'POST',
     data: formData,
@@ -96,22 +109,22 @@ export async function uploadMaterial(
 
 /** IF-MAT-003 手动指定材料类型 */
 export async function updateMaterialType(materialId: number, materialType: string) {
-  return request(`/materials/${materialId}/type`, { method: 'PATCH', params: { materialType } });
+  return request(`/applications/materials/${materialId}/type`, { method: 'PUT', data: { materialType } });
 }
 
 /** IF-MAT-004 重新识别 */
 export async function reRecognizeMaterial(materialId: number) {
-  return request(`/materials/${materialId}/re-recognize`, { method: 'POST' });
+  return request(`/applications/materials/${materialId}/re-recognize`, { method: 'POST' });
 }
 
 /** IF-MAT-005 获取识别结果 */
 export async function getRecognitionResult(materialId: number): Promise<MaterialRecognitionResult> {
-  return request(`/materials/${materialId}/recognition`, { method: 'GET' });
+  return request(`/applications/materials/${materialId}/recognition`, { method: 'GET' });
 }
 
 /** IF-MAT-006 修正识别结果 */
 export async function updateRecognitionResult(materialId: number, data: Partial<MaterialRecognitionResult>) {
-  return request(`/materials/${materialId}/recognition`, { method: 'PUT', data });
+  return request(`/applications/materials/${materialId}/recognition`, { method: 'PUT', data });
 }
 
 /** IF-MAT-007 删除材料 */

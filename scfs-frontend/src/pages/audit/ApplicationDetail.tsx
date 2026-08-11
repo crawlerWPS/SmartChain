@@ -5,10 +5,11 @@ import React, { useEffect, useState } from 'react';
 import { Card, Descriptions, Steps, Button, Space, Tag, message, Modal, Input, Typography } from 'antd';
 import { useSearchParams, history } from '@umijs/max';
 import { getApplication, submitApplication, assignApplication, rejectApplication, approveApplication, getStatusHistory } from '@/api/application';
-import { canSubmit, canAssign, canReject, canApprove, formatDate, formatAmount, BUSINESS_TYPE_MAP } from '@/utils';
+import { canSubmit, canAssign, canReject, canApprove, formatDate, formatAmount } from '@/utils';
 import { ApplicationStatusTag } from '@/components/common/StatusTag';
 import { Permission } from '@/components/common/Permission';
 import { ApplicationStatus } from '@/types';
+import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 
 const { Title, Text } = Typography;
 
@@ -17,6 +18,7 @@ const ApplicationDetail: React.FC = () => {
   const appId = Number(searchParams.get('appId') || 0);
   const [detail, setDetail] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const dictionary = useCodeDictionary();
 
   const load = async () => {
     if (!appId) return;
@@ -85,7 +87,7 @@ const ApplicationDetail: React.FC = () => {
         <Descriptions bordered column={2}>
           <Descriptions.Item label="申请编号">{detail.appNo}</Descriptions.Item>
           <Descriptions.Item label="企业ID">{detail.enterpriseId}</Descriptions.Item>
-          <Descriptions.Item label="业务类型">{BUSINESS_TYPE_MAP[detail.businessType] || detail.businessType}</Descriptions.Item>
+          <Descriptions.Item label="业务类型">{dictionary.label('BUSINESS_TYPE', detail.businessType)}</Descriptions.Item>
           <Descriptions.Item label="融资金额">{formatAmount(detail.financingAmount)}</Descriptions.Item>
           <Descriptions.Item label="状态"><ApplicationStatusTag status={detail.status as ApplicationStatus} /></Descriptions.Item>
           <Descriptions.Item label="版本">v{detail.version}</Descriptions.Item>

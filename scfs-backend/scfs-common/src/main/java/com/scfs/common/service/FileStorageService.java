@@ -7,6 +7,8 @@ import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.GetObjectArgs;
 import io.minio.StatObjectArgs;
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.errors.ErrorResponseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +39,7 @@ public class FileStorageService {
     private final MinioClient minioClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${scfs.minio.bucket:scfs-files}")
+    @Value("${scfs.minio.bucket-materials:scfs-materials}")
     private String defaultBucket;
 
     /**
@@ -60,6 +62,7 @@ public class FileStorageService {
             }
 
             // 上传到 MinIO
+            ensureBucketExists();
             String objectKey = Instant.now().toEpochMilli() + "_" + file.getOriginalFilename();
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(defaultBucket)
@@ -110,6 +113,14 @@ public class FileStorageService {
 
     public FileObject getFileInfo(Long fileObjectId) {
         return fileObjectMapper.selectById(fileObjectId);
+    }
+
+    private void ensureBucketExists() throws Exception {
+        boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(defaultBucket).build());
+        if (!exists) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(defaultBucket).build());
+            log.info("[MinIO] 创建 bucket: {}", defaultBucket);
+        }
     }
 
     private static String sha256(byte[] bytes) {

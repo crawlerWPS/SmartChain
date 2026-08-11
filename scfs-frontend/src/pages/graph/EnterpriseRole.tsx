@@ -2,26 +2,11 @@
  * 企业角色识别页 - 列表展示 + 搜索过滤
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Input, Table, Tag, message } from 'antd';
+import { Card, Input, Table, message } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { listEnterpriseRoles } from '@/api/graph';
 import type { EnterpriseRole } from '@/types';
-
-const roleColors: Record<string, string> = {
-  CORE: 'red',
-  KEY_SUPPLIER: 'orange',
-  TIER1: 'blue',
-  TIER2: 'cyan',
-  NORMAL: 'default',
-};
-
-const roleLabels: Record<string, string> = {
-  CORE: '核心企业',
-  KEY_SUPPLIER: '关键供应商',
-  TIER1: '一级供应商',
-  TIER2: '二级供应商',
-  NORMAL: '普通企业',
-};
+import { CodeTag } from '@/components/common/CodeTag';
 
 const EnterpriseRolePage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
@@ -59,13 +44,13 @@ const EnterpriseRolePage: React.FC = () => {
       title: '角色',
       dataIndex: 'role',
       key: 'role',
-      render: (v: string) => <Tag color={roleColors[v] || 'default'}>{roleLabels[v] || v}</Tag>,
+      render: (v: string) => <CodeTag type="ENTERPRISE_ROLE" code={v} />,
     },
     { title: '核心企业ID', dataIndex: 'coreEnterpriseId', key: 'coreEnterpriseId' },
     { title: '合作年限', dataIndex: 'coopDurationYears', key: 'coopDurationYears' },
     { title: '合作企业数', dataIndex: 'coopEnterpriseCount', key: 'coopEnterpriseCount' },
-    { title: '影响力', dataIndex: 'influenceLevel', key: 'influenceLevel' },
-    { title: '信誉等级', dataIndex: 'credibilityLevel', key: 'credibilityLevel' },
+    { title: '影响力', dataIndex: 'influenceLevel', key: 'influenceLevel', render: (v: string) => <CodeTag type="INFLUENCE_LEVEL" code={v} /> },
+    { title: '信誉等级', dataIndex: 'credibilityLevel', key: 'credibilityLevel', render: (v: string) => <CodeTag type="CREDIBILITY_LEVEL" code={v} /> },
   ];
 
   return (

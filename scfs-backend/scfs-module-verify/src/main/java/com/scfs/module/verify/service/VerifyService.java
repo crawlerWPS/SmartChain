@@ -201,7 +201,9 @@ public class VerifyService {
         }
 
         Map<String, Object> details = new HashMap<>();
-        details.put("dates", dates);
+        Map<String, String> serializableDates = new HashMap<>();
+        dates.forEach((key, value) -> serializableDates.put(key, value.toString()));
+        details.put("dates", serializableDates);
         details.put("hints", hints);
         if (executedRules.isEmpty()) executedRules.add("R_TIME_LOGIC");
 

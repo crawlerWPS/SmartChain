@@ -6,6 +6,8 @@ import { Card, Tree, Button, Tag, message, Modal, Form, Input, Select, InputNumb
 import { PlusOutlined, ReloadOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getMenuTree, createMenu, updateMenu, deleteMenu } from '@/api/system';
 import type { SysMenu } from '@/types';
+import { useCodeDictionary } from '@/hooks/useCodeDictionary';
+import { CodeTag } from '@/components/common/CodeTag';
 
 const MenuList: React.FC = () => {
   const [tree, setTree] = useState<SysMenu[]>([]);
@@ -14,6 +16,7 @@ const MenuList: React.FC = () => {
   const [editForm] = Form.useForm();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [parentId, setParentId] = useState<number | null>(null);
+  const dictionary = useCodeDictionary();
 
   const buildTree = (list: SysMenu[]): SysMenu[] => {
     const map = new Map<number, SysMenu & { children?: SysMenu[] }>();
@@ -89,7 +92,7 @@ const MenuList: React.FC = () => {
     title: (
       <Space>
         <span>{node.menuName}</span>
-        <Tag color={node.menuType === 'DIRECTORY' ? 'blue' : node.menuType === 'MENU' ? 'green' : 'orange'}>{node.menuType}</Tag>
+        <CodeTag type="MENU_TYPE" code={node.menuType} />
         {node.path && <span style={{ color: '#999' }}>{node.path}</span>}
         <a onClick={() => handleAdd(node)}><PlusOutlined /></a>
         <a onClick={() => handleEdit(node)}><EditOutlined /></a>
@@ -113,19 +116,15 @@ const MenuList: React.FC = () => {
           <Form.Item name="menuName" label="菜单名称" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="menuCode" label="菜单编码" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="menuType" label="类型" rules={[{ required: true }]}>
-            <Select options={[
-              { label: '目录', value: 'DIRECTORY' },
-              { label: '菜单', value: 'MENU' },
-              { label: '按钮', value: 'BUTTON' },
-            ]} />
+            <Select options={dictionary.options('MENU_TYPE')} />
           </Form.Item>
           <Form.Item name="path" label="路由路径"><Input placeholder="/workspace" /></Form.Item>
           <Form.Item name="component" label="组件路径"><Input placeholder="@/pages/workspace/Workspace" /></Form.Item>
           <Form.Item name="permission" label="权限标识"><Input placeholder="rule:approve" /></Form.Item>
           <Form.Item name="icon" label="图标"><Input placeholder="SettingOutlined" /></Form.Item>
           <Form.Item name="sort" label="排序"><InputNumber min={0} style={{ width: '100%' }} /></Form.Item>
-          <Form.Item name="visible" label="是否可见"><InputNumber min={0} max={1} /></Form.Item>
-          <Form.Item name="status" label="状态"><InputNumber min={0} max={1} /></Form.Item>
+          <Form.Item name="visible" label="是否可见"><Select options={dictionary.options('VISIBLE_STATUS')} /></Form.Item>
+          <Form.Item name="status" label="状态"><Select options={dictionary.options('ENABLE_STATUS')} /></Form.Item>
         </Form>
       </Modal>
     </Card>

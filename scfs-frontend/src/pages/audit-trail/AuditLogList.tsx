@@ -9,6 +9,7 @@ import { Permission } from '@/components/common/Permission';
 import { ExportXlsx } from '@/components/export/ExportBtn';
 import { formatDate, downloadBlob } from '@/utils';
 import dayjs from 'dayjs';
+import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 
 const { RangePicker } = DatePicker;
 
@@ -18,6 +19,7 @@ const AuditLogList: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState<any>({ page: 1, size: 20, module: undefined, action: undefined, userId: undefined, startTime: undefined, endTime: undefined });
   const [detail, setDetail] = useState<any>(null);
+  const dictionary = useCodeDictionary();
 
   const load = async () => {
     setLoading(true);
@@ -47,9 +49,9 @@ const AuditLogList: React.FC = () => {
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
     { title: '用户', dataIndex: 'username', key: 'username' },
-    { title: '模块', dataIndex: 'module', key: 'module', render: (v: string) => <Tag color="blue">{v}</Tag> },
-    { title: '操作', dataIndex: 'action', key: 'action' },
-    { title: '对象', key: 'target', render: (_: any, r: any) => `${r.targetType || '-'}#${r.targetId || '-'}` },
+    { title: '模块', dataIndex: 'module', key: 'module', render: (v: string) => <Tag color="blue">{dictionary.label('PERMISSION_MODULE', v)}</Tag> },
+    { title: '操作', dataIndex: 'action', key: 'action', render: (v: string) => dictionary.label('AUDIT_ACTION', v) },
+    { title: '对象', key: 'target', render: (_: any, r: any) => `${dictionary.label('AUDIT_TARGET_TYPE', r.targetType)}#${r.targetId || '-'}` },
     { title: 'IP', dataIndex: 'ipAddress', key: 'ipAddress' },
     { title: '时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action_btn', render: (_: any, r: any) => <a onClick={() => setDetail(r)}>详情</a> },
@@ -65,11 +67,8 @@ const AuditLogList: React.FC = () => {
       </Space>
     }>
       <Space style={{ marginBottom: 16 }}>
-        <Select placeholder="模块" allowClear style={{ width: 160 }} onChange={(v) => setQuery({ ...query, module: v, page: 1 })} options={[
-          { label: '认证', value: 'AUTH' }, { label: '用户', value: 'USER' }, { label: '规则', value: 'RULE' },
-          { label: '图谱', value: 'GRAPH' }, { label: '核验', value: 'VERIFY' }, { label: '风险', value: 'RISK' },
-        ]} />
-        <Input placeholder="操作" allowClear style={{ width: 160 }} onChange={(e) => setQuery({ ...query, action: e.target.value, page: 1 })} />
+        <Select placeholder="模块" allowClear style={{ width: 160 }} onChange={(v) => setQuery({ ...query, module: v, page: 1 })} options={dictionary.options('PERMISSION_MODULE')} />
+        <Select placeholder="操作" allowClear style={{ width: 160 }} onChange={(v) => setQuery({ ...query, action: v, page: 1 })} options={dictionary.options('AUDIT_ACTION')} />
         <Input placeholder="用户ID" allowClear style={{ width: 100 }} onChange={(e) => setQuery({ ...query, userId: e.target.value ? Number(e.target.value) : undefined, page: 1 })} />
         <RangePicker showTime onChange={(v, str) => setQuery({ ...query, startTime: str[0], endTime: str[1], page: 1 })} />
       </Space>
@@ -82,9 +81,9 @@ const AuditLogList: React.FC = () => {
           <Descriptions column={1} bordered>
             <Descriptions.Item label="ID">{detail.id}</Descriptions.Item>
             <Descriptions.Item label="用户">{detail.username} (#{detail.userId})</Descriptions.Item>
-            <Descriptions.Item label="模块">{detail.module}</Descriptions.Item>
-            <Descriptions.Item label="操作">{detail.action}</Descriptions.Item>
-            <Descriptions.Item label="对象类型">{detail.targetType || '-'}</Descriptions.Item>
+            <Descriptions.Item label="模块">{dictionary.label('PERMISSION_MODULE', detail.module)}</Descriptions.Item>
+            <Descriptions.Item label="操作">{dictionary.label('AUDIT_ACTION', detail.action)}</Descriptions.Item>
+            <Descriptions.Item label="对象类型">{dictionary.label('AUDIT_TARGET_TYPE', detail.targetType)}</Descriptions.Item>
             <Descriptions.Item label="对象ID">{detail.targetId || '-'}</Descriptions.Item>
             <Descriptions.Item label="IP">{detail.ipAddress || '-'}</Descriptions.Item>
             <Descriptions.Item label="时间">{formatDate(detail.createdAt)}</Descriptions.Item>

@@ -207,7 +207,7 @@ scfs_support/
 
 ```
 PostgreSQL (scfs_db)
-├── schema_common     -- 共享（用户/角色/权限/审计/文件/规则）
+├── schema_common     -- 共享（用户/角色/权限/审计/文件/规则/码值字典）
 ├── schema_graph       -- M1 图谱
 ├── schema_verify      -- M2 核验
 ├── schema_preaudit    -- M3 预审
@@ -434,13 +434,36 @@ PostgreSQL (scfs_db)
 - CHECK (supply_chain_weight + transaction_weight + material_weight = 100)
 - CHECK (maker_id <> checker_id)
 
+#### 表 8a：code_dictionary（统一码值字典）
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| id | BIGSERIAL | PK | 主键 |
+| code_type | VARCHAR(64) | NOT NULL | 码值类型，如 APPLICATION_STATUS、MATERIAL_TYPE |
+| code_key | VARCHAR(128) | UNIQUE NOT NULL | 全局唯一键，格式为“码值类型.原始值”，如 APPLICATION_STATUS.DRAFT |
+| code_value | VARCHAR(128) | NOT NULL | 码值中文名称，如“草稿” |
+| sort_order | INT | NOT NULL DEFAULT 0 | 同一码值类型内的显示顺序 |
+| status | SMALLINT | NOT NULL DEFAULT 1 | 1=启用，0=禁用 |
+| description | VARCHAR(255) | | 码值说明 |
+| created_at | TIMESTAMP | NOT NULL DEFAULT NOW() | 创建时间 |
+| updated_at | TIMESTAMP | NOT NULL DEFAULT NOW() | 更新时间 |
+
+**唯一性与查询约定**：
+
+- `code_key` 全表唯一，使用 `code_type + '.' + 原始码值` 组成，避免 `PENDING`、`APPROVED`、`HIGH` 等跨类型重名冲突。
+- 业务表继续保存原始码值。例如 `financing_application.status='DRAFT'`，展示时使用 `APPLICATION_STATUS.DRAFT` 查询中文值“草稿”。
+- `code_type` 用于按类型批量加载下拉选项，索引为 `idx_code_dictionary_type(code_type, sort_order)`。
+- 初始化数据由 `V4__init_code_dictionary.sql` 写入，并使用 `ON CONFLICT (code_key) DO NOTHING` 保证幂等。
+
+**首期码值范围**：用户角色、角色类型、菜单类型、权限模块与动作、审计动作与对象、文件类型、规则分类与变更类型、双岗状态、业务类型、企业数据源、供应链关系类型、企业角色、影响力与可信度、异常类型与状态、融资申请状态机、材料类型与识别状态、核验类型与结果、报告评估、预审不一致字段、补正状态和风险等级。
+
 ### 2.3 Schema: schema_graph（M1 供应链图谱）
 
 #### 表 9：enterprise（企业）
 
 | 字段 | 类型 | 约束 | 说明 |
 |------|------|------|------|
-| id | BIGSERIAL | PK | |
+| id | BIGSERIAL | PK | 企业客户号，业务表统一通过该字段关联企业 |
 | name | VARCHAR(128) | NOT NULL | 企业名称 |
 | uscc | VARCHAR(18) | UNIQUE NOT NULL | 统一社会信用代码 |
 | industry | VARCHAR(64) | | 所属行业 |
@@ -533,6 +556,8 @@ PostgreSQL (scfs_db)
 | id | BIGSERIAL | PK | |
 | app_no | VARCHAR(32) | UNIQUE NOT NULL | 申请编号 APP-yyyymmdd-xxxx |
 | enterprise_id | BIGINT | NOT NULL | 融资企业 |
+| buyer_enterprise_id | BIGINT | FK → schema_graph.enterprise(id), NOT NULL | 买方客户号（直接使用 enterprise.id） |
+| seller_enterprise_id | BIGINT | FK → schema_graph.enterprise(id), NOT NULL | 卖方客户号（直接使用 enterprise.id，亦为融资企业） |
 | business_type | VARCHAR(32) | NOT NULL | AR_FINANCING/FACTORING/ORDER_FINANCING |
 | financing_amount | DECIMAL(18,2) | NOT NULL | 融资金额 |
 | submitted_by | BIGINT | NOT NULL | 提交人（客户经理） |
@@ -540,10 +565,17 @@ PostgreSQL (scfs_db)
 | current_handler | BIGINT | | 当前处理人 |
 | submitted_at | TIMESTAMP | | 提交时间 |
 | approved_at | TIMESTAMP | | 审批完成时间 |
+| version | INT | NOT NULL DEFAULT 0 | 乐观锁版本号 |
 | created_at | TIMESTAMP | NOT NULL DEFAULT NOW() | |
 | updated_at | TIMESTAMP | NOT NULL DEFAULT NOW() | |
 
-**索引**：idx_app_no(app_no), idx_app_enterprise(enterprise_id), idx_app_status(status), idx_app_handler(current_handler)
+融资申请不另设客户号字段，统一以 `schema_graph.enterprise.id` 作为客户号。新增申请时，买方和卖方必须存在于企业表，且双方须在 `supply_chain_relation.from_enterprise_id/to_enterprise_id` 中存在直接关系。列表中的买卖方名称通过上述企业 ID 实时关联 `enterprise.name` 展示。
+
+**外键**：fk_application_buyer_enterprise(buyer_enterprise_id) → schema_graph.enterprise(id)，fk_application_seller_enterprise(seller_enterprise_id) → schema_graph.enterprise(id)
+
+**索引**：idx_app_no(app_no), idx_app_enterprise(enterprise_id), idx_app_status(status), idx_app_buyer_enterprise(buyer_enterprise_id), idx_app_seller_enterprise(seller_enterprise_id)
+
+**迁移归属**：V1 创建融资申请基础表；V5 集中完成买卖方客户号字段新增、历史数据回填、非空约束、企业外键及买卖方索引。V5 不重复 V1 的建表及既有字段、索引语句。
 
 #### 表 15：application_status_history（申请状态流转历史）
 
@@ -772,6 +804,7 @@ sys_role ── sys_role_permission
    ↑
 sys_user (role_code)
 sys_audit_log
+code_dictionary（统一码值中文映射，供全部业务模块共享）
 
 enterprise (M1) ──┬── supply_chain_relation
                   ├── enterprise_role

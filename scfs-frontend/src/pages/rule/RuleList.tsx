@@ -7,6 +7,8 @@ import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { pageRules, createRule, submitRuleChange, toggleRuleStatus, pagePendingChanges, approveRuleChange, rejectRuleChange } from '@/api/rule';
 import { Permission } from '@/components/common/Permission';
 import { formatDate } from '@/utils';
+import { useCodeDictionary } from '@/hooks/useCodeDictionary';
+import { CodeTag } from '@/components/common/CodeTag';
 
 const RuleList: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
@@ -16,6 +18,7 @@ const RuleList: React.FC = () => {
   const [query, setQuery] = useState({ page: 1, size: 10, keyword: '', category: undefined, status: undefined });
   const [createVisible, setCreateVisible] = useState(false);
   const [createForm] = Form.useForm();
+  const dictionary = useCodeDictionary();
 
   const load = async () => {
     setLoading(true);
@@ -100,9 +103,9 @@ const RuleList: React.FC = () => {
   const columns = [
     { title: '规则编码', dataIndex: 'ruleCode', key: 'ruleCode' },
     { title: '规则名称', dataIndex: 'ruleName', key: 'ruleName' },
-    { title: '分类', dataIndex: 'category', key: 'category', render: (v: string) => <Tag>{v}</Tag> },
+    { title: '分类', dataIndex: 'category', key: 'category', render: (v: string) => <CodeTag type="RULE_CATEGORY" code={v} /> },
     { title: '版本', dataIndex: 'version', key: 'version', render: (v: number) => `v${v}` },
-    { title: '状态', dataIndex: 'status', key: 'status', render: (v: number) => <Tag color={v === 1 ? 'green' : 'default'}>{v === 1 ? '启用' : '禁用'}</Tag> },
+    { title: '状态', dataIndex: 'status', key: 'status', render: (v: number) => <CodeTag type="ENABLE_STATUS" code={v} /> },
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
@@ -118,7 +121,7 @@ const RuleList: React.FC = () => {
 
   const pendingColumns = [
     { title: '规则编码', dataIndex: 'ruleCode', key: 'ruleCode' },
-    { title: '变更类型', dataIndex: 'changeType', key: 'changeType' },
+    { title: '变更类型', dataIndex: 'changeType', key: 'changeType', render: (v: string) => dictionary.label('RULE_CHANGE_TYPE', v) },
     { title: '原版本', dataIndex: 'oldVersion', key: 'oldVersion' },
     { title: '新版本', dataIndex: 'newVersion', key: 'newVersion' },
     { title: '经办人', dataIndex: 'makerId', key: 'makerId' },
@@ -158,12 +161,7 @@ const RuleList: React.FC = () => {
           <Form.Item name="ruleCode" label="规则编码" rules={[{ required: true }]}><Input placeholder="如 RULE_001" /></Form.Item>
           <Form.Item name="ruleName" label="规则名称" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="category" label="分类" rules={[{ required: true }]}>
-            <Select options={[
-              { label: '完整性', value: 'COMPLETENESS' },
-              { label: '有效性', value: 'VALIDITY' },
-              { label: '一致性', value: 'CONSISTENCY' },
-              { label: '逻辑检查', value: 'LOGIC_CHECK' },
-            ]} />
+            <Select options={dictionary.options('RULE_CATEGORY')} />
           </Form.Item>
           <Form.Item name="drlContent" label="DRL 内容" rules={[{ required: true }]}><Input.TextArea rows={8} placeholder="package com.scfs.rules; ..." /></Form.Item>
         </Form>

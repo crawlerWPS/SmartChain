@@ -7,6 +7,7 @@ import { ExportOutlined } from '@ant-design/icons';
 import { useParams } from '@umijs/max';
 import { getReport, generateReport, exportReportPdf } from '@/api/verify';
 import { formatDate, downloadBlob } from '@/utils';
+import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 
 const { Paragraph } = Typography;
 
@@ -15,6 +16,7 @@ const VerifyReport: React.FC = () => {
   const appId = Number(params?.appId || 0);
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const dictionary = useCodeDictionary();
 
   const load = async () => {
     if (!appId) return;
@@ -71,7 +73,7 @@ const VerifyReport: React.FC = () => {
             <Descriptions.Item label="内容哈希">{report.contentHash?.slice(0, 16) || '-'}...</Descriptions.Item>
           </Descriptions>
           <Card size="small" title="总体评估" style={{ marginTop: 16 }}>
-            <Paragraph>{report.overallAssessment}</Paragraph>
+            <Paragraph>{dictionary.label('REPORT_ASSESSMENT', report.overallAssessment)}</Paragraph>
           </Card>
           {report.riskHints?.length > 0 && (
             <Card size="small" title="风险提示" style={{ marginTop: 12 }}>

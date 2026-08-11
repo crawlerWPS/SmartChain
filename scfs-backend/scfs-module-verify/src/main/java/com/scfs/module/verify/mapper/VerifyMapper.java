@@ -20,17 +20,26 @@ public interface VerifyMapper {
 
     List<FinancingApplication> selectApplicationPage(@Param("status") String status,
                                                        @Param("submittedBy") Long submittedBy,
-                                                       @Param("enterpriseId") Long enterpriseId,
+                                                     @Param("enterpriseId") Long enterpriseId,
+                                                     @Param("keyword") String keyword,
                                                        @Param("offset") long offset,
                                                        @Param("size") int size);
 
     long countApplications(@Param("status") String status,
                            @Param("submittedBy") Long submittedBy,
-                           @Param("enterpriseId") Long enterpriseId);
+                           @Param("enterpriseId") Long enterpriseId,
+                           @Param("keyword") String keyword);
 
     int insertApplication(FinancingApplication application);
 
     int updateApplication(FinancingApplication application);
+
+    List<ApplicationCustomer> selectApplicationCustomers(@Param("keyword") String keyword);
+
+    long countEnterpriseById(@Param("enterpriseId") Long enterpriseId);
+
+    long countRelationByEnterpriseIds(@Param("buyerEnterpriseId") Long buyerEnterpriseId,
+                                      @Param("sellerEnterpriseId") Long sellerEnterpriseId);
 
     int updateApplicationStatus(@Param("id") Long id,
                                  @Param("status") String status,
@@ -55,6 +64,8 @@ public interface VerifyMapper {
 
     // 材料识别结果
     MaterialRecognitionResult selectRecognitionResult(@Param("applicationMaterialId") Long applicationMaterialId);
+
+    int deleteRecognitionResult(@Param("applicationMaterialId") Long applicationMaterialId);
 
     int insertRecognitionResult(MaterialRecognitionResult result);
 

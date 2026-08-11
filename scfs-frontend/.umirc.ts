@@ -28,6 +28,7 @@ export default defineConfig({
   },
   npmClient: 'npm',
   hash: true,
+  esbuildMinifyIIFE: true,
   define: {
     API_BASE: '/api/v1',
   },
