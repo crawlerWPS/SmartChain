@@ -3,8 +3,8 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Descriptions, Tag, message, Empty, Typography } from 'antd';
-import { ExportOutlined } from '@ant-design/icons';
-import { useParams } from '@umijs/max';
+import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
+import { history, useParams } from '@umijs/max';
 import { getReport, generateReport, exportReportPdf } from '@/api/verify';
 import { formatDate, downloadBlob } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
@@ -55,7 +55,12 @@ const VerifyReport: React.FC = () => {
   };
 
   return (
-    <Card title={`核验报告 - 申请 #${appId}`} extra={
+    <Card title={<div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <Button icon={<ArrowLeftOutlined />} onClick={() => history.push(`/audit/application/detail?appId=${appId}`)}>
+        返回申请详情
+      </Button>
+      <span>核验报告 - 申请 #{appId}</span>
+    </div>} extra={
       <div>
         <Button type="primary" onClick={handleGenerate} loading={loading} style={{ marginRight: 8 }}>生成报告</Button>
         {report && <Button icon={<ExportOutlined />} onClick={handleExport}>导出 PDF</Button>}

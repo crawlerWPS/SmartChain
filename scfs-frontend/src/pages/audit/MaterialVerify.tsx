@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Tabs, Button, message, List, Tag, Empty, Row, Col, Progress, Modal, Descriptions } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
-import { useParams } from '@umijs/max';
+import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons';
+import { history, useParams } from '@umijs/max';
 import FileUpload from '@/components/upload/FileUpload';
 import { listMaterials, getRecognitionResult, reRecognizeMaterial } from '@/api/application';
 import { verifyAll } from '@/api/verify';
@@ -78,7 +78,12 @@ const MaterialVerify: React.FC = () => {
   useEffect(() => { load(); }, [appId]);
 
   return (
-    <Card title={`材料核验 - 申请 #${appId}`} extra={<Button icon={<ReloadOutlined />} onClick={load}>刷新</Button>}>
+    <Card title={<div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <Button icon={<ArrowLeftOutlined />} onClick={() => history.push(`/audit/application/detail?appId=${appId}`)}>
+        返回申请详情
+      </Button>
+      <span>材料核验 - 申请 #{appId}</span>
+    </div>} extra={<Button icon={<ReloadOutlined />} onClick={load}>刷新</Button>}>
       <Tabs items={[
         { key: 'upload', label: '材料上传', children: <div>
           <FileUpload applicationId={appId} onUploaded={load} />

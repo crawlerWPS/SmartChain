@@ -3,6 +3,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { Card, Descriptions, Steps, Button, Space, Tag, message, Modal, Input, Typography } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useSearchParams, history } from '@umijs/max';
 import { getApplication, submitApplication, assignApplication, rejectApplication, approveApplication, getStatusHistory } from '@/api/application';
 import { canSubmit, canAssign, canReject, canApprove, formatDate, formatAmount } from '@/utils';
@@ -17,7 +18,7 @@ const ApplicationDetail: React.FC = () => {
   const [searchParams] = useSearchParams();
   const appId = Number(searchParams.get('appId') || 0);
   const [detail, setDetail] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [statusHistory, setStatusHistory] = useState<any[]>([]);
   const dictionary = useCodeDictionary();
 
   const load = async () => {
@@ -28,7 +29,7 @@ const ApplicationDetail: React.FC = () => {
         getStatusHistory(appId).catch(() => []),
       ]);
       setDetail(d);
-      setHistory(h || []);
+      setStatusHistory(h || []);
     } catch (e: any) {
       message.error(e.message);
     }
@@ -81,7 +82,12 @@ const ApplicationDetail: React.FC = () => {
 
   return (
     <div>
-      <Title level={4}>融资申请详情 #{detail.appNo}</Title>
+      <Space align="center" size={12} style={{ marginBottom: 16 }}>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => history.push('/audit/application')}>
+          返回申请列表
+        </Button>
+        <Title level={4} style={{ margin: 0 }}>融资申请详情 #{detail.appNo}</Title>
+      </Space>
 
       <Card title="基本信息" style={{ marginBottom: 16 }}>
         <Descriptions bordered column={2}>
@@ -130,12 +136,12 @@ const ApplicationDetail: React.FC = () => {
         </Space>
       </Card>
 
-      {history.length > 0 && (
+      {statusHistory.length > 0 && (
         <Card title="状态流转历史" style={{ marginTop: 16 }}>
           <Steps
             direction="vertical"
-            current={history.length - 1}
-            items={history.map((h) => ({
+            current={statusHistory.length - 1}
+            items={statusHistory.map((h) => ({
               title: <ApplicationStatusTag status={h.toStatus} />,
               description: `操作人: ${h.operatorId} | ${formatDate(h.createdAt)} | ${h.remark || ''}`,
             }))}

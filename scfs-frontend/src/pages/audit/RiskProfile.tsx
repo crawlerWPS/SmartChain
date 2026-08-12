@@ -3,7 +3,8 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Descriptions, Progress, Row, Col, Tag, message, Empty } from 'antd';
-import { useParams } from '@umijs/max';
+import { history, useParams } from '@umijs/max';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { getRiskProfileByApplication, calculateRiskScore } from '@/api/risk';
 import { RiskLevelTag } from '@/components/common/StatusTag';
 import { formatDate } from '@/utils';
@@ -41,7 +42,12 @@ const RiskProfile: React.FC = () => {
   };
 
   return (
-    <Card title={`风险画像 - 申请 #${appId}`} extra={<Button type="primary" onClick={handleScore} loading={loading}>执行评分</Button>}>
+    <Card title={<div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <Button icon={<ArrowLeftOutlined />} onClick={() => history.push(`/audit/application/detail?appId=${appId}`)}>
+        返回申请详情
+      </Button>
+      <span>风险画像 - 申请 #{appId}</span>
+    </div>} extra={<Button type="primary" onClick={handleScore} loading={loading}>执行评分</Button>}>
       {profile ? (
         <>
           <Descriptions bordered column={2}>

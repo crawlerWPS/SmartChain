@@ -3,7 +3,8 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Card, Tabs, Button, Descriptions, Progress, Tag, message, List, Empty } from 'antd';
-import { useParams } from '@umijs/max';
+import { history, useParams } from '@umijs/max';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { checkCompleteness, checkValidity, checkConsistency, getCompletenessResult, getValidityResult, getConsistencyResult } from '@/api/preaudit';
 import { formatDate } from '@/utils';
 
@@ -57,7 +58,12 @@ const PreAuditCheck: React.FC = () => {
   };
 
   return (
-    <Card title={`材料预审 - 申请 #${appId}`}>
+    <Card title={<div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <Button icon={<ArrowLeftOutlined />} onClick={() => history.push(`/audit/application/detail?appId=${appId}`)}>
+        返回申请详情
+      </Button>
+      <span>材料预审 - 申请 #{appId}</span>
+    </div>}>
       <Tabs items={[
         {
           key: 'completeness',
