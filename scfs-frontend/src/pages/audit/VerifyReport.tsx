@@ -2,7 +2,7 @@
  * 核验报告页
  */
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Descriptions, Tag, message, Empty, Typography } from 'antd';
+import { Card, Button, Descriptions, Tag, message, Empty, Typography, Table } from 'antd';
 import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
 import { history, useParams } from '@umijs/max';
 import { getReport, generateReport, exportReportPdf } from '@/api/verify';
@@ -10,6 +10,26 @@ import { formatDate, downloadBlob } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 
 const { Paragraph } = Typography;
+
+const checkTypeLabels: Record<string, string> = {
+  SUBJECT: '主体一致性',
+  AMOUNT: '金额一致性',
+  TIME: '时间逻辑',
+  REPEAT: '重复融资',
+};
+
+const resultLabels: Record<string, string> = {
+  PASS: '通过',
+  ABNORMAL: '异常',
+  MISSING: '缺失',
+};
+
+const conclusionLabels: Record<string, string> = {
+  SUBJECT: '买卖双方主体信息一致，未发现异常。',
+  AMOUNT: '合同、订单及发票金额未发现明显差异。',
+  TIME: '交易材料时间顺序合理，未发现明显异常。',
+  REPEAT: '未发现同企业已审批的重复融资记录。',
+};
 
 const VerifyReport: React.FC = () => {
   const params = useParams();
@@ -75,7 +95,6 @@ const VerifyReport: React.FC = () => {
               <Tag color={report.abnormalCount > 0 ? 'red' : 'green'}>{report.abnormalCount}</Tag>
             </Descriptions.Item>
             <Descriptions.Item label="生成时间">{formatDate(report.generatedAt)}</Descriptions.Item>
-            <Descriptions.Item label="内容哈希">{report.contentHash?.slice(0, 16) || '-'}...</Descriptions.Item>
           </Descriptions>
           <Card size="small" title="总体评估" style={{ marginTop: 16 }}>
             <Paragraph>{dictionary.label('REPORT_ASSESSMENT', report.overallAssessment)}</Paragraph>
@@ -87,6 +106,21 @@ const VerifyReport: React.FC = () => {
               </ul>
             </Card>
           )}
+          <Card size="small" title="核验内容" style={{ marginTop: 12 }}>
+            <Table
+              size="small"
+              pagination={false}
+              rowKey={(row: any) => row.id || row.checkType}
+              dataSource={report.contentSnapshot?.results || []}
+              locale={{ emptyText: '暂无核验明细' }}
+              columns={[
+                { title: '核验项目', dataIndex: 'checkType', render: (value: string) => checkTypeLabels[value] || value },
+                { title: '结果', dataIndex: 'result', render: (value: string) => <Tag color={value === 'PASS' ? 'green' : 'red'}>{resultLabels[value] || value}</Tag> },
+                { title: '核验结论', dataIndex: 'checkType', render: (value: string, row: any) => row.result === 'PASS' ? conclusionLabels[value] || '该核验项目已通过。' : '该核验项目存在异常，请人工复核。' },
+                { title: '核验时间', dataIndex: 'executedAt', render: (value: string) => formatDate(value) },
+              ]}
+            />
+          </Card>
         </>
       ) : (
         <Empty description="尚未生成报告，请点击「生成报告」按钮" />

@@ -206,6 +206,12 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateApplicationHandler">
+        UPDATE schema_verify.financing_application
+        SET current_handler = #{currentHandler}, version = #{version}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
     <!-- 状态历史 -->
     <insert id="insertStatusHistory" parameterType="com.scfs.module.verify.entity.ApplicationStatusHistory" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO schema_verify.application_status_history (application_id, from_status, to_status, operator_id, remark)

@@ -46,6 +46,10 @@ public interface VerifyMapper {
                                  @Param("currentHandler") Long currentHandler,
                                  @Param("version") Integer version);
 
+    int updateApplicationHandler(@Param("id") Long id,
+                                 @Param("currentHandler") Long currentHandler,
+                                 @Param("version") Integer version);
+
     // 申请状态历史
     int insertStatusHistory(ApplicationStatusHistory history);
 

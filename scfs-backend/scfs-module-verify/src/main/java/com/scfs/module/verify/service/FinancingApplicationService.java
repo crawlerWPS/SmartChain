@@ -5,6 +5,8 @@ import com.scfs.common.core.PageResult;
 import com.scfs.common.enums.ApplicationStatus;
 import com.scfs.common.enums.BusinessType;
 import com.scfs.common.security.SecurityContextHelper;
+import com.scfs.common.service.SysUserService;
+import com.scfs.common.entity.SysUser;
 import com.scfs.module.verify.entity.*;
 import com.scfs.module.verify.mapper.VerifyMapper;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class FinancingApplicationService {
 
     private final VerifyMapper verifyMapper;
     private final SecurityContextHelper securityContextHelper;
+    private final SysUserService sysUserService;
 
     public FinancingApplication getById(Long id) {
         return verifyMapper.selectApplicationById(id);
@@ -131,6 +134,40 @@ public class FinancingApplicationService {
         transit(app, ApplicationStatus.SUBMITTED, currentUserId, "客户经理提交");
         app.setSubmittedAt(Instant.now());
         verifyMapper.updateApplication(app);
+    }
+
+    /**
+     * 为已提交申请分配风控审核员，不改变申请状态。
+     */
+    @Audit(module = "VERIFY", action = "ASSIGN", targetType = "FINANCING_APPLICATION", targetIdExpr = "#id")
+    @Transactional
+    public void assignHandler(Long id, Long handlerId) {
+        Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
+        if (handlerId == null) {
+            throw new IllegalArgumentException("请选择审核人");
+        }
+        FinancingApplication app = verifyMapper.selectApplicationById(id);
+        if (app == null) {
+            throw new IllegalArgumentException("申请不存在");
+        }
+        if (!ApplicationStatus.SUBMITTED.name().equals(app.getStatus())) {
+            throw new IllegalStateException("仅已提交状态的申请可以分配审核人");
+        }
+        SysUser handler = sysUserService.getById(handlerId);
+        if (handler == null) {
+            throw new IllegalArgumentException("审核人不存在");
+        }
+        if (handler.getStatus() == null || handler.getStatus() != 1) {
+            throw new IllegalStateException("审核人账号未启用");
+        }
+        if (!"RCO".equals(handler.getRoleCode())) {
+            throw new IllegalArgumentException("只能分配给风控审核员");
+        }
+        verifyMapper.updateApplicationHandler(id, handlerId, app.getVersion() + 1);
+        recordStatusHistory(id, app.getStatus(), app.getStatus(), currentUserId,
+                "分配审核人: " + (handler.getRealName() == null ? handlerId : handler.getRealName()));
+        log.info("[Application] 已分配审核人: appNo={}, handlerId={}, operatorId={}",
+                app.getAppNo(), handlerId, currentUserId);
     }
 
     /**

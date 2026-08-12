@@ -77,6 +77,13 @@ public class ApplicationController {
         return Result.success();
     }
 
+    @RequirePermission(module = "VERIFY", permission = "approve")
+    @PostMapping("/{id}/assign")
+    public Result<Void> assign(@PathVariable Long id, @RequestParam Long handlerId) {
+        applicationService.assignHandler(id, handlerId);
+        return Result.success();
+    }
+
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/move-to-pre-audit")
     public Result<Void> moveToPreAudit(@PathVariable Long id) {

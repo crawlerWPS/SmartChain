@@ -46,10 +46,15 @@ const ApplicationDetail: React.FC = () => {
   };
 
   const handleAssign = async () => {
-    const handlerId = window.prompt('请输入审核人 ID');
+    const handlerId = window.prompt('请输入风控审核员 ID');
     if (!handlerId) return;
+    const parsedHandlerId = Number(handlerId.trim());
+    if (!Number.isInteger(parsedHandlerId) || parsedHandlerId <= 0) {
+      message.error('审核人 ID 必须是正整数');
+      return;
+    }
     try {
-      await assignApplication(appId, Number(handlerId));
+      await assignApplication(appId, parsedHandlerId);
       message.success('已分配');
       load();
     } catch (e: any) { message.error(e.message); }
