@@ -38,6 +38,8 @@ public interface RuleDefinitionMapper {
 
     RuleChangeLog selectChangeLogById(@Param("id") Long id);
 
+    RuleChangeLog selectPendingChangeLogByRuleId(@Param("ruleId") Long ruleId);
+
     List<RuleChangeLog> selectChangeLogsByRuleId(@Param("ruleId") Long ruleId);
 
     List<RuleChangeLog> selectPendingChangeLogs(@Param("offset") long offset, @Param("size") int size);
