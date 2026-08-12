@@ -81,6 +81,8 @@ public interface VerifyMapper {
 
     VerifyReport selectReportById(@Param("id") Long id);
 
+    VerifyReport selectReportByNo(@Param("reportNo") String reportNo);
+
     int insertReport(VerifyReport report);
 
     // 重复融资查询

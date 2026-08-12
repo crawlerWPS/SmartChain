@@ -2,6 +2,8 @@ package com.scfs.common.mybatis;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
@@ -21,7 +23,13 @@ import java.util.Map;
 @MappedTypes(Map.class)
 public class JsonMapTypeHandler extends BaseTypeHandler<Map<String, Object>> {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    /**
+     * JSONB 字段可能包含实体对象中的 Instant/LocalDateTime 等时间类型，
+     * 需要显式注册 JavaTimeModule，否则报告快照落库时会序列化失败。
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, Map<String, Object> parameter, JdbcType jdbcType)

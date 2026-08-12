@@ -32,6 +32,7 @@ public class ApplicationController {
     private final ApplicationMaterialService materialService;
     private final VerifyService verifyService;
 
+
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping
     public Result<PageResult<FinancingApplication>> list(PageQuery pageQuery,

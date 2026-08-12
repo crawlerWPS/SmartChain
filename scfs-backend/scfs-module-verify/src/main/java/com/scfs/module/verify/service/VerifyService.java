@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -304,6 +305,63 @@ public class VerifyService {
 
     public VerifyReport getReportByApplication(Long applicationId) {
         return verifyMapper.selectReportByApplication(applicationId);
+    }
+
+    /** 导出一个轻量、可下载的 PDF 报告，避免依赖浏览器页面截图或额外 PDF 引擎。 */
+    public byte[] exportReportPdf(String reportNo) {
+        VerifyReport report = verifyMapper.selectReportByNo(reportNo);
+        if (report == null) {
+            throw new IllegalArgumentException("报告不存在: " + reportNo);
+        }
+        List<String> lines = new ArrayList<>();
+        lines.add("SCFS Verification Report");
+        lines.add("Report No: " + report.getReportNo());
+        lines.add("Application ID: " + report.getApplicationId());
+        lines.add("Version: v" + report.getVersion());
+        lines.add("Overall Assessment: " + report.getOverallAssessment());
+        lines.add("Abnormal Count: " + report.getAbnormalCount());
+        lines.add("Generated At: " + report.getGeneratedAt());
+        lines.add("Content Hash: " + report.getContentHash());
+        if (report.getRiskHints() != null && !report.getRiskHints().isEmpty()) {
+            lines.add("Risk Hints:");
+            report.getRiskHints().forEach(hint -> lines.add("- " + hint));
+        }
+        return buildSimplePdf(lines);
+    }
+
+    private byte[] buildSimplePdf(List<String> lines) {
+        StringBuilder content = new StringBuilder("BT\n/F1 11 Tf\n50 760 Td\n");
+        for (String line : lines) {
+            content.append("(").append(escapePdf(line)).append(") Tj\n0 -20 Td\n");
+        }
+        content.append("ET\n");
+        String stream = content.toString();
+        String[] objects = {
+                "<< /Type /Catalog /Pages 2 0 R >>",
+                "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+                "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+                "<< /Length " + stream.getBytes(StandardCharsets.US_ASCII).length + " >>\nstream\n" + stream + "endstream"
+        };
+        StringBuilder pdf = new StringBuilder("%PDF-1.4\n");
+        List<Integer> offsets = new ArrayList<>();
+        for (int i = 0; i < objects.length; i++) {
+            offsets.add(pdf.toString().getBytes(StandardCharsets.US_ASCII).length);
+            pdf.append(i + 1).append(" 0 obj\n").append(objects[i]).append("\nendobj\n");
+        }
+        int xref = pdf.toString().getBytes(StandardCharsets.US_ASCII).length;
+        pdf.append("xref\n0 ").append(objects.length + 1).append("\n0000000000 65535 f \n");
+        for (Integer offset : offsets) {
+            pdf.append(String.format("%010d 00000 n \n", offset));
+        }
+        pdf.append("trailer\n<< /Size ").append(objects.length + 1).append(" /Root 1 0 R >>\nstartxref\n")
+                .append(xref).append("\n%%EOF\n");
+        return pdf.toString().getBytes(StandardCharsets.US_ASCII);
+    }
+
+    private String escapePdf(String value) {
+        return value == null ? "" : value.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+                .replaceAll("[^\\x20-\\x7E]", "?");
     }
 
     public List<VerifyCheckResult> getCheckResults(Long applicationId) {

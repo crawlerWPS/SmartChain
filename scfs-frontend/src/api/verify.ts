@@ -36,12 +36,12 @@ export async function getCheckResults(applicationId: number): Promise<VerifyChec
 
 /** IF-VER-007 生成核验报告 */
 export async function generateReport(applicationId: number): Promise<VerifyReport> {
-  return request(`/applications/${applicationId}/report/generate`, { method: 'POST' });
+  return request(`/applications/${applicationId}/verify-report`, { method: 'POST' });
 }
 
 /** IF-VER-008 查询报告 */
 export async function getReport(applicationId: number): Promise<VerifyReport> {
-  return request(`/applications/${applicationId}/report`, { method: 'GET' });
+  return request(`/applications/${applicationId}/verify-report`, { method: 'GET' });
 }
 
 /** IF-VER-009 按 reportNo 查询 */

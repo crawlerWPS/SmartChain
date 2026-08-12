@@ -305,6 +305,10 @@
         SELECT * FROM schema_verify.verify_report WHERE id = #{id}
     </select>
 
+    <select id="selectReportByNo" resultMap="ReportMap">
+        SELECT * FROM schema_verify.verify_report WHERE report_no = #{reportNo}
+    </select>
+
     <insert id="insertReport" parameterType="com.scfs.module.verify.entity.VerifyReport" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO schema_verify.verify_report (report_no, application_id, version, overall_assessment,
             abnormal_count, risk_hints, content_snapshot, content_hash)
