@@ -21,6 +21,8 @@ public interface GraphMapper {
 
     Enterprise selectEnterpriseByUscc(@Param("uscc") String uscc);
 
+    Enterprise selectEnterpriseByName(@Param("name") String name);
+
     List<Enterprise> searchEnterprises(@Param("keyword") String keyword,
                                         @Param("offset") long offset,
                                         @Param("size") int size);
@@ -40,6 +42,12 @@ public interface GraphMapper {
     int insertRelation(SupplyChainRelation relation);
 
     int batchInsertRelations(@Param("list") List<SupplyChainRelation> list);
+
+    SupplyChainRelation selectRelation(@Param("fromEnterpriseId") Long fromEnterpriseId,
+                                       @Param("toEnterpriseId") Long toEnterpriseId,
+                                       @Param("relationType") String relationType);
+
+    int upsertRelation(SupplyChainRelation relation);
 
     // 角色
     EnterpriseRole selectRoleByEnterprise(@Param("enterpriseId") Long enterpriseId);

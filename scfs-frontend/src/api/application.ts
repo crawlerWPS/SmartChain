@@ -44,8 +44,8 @@ export interface ApplicationCustomer {
   address?: string;
 }
 
-export async function listApplicationCustomers(keyword?: string): Promise<ApplicationCustomer[]> {
-  return request('/applications/customers', { method: 'GET', params: { keyword } });
+export async function listApplicationCustomers(keyword?: string, buyerOnly = false): Promise<ApplicationCustomer[]> {
+  return request('/applications/customers', { method: 'GET', params: { keyword, buyerOnly } });
 }
 
 export async function createApplicationCustomer(data: Omit<ApplicationCustomer, 'enterpriseId'>): Promise<number> {

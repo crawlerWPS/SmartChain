@@ -22,6 +22,7 @@ const ApplicationList: React.FC = () => {
   const [query, setQuery] = useState({ page: 1, size: 10, keyword: '', status: undefined });
   const [createVisible, setCreateVisible] = useState(false);
   const [customers, setCustomers] = useState<ApplicationCustomer[]>([]);
+  const [buyerCustomers, setBuyerCustomers] = useState<ApplicationCustomer[]>([]);
   const [customerLoading, setCustomerLoading] = useState(false);
   const [createForm] = Form.useForm();
   const dictionary = useCodeDictionary();
@@ -42,7 +43,12 @@ const ApplicationList: React.FC = () => {
   const loadCustomers = async () => {
     setCustomerLoading(true);
     try {
-      setCustomers(await listApplicationCustomers());
+      const [all, buyers] = await Promise.all([
+        listApplicationCustomers(),
+        listApplicationCustomers(undefined, true),
+      ]);
+      setCustomers(all);
+      setBuyerCustomers(buyers);
     } catch (e: any) {
       message.error(e.message);
     } finally {
@@ -59,6 +65,12 @@ const ApplicationList: React.FC = () => {
     label: `${customer.name}（客户号：${customer.enterpriseId}）`,
     searchText: `${customer.name} ${customer.enterpriseId} ${customer.uscc}`,
   })), [customers]);
+
+  const buyerOptions = useMemo(() => buyerCustomers.map((customer) => ({
+    value: customer.enterpriseId,
+    label: `${customer.name}（客户号：${customer.enterpriseId}）`,
+    searchText: `${customer.name} ${customer.enterpriseId} ${customer.uscc}`,
+  })), [buyerCustomers]);
 
   const openCreate = () => {
     setCreateVisible(true);
@@ -123,7 +135,7 @@ const ApplicationList: React.FC = () => {
         onCancel={() => { setCreateVisible(false); createForm.resetFields(); }}>
         <Form form={createForm} layout="vertical">
           <Form.Item name="buyerEnterpriseId" label="买方客户" rules={[{ required: true, message: '请选择买方客户' }]}>
-            <Select {...customerSelectProps} />
+            <Select {...customerSelectProps} options={buyerOptions} placeholder="请选择或搜索买方企业名称/客户号/信用代码" notFoundContent="暂无买方企业" />
           </Form.Item>
           <Form.Item name="sellerEnterpriseId" label="卖方客户" dependencies={['buyerEnterpriseId']}
             rules={[{ required: true, message: '请选择卖方客户' }, ({ getFieldValue }) => ({

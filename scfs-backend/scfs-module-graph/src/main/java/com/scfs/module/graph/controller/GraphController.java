@@ -8,6 +8,8 @@ import com.scfs.module.graph.entity.AbnormalRelation;
 import com.scfs.module.graph.entity.Enterprise;
 import com.scfs.module.graph.entity.EnterprisePositionAnalysis;
 import com.scfs.module.graph.entity.EnterpriseRole;
+import com.scfs.module.graph.entity.RelationImportResult;
+import com.scfs.module.graph.entity.RelationImportRow;
 import com.scfs.module.graph.service.GraphService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +59,18 @@ public class GraphController {
     @GetMapping("/full")
     public Result<Map<String, Object>> getAllRelationGraph() {
         return Result.success(graphService.getAllRelationGraph());
+    }
+
+    @RequirePermission(module = "GRAPH", permission = "update")
+    @PostMapping("/relations/import")
+    public Result<RelationImportResult> importRelations(@RequestBody List<RelationImportRow> rows) {
+        return Result.success(graphService.importRelations(rows));
+    }
+
+    @RequirePermission(module = "GRAPH", permission = "update")
+    @PostMapping("/analysis/recalculate")
+    public Result<Map<String, Object>> recalculateAnalysis() {
+        return Result.success(graphService.recalculateAllAnalysis());
     }
 
     // ========== 企业角色 ==========

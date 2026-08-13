@@ -29,6 +29,35 @@ export interface GraphData {
   edges: GraphEdge[];
 }
 
+export interface RelationImportRow {
+  rowNumber: number;
+  buyerName: string;
+  buyerUscc: string;
+  sellerName: string;
+  sellerUscc: string;
+  relationType: string;
+  amount?: number;
+  transactionDate?: string;
+  remark?: string;
+}
+
+export interface RelationImportResult {
+  total: number;
+  createdEnterprises: number;
+  createdRelations: number;
+  updatedRelations: number;
+  skippedDuplicates: number;
+  errors: string[];
+}
+
+export async function importRelations(rows: RelationImportRow[]): Promise<RelationImportResult> {
+  return request('/graph/relations/import', { method: 'POST', data: rows });
+}
+
+export async function recalculateAnalysis(): Promise<{ enterpriseCount: number; calculatedCount: number; coreEnterpriseId?: number; message: string }> {
+  return request('/graph/analysis/recalculate', { method: 'POST' });
+}
+
 /** IF-GRAPH-001 企业分页 */
 export async function pageEnterprises(query: EnterpriseQuery): Promise<PageResult<Enterprise>> {
   return request('/graph/enterprises', { method: 'GET', params: query });

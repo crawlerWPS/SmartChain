@@ -186,10 +186,16 @@
         SELECT id AS enterpriseId, name, uscc, industry, legal_person AS legalPerson, address
         FROM schema_graph.enterprise
         <where>
+            <if test="buyerOnly == true">
+                EXISTS (
+                    SELECT 1 FROM schema_graph.supply_chain_relation r
+                    WHERE r.to_enterprise_id = enterprise.id
+                )
+            </if>
             <if test="keyword != null and keyword != ''">
-                CAST(id AS VARCHAR) LIKE '%' || #{keyword} || '%'
+                AND (CAST(id AS VARCHAR) LIKE '%' || #{keyword} || '%'
                 OR name ILIKE '%' || #{keyword} || '%'
-                OR uscc ILIKE '%' || #{keyword} || '%'
+                OR uscc ILIKE '%' || #{keyword} || '%')
             </if>
         </where>
         ORDER BY id

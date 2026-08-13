@@ -34,7 +34,8 @@ public interface VerifyMapper {
 
     int updateApplication(FinancingApplication application);
 
-    List<ApplicationCustomer> selectApplicationCustomers(@Param("keyword") String keyword);
+    List<ApplicationCustomer> selectApplicationCustomers(@Param("keyword") String keyword,
+                                                          @Param("buyerOnly") Boolean buyerOnly);
 
     int insertApplicationCustomer(ApplicationCustomer customer);
     int updateApplicationCustomer(ApplicationCustomer customer);

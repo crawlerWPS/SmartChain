@@ -23,7 +23,8 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
   const graphRef = useRef<Graph | null>(null);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<GraphData>({ nodes: [], edges: [] });
-  const [layoutMode, setLayoutMode] = useState<'force' | 'radial'>('force');
+  // 默认采用径向布局，核心企业位于中心，便于快速识别上下游关系
+  const [layoutMode, setLayoutMode] = useState<'force' | 'radial'>('radial');
 
   const destroyGraph = () => {
     // 先清空引用，避免 effect 清理和下一次建图重复销毁同一个实例
