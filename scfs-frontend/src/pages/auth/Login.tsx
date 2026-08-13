@@ -36,6 +36,11 @@ const Login: React.FC = () => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <Card style={{ width: 380, boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <img
+              src="/project-logo.png"
+              alt="SCFS 项目图标"
+              style={{ width: 88, height: 88, objectFit: 'contain', marginBottom: 12 }}
+            />
             <Title level={3}>SCFS 供应链金融风控平台</Title>
             <Typography.Text type="secondary">智能风控与尽调辅助系统</Typography.Text>
           </div>

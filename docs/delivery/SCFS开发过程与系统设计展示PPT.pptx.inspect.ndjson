@@ -1,0 +1,702 @@
+{"kind":"deck","id":"pr/2piotb","name":"Deck"}
+{"kind":"layout","layoutId":"bb800f9f-8bd2-43e0-b4e4-e469bf81b446","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"d56b6cb7-5b3f-4bbd-9477-b31bce446074","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/c8nlhb","slide":1,"title":"E","textShapes":7}
+{"kind":"shape","id":"sh/7yx8rq1c","slide":1,"bbox":[64,45,58,58]}
+{"kind":"textbox","id":"sh/szq9kvix","slide":1,"text":"E","textPreview":"E","textChars":1,"textLines":1,"bbox":[64,56,58,58]}
+{"kind":"textbox","id":"sh/t0zqtgji","slide":1,"text":"SCFS / DEVELOPMENT STORY","textPreview":"SCFS / DEVELOPMENT STORY","textChars":24,"textLines":1,"bbox":[138,62,600,24]}
+{"kind":"textbox","id":"sh/i9ore10f","slide":1,"text":"从业务需求到系统落地","textPreview":"从业务需求到系统落地","textChars":10,"textLines":1,"bbox":[64,190,780,68]}
+{"kind":"textbox","id":"sh/jax8n610","slide":1,"text":"供应链金融智能风控与尽调辅助平台","textPreview":"供应链金融智能风控与尽调辅助平台","textChars":16,"textLines":1,"bbox":[64,280,820,38]}
+{"kind":"textbox","id":"sh/kb69gbil","slide":1,"text":"AI Agent 协同开发 · 系统设计 · 验证交付","textPreview":"AI Agent 协同开发 · 系统设计 · 验证交付","textChars":27,"textLines":1,"bbox":[64,370,800,30]}
+{"kind":"shape","id":"sh/5cfqpgj6","slide":1,"bbox":[64,500,500,0]}
+{"kind":"textbox","id":"sh/258rq50z","slide":1,"text":"让关系可见，让材料可核，让风险判断有依据。","textPreview":"让关系可见，让材料可核，让风险判断有依据。","textChars":21,"textLines":1,"bbox":[64,540,900,32]}
+{"kind":"textbox","id":"sh/36h8za1k","slide":1,"text":"项目展示版 · 2026","textPreview":"项目展示版 · 2026","textChars":12,"textLines":1,"bbox":[64,680,300,18]}
+{"kind":"notes","id":"nt/c8nlhb","slide":1,"text":"[Sources]\n- docs/开发过程\n- docs/prd/scfs_platform_prd.md\n- docs/spec/scfs_platform_rfc.md"}
+{"kind":"slide","id":"sl/1oyabe","slide":2,"title":"00 / 讲述主线","textShapes":21}
+{"kind":"textbox","id":"sh/n29wfedc","slide":2,"text":"00 / 讲述主线","textPreview":"00 / 讲述主线","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/832x8jex","slide":2,"text":"这不是代码清单，而是一条完整的落地链路","textPreview":"这不是代码清单，而是一条完整的落地链路","textChars":19,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"textbox","id":"sh/94behovi","slide":2,"text":"每一段设计，都会回答下一段为什么需要。","textPreview":"每一段设计，都会回答下一段为什么需要。","textChars":19,"textLines":1,"bbox":[64,130,1152,28]}
+{"kind":"shape","id":"sh/a5kfa9w3","slide":2,"bbox":[64,245,48,48]}
+{"kind":"textbox","id":"sh/v6twjed8","slide":2,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[64,256,48,24]}
+{"kind":"textbox","id":"sh/w72xcjet","slide":2,"text":"业务问题","textPreview":"业务问题","textChars":4,"textLines":1,"bbox":[39,320,100,28]}
+{"kind":"textbox","id":"sh/x8belove","slide":2,"text":"为什么做","textPreview":"为什么做","textChars":4,"textLines":1,"bbox":[39,360,100,22]}
+{"kind":"shape","id":"sh/i9kfetwz","slide":2,"bbox":[120,261,150,16]}
+{"kind":"shape","id":"sh/jadwnydk","slide":2,"bbox":[296,245,48,48]}
+{"kind":"textbox","id":"sh/by5s3m94","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[296,256,48,24]}
+{"kind":"textbox","id":"sh/axcbu1sj","slide":2,"text":"需求澄清","textPreview":"需求澄清","textChars":4,"textLines":1,"bbox":[271,320,100,28]}
+{"kind":"textbox","id":"sh/x0na5wra","slide":2,"text":"做什么","textPreview":"做什么","textChars":3,"textLines":1,"bbox":[271,360,100,22]}
+{"kind":"shape","id":"sh/wzetwrap","slide":2,"bbox":[352,261,150,16]}
+{"kind":"shape","id":"sh/nulszm98","slide":2,"bbox":[528,245,48,48]}
+{"kind":"textbox","id":"sh/mtcbqhsn","slide":2,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[528,256,48,24]}
+{"kind":"textbox","id":"sh/9w3a1wry","slide":2,"text":"系统设计","textPreview":"系统设计","textChars":4,"textLines":1,"bbox":[503,320,100,28]}
+{"kind":"textbox","id":"sh/ovutsrad","slide":2,"text":"怎么做","textPreview":"怎么做","textChars":3,"textLines":1,"bbox":[503,360,100,22]}
+{"kind":"shape","id":"sh/7qpcbq9c","slide":2,"bbox":[584,261,150,16]}
+{"kind":"shape","id":"sh/6pwb2lsr","slide":2,"bbox":[760,245,48,48]}
+{"kind":"textbox","id":"sh/2xknq9gb","slide":2,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[760,256,48,24]}
+{"kind":"textbox","id":"sh/3yt4jexw","slide":2,"text":"AI 协同","textPreview":"AI 协同","textChars":5,"textLines":1,"bbox":[735,320,100,28]}
+{"kind":"textbox","id":"sh/oz25sjyh","slide":2,"text":"如何落地","textPreview":"如何落地","textChars":4,"textLines":1,"bbox":[735,360,100,22]}
+{"kind":"shape","id":"sh/p0bmlofm","slide":2,"bbox":[816,261,150,16]}
+{"kind":"shape","id":"sh/q1knutg7","slide":2,"bbox":[992,245,48,48]}
+{"kind":"textbox","id":"sh/b2d4nexs","slide":2,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[992,256,48,24]}
+{"kind":"textbox","id":"sh/c3m5wjyd","slide":2,"text":"验证交付","textPreview":"验证交付","textChars":4,"textLines":1,"bbox":[967,320,100,28]}
+{"kind":"textbox","id":"sh/d4v6pofy","slide":2,"text":"如何证明","textPreview":"如何证明","textChars":4,"textLines":1,"bbox":[967,360,100,22]}
+{"kind":"textbox","id":"sh/650nipg3","slide":2,"text":"主线：问题 → 决策 → 架构 → 实现 → 验证 → 交付。","textPreview":"主线：问题 → 决策 → 架构 → 实现 → 验证 → 交付。","textChars":31,"textLines":1,"bbox":[64,535,1100,30]}
+{"kind":"shape","id":"sh/r694buxo","slide":2,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/9kfqxsz6","slide":2,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/8j6ponil","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/1oyabe","slide":2,"text":"[Sources]\n- docs/开发过程/topics_0714.md\n- docs/开发过程/topics_0728.md"}
+{"kind":"slide","id":"sl/6kmmeb","slide":3,"title":"01 / 业务问题","textShapes":17}
+{"kind":"textbox","id":"sh/4n21czyd","slide":3,"text":"01 / 业务问题","textPreview":"01 / 业务问题","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/32t03uh8","slide":3,"text":"供应链金融的难点，是信息分散而不是信息缺少","textPreview":"供应链金融的难点，是信息分散而不是信息缺少","textChars":21,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/i1kjapgn","slide":3,"bbox":[64,230,48,48]}
+{"kind":"textbox","id":"sh/dsvi94fa","slide":3,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[64,241,48,24]}
+{"kind":"textbox","id":"sh/srm1gzyp","slide":3,"text":"关系看不清","textPreview":"关系看不清","textChars":5,"textLines":1,"bbox":[64,310,220,30]}
+{"kind":"textbox","id":"sh/rqd07ux4","slide":3,"text":"上下游、核心企业和企业角色缺少全景视图","textPreview":"上下游、核心企业和企业角色缺少全景视图","textChars":19,"textLines":1,"bbox":[64,360,220,80]}
+{"kind":"shape","id":"sh/qpkjepgj","slide":3,"bbox":[352,230,48,48]}
+{"kind":"textbox","id":"sh/1wv2d4f6","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[352,241,48,24]}
+{"kind":"textbox","id":"sh/0vm1kjyl","slide":3,"text":"材料对不齐","textPreview":"材料对不齐","textChars":5,"textLines":1,"bbox":[352,310,220,30]}
+{"kind":"textbox","id":"sh/ilsb2d4f","slide":3,"text":"合同、订单、发票、物流信息彼此割裂","textPreview":"合同、订单、发票、物流信息彼此割裂","textChars":17,"textLines":1,"bbox":[352,360,220,80]}
+{"kind":"shape","id":"sh/jm1cbi50","slide":3,"bbox":[640,230,48,48]}
+{"kind":"textbox","id":"sh/knat4nm5","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[640,241,48,24]}
+{"kind":"textbox","id":"sh/5ojudsnq","slide":3,"text":"风险难前置","textPreview":"风险难前置","textChars":5,"textLines":1,"bbox":[640,310,220,30]}
+{"kind":"textbox","id":"sh/6pcb6x4b","slide":3,"text":"异常交易往往在人工审核后期才暴露","textPreview":"异常交易往往在人工审核后期才暴露","textChars":16,"textLines":1,"bbox":[640,360,220,80]}
+{"kind":"shape","id":"sh/7qlcf25w","slide":3,"bbox":[928,230,48,48]}
+{"kind":"textbox","id":"sh/srut87mh","slide":3,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[928,241,48,24]}
+{"kind":"textbox","id":"sh/tc3uhsn2","slide":3,"text":"过程难复盘","textPreview":"过程难复盘","textChars":5,"textLines":1,"bbox":[928,310,220,30]}
+{"kind":"textbox","id":"sh/mt8but47","slide":3,"text":"操作、规则、结论和版本缺少统一留痕","textPreview":"操作、规则、结论和版本缺少统一留痕","textChars":17,"textLines":1,"bbox":[928,360,220,80]}
+{"kind":"shape","id":"sh/nuhs3y5s","slide":3,"bbox":[64,550,1152,56]}
+{"kind":"textbox","id":"sh/ryx8bulk","slide":3,"text":"开发起点：先把业务判断需要的证据组织起来，再谈页面和接口。","textPreview":"开发起点：先把业务判断需要的证据组织起来，再谈页面和接口。","textChars":29,"textLines":1,"bbox":[88,568,1100,24]}
+{"kind":"shape","id":"sh/qx4r2pkz","slide":3,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/d0fqd43a","slide":3,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/cz694z25","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/6kmmeb","slide":3,"text":"[Sources]\n- docs/开发过程/session_memory_0713.jsonl\n- docs/prd/scfs_platform_prd.md"}
+{"kind":"slide","id":"sl/y7i7ql","slide":4,"title":"02 / 项目目标","textShapes":13}
+{"kind":"textbox","id":"sh/dsji10z2","slide":4,"text":"02 / 项目目标","textPreview":"02 / 项目目标","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/q58j6lgb","slide":4,"text":"系统把“看关系、核材料、判风险、留证据”串成一条链","textPreview":"系统把“看关系、核材料、判风险、留证据”串成一条链","textChars":25,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/b610zqhw","slide":4,"bbox":[64,230,250,165]}
+{"kind":"shape","id":"sh/0va1cfyd","slide":4,"bbox":[64,230,250,7]}
+{"kind":"textbox","id":"sh/lwji50zy","slide":4,"text":"看关系","textPreview":"看关系","textChars":3,"textLines":1,"bbox":[82,257,214,28]}
+{"kind":"textbox","id":"sh/ytsja5gn","slide":4,"text":"供应链图谱","textPreview":"供应链图谱","textChars":5,"textLines":1,"bbox":[82,302,214,79]}
+{"kind":"shape","id":"sh/zu103ahs","slide":4,"bbox":[352,230,250,165]}
+{"kind":"shape","id":"sh/8zu1gfyp","slide":4,"bbox":[352,230,250,7]}
+{"kind":"textbox","id":"sh/903i9kza","slide":4,"text":"核材料","textPreview":"核材料","textChars":3,"textLines":1,"bbox":[370,257,214,28]}
+{"kind":"textbox","id":"sh/t0j2dcn2","slide":4,"text":"预审与 OCR","textPreview":"预审与 OCR","textChars":7,"textLines":1,"bbox":[370,302,214,79]}
+{"kind":"shape","id":"sh/szalk7mx","slide":4,"bbox":[640,230,250,165]}
+{"kind":"shape","id":"sh/7y1kb25c","slide":4,"bbox":[640,230,250,7]}
+{"kind":"textbox","id":"sh/6x83ix4r","slide":4,"text":"判风险","textPreview":"判风险","textChars":3,"textLines":1,"bbox":[658,257,214,28]}
+{"kind":"textbox","id":"sh/h4j2hcne","slide":4,"text":"规则与画像","textPreview":"规则与画像","textChars":5,"textLines":1,"bbox":[658,302,214,79]}
+{"kind":"shape","id":"sh/g3alormt","slide":4,"bbox":[928,230,250,165]}
+{"kind":"shape","id":"sh/f21kfm58","slide":4,"bbox":[928,230,250,7]}
+{"kind":"textbox","id":"sh/u1s3mh4n","slide":4,"text":"留证据","textPreview":"留证据","textChars":3,"textLines":1,"bbox":[946,257,214,28]}
+{"kind":"textbox","id":"sh/x8z25sna","slide":4,"text":"报告与审计","textPreview":"报告与审计","textChars":5,"textLines":1,"bbox":[946,302,214,79]}
+{"kind":"shape","id":"sh/w7q1cnmp","slide":4,"bbox":[312,300,40,16]}
+{"kind":"shape","id":"sh/obulsnul","slide":4,"bbox":[600,300,40,16]}
+{"kind":"shape","id":"sh/pc32lsvq","slide":4,"bbox":[888,300,40,16]}
+{"kind":"textbox","id":"sh/29s3qxcf","slide":4,"text":"产品定位：银行客户经理与风控审核员的辅助决策平台，不替代核心信贷系统和人工审批。","textPreview":"产品定位：银行客户经理与风控审核员的辅助决策平台，不替代核心信贷系统和人工审批。","textChars":40,"textLines":1,"bbox":[64,540,1130,32]}
+{"kind":"shape","id":"sh/na1kjid0","slide":4,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/cfulw7uh","slide":4,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/xg32pcv2","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/y7i7ql","slide":4,"text":"[Sources]\n- docs/开发过程/session_memory_0713.jsonl\n- docs/prd/scfs_platform_prd.md §1"}
+{"kind":"slide","id":"sl/7y5135","slide":5,"title":"03 / 需求澄清","textShapes":17}
+{"kind":"textbox","id":"sh/o7m1kvux","slide":5,"text":"03 / 需求澄清","textPreview":"03 / 需求澄清","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/nmdkratc","slide":5,"text":"开发前先解决关键业务分歧","textPreview":"开发前先解决关键业务分歧","textChars":12,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/mlkji5c7","slide":5,"bbox":[64,205,48,48]}
+{"kind":"textbox","id":"sh/xcv2xkbu","slide":5,"text":"Q1","textPreview":"Q1","textChars":2,"textLines":1,"bbox":[64,216,48,24]}
+{"kind":"textbox","id":"sh/wbmlofu9","slide":5,"text":"客户经理是否发起融资申请？","textPreview":"客户经理是否发起融资申请？","textChars":13,"textLines":1,"bbox":[134,217,440,28]}
+{"kind":"shape","id":"sh/badkvato","slide":5,"bbox":[134,260,440,0]}
+{"kind":"shape","id":"sh/a94jm5c3","slide":5,"bbox":[634,205,48,48]}
+{"kind":"textbox","id":"sh/dgb2lgba","slide":5,"text":"Q2","textPreview":"Q2","textChars":2,"textLines":1,"bbox":[634,216,48,24]}
+{"kind":"textbox","id":"sh/cf21cbup","slide":5,"text":"客户是否直接上传材料？","textPreview":"客户是否直接上传材料？","textChars":11,"textLines":1,"bbox":[704,217,440,28]}
+{"kind":"shape","id":"sh/ah03elcf","slide":5,"bbox":[704,260,440,0]}
+{"kind":"shape","id":"sh/bi947qtk","slide":5,"bbox":[64,310,48,48]}
+{"kind":"textbox","id":"sh/cj2lgvu5","slide":5,"text":"Q3","textPreview":"Q3","textChars":2,"textLines":1,"bbox":[64,321,48,24]}
+{"kind":"textbox","id":"sh/xkbm9gbq","slide":5,"text":"哪些角色可以审核？","textPreview":"哪些角色可以审核？","textChars":9,"textLines":1,"bbox":[134,322,440,28]}
+{"kind":"shape","id":"sh/ylk3ilcb","slide":5,"bbox":[134,365,440,0]}
+{"kind":"shape","id":"sh/zmt4bqtw","slide":5,"bbox":[634,310,48,48]}
+{"kind":"textbox","id":"sh/kn25kvuh","slide":5,"text":"Q4","textPreview":"Q4","textChars":2,"textLines":1,"bbox":[634,321,48,24]}
+{"kind":"textbox","id":"sh/lobmd0b2","slide":5,"text":"核验结果是否直接决定审批？","textPreview":"核验结果是否直接决定审批？","textChars":13,"textLines":1,"bbox":[704,322,440,28]}
+{"kind":"shape","id":"sh/m9knm5c7","slide":5,"bbox":[704,365,440,0]}
+{"kind":"shape","id":"sh/7ad4fats","slide":5,"bbox":[64,415,48,48]}
+{"kind":"textbox","id":"sh/jedk3a90","slide":5,"text":"Q5","textPreview":"Q5","textChars":2,"textLines":1,"bbox":[64,426,48,24]}
+{"kind":"textbox","id":"sh/id43a58f","slide":5,"text":"终态是否允许重新打开？","textPreview":"终态是否允许重新打开？","textChars":11,"textLines":1,"bbox":[134,427,440,28]}
+{"kind":"shape","id":"sh/5gv25kr6","slide":5,"bbox":[134,470,440,0]}
+{"kind":"shape","id":"sh/4fmlcfql","slide":5,"bbox":[634,415,48,48]}
+{"kind":"textbox","id":"sh/vadkzq94","slide":5,"text":"Q6","textPreview":"Q6","textChars":2,"textLines":1,"bbox":[634,426,48,24]}
+{"kind":"textbox","id":"sh/upk36l8j","slide":5,"text":"规则配置是否需要双人复核？","textPreview":"规则配置是否需要双人复核？","textChars":13,"textLines":1,"bbox":[704,427,440,28]}
+{"kind":"shape","id":"sh/hcv210ru","slide":5,"bbox":[704,470,440,0]}
+{"kind":"textbox","id":"sh/wbml8vqp","slide":5,"text":"AI Agent 在这里的价值：把模糊需求变成可确认的问题清单。","textPreview":"AI Agent 在这里的价值：把模糊需求变成可确认的问题清单。","textChars":32,"textLines":1,"bbox":[64,565,1100,30]}
+{"kind":"shape","id":"sh/7mtkvq9s","slide":5,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/mlk32ls7","slide":5,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/cfy9gn2t","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/7y5135","slide":5,"text":"[Sources]\n- docs/开发过程/session_memory_0712-2.jsonl\n- docs/开发过程/session_memory_0714.jsonl"}
+{"kind":"slide","id":"sl/y2batn","slide":6,"title":"04 / 产品边界","textShapes":22}
+{"kind":"textbox","id":"sh/q1onut07","slide":6,"text":"04 / 产品边界","textPreview":"04 / 产品边界","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/d4z6p8zy","slide":6,"text":"SCFS 负责辅助判断，不替代银行核心审批","textPreview":"SCFS 负责辅助判断，不替代银行核心审批","textChars":21,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/c3qpw3id","slide":6,"bbox":[64,220,510,300]}
+{"kind":"textbox","id":"sh/zqhorih4","slide":6,"text":"平台负责","textPreview":"平台负责","textChars":4,"textLines":1,"bbox":[92,250,200,28]}
+{"kind":"shape","id":"sh/yp87yd0j","slide":6,"bbox":[92,305,48,48]}
+{"kind":"textbox","id":"sh/lsz6t8za","slide":6,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[92,316,48,24]}
+{"kind":"textbox","id":"sh/0rqp03ip","slide":6,"text":"关系分析与图谱展示","textPreview":"关系分析与图谱展示","textChars":9,"textLines":1,"bbox":[156,317,356,26]}
+{"kind":"shape","id":"sh/fudofehk","slide":6,"bbox":[92,353,48,48]}
+{"kind":"textbox","id":"sh/e94nm90f","slide":6,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[92,364,48,24]}
+{"kind":"textbox","id":"sh/0zmhg7q9","slide":6,"text":"材料上传、OCR 与预审","textPreview":"材料上传、OCR 与预审","textChars":12,"textLines":1,"bbox":[156,365,356,26]}
+{"kind":"shape","id":"sh/1kvypcru","slide":6,"bbox":[92,401,48,48]}
+{"kind":"textbox","id":"sh/ex4zeh83","slide":6,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[92,412,48,24]}
+{"kind":"textbox","id":"sh/zydgnm9o","slide":6,"text":"真实性核验与风险画像","textPreview":"真实性核验与风险画像","textChars":10,"textLines":1,"bbox":[156,413,356,26]}
+{"kind":"shape","id":"sh/on6hkrql","slide":6,"bbox":[92,449,48,48]}
+{"kind":"textbox","id":"sh/9ofytw76","slide":6,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[92,460,48,24]}
+{"kind":"textbox","id":"sh/ml4zih8f","slide":6,"text":"报告、审计与流程留痕","textPreview":"报告、审计与流程留痕","textChars":10,"textLines":1,"bbox":[156,461,356,26]}
+{"kind":"shape","id":"sh/nmdgrmp0","slide":6,"bbox":[706,220,510,300]}
+{"kind":"textbox","id":"sh/4r2x8nq1","slide":6,"text":"系统边界外","textPreview":"系统边界外","textChars":5,"textLines":1,"bbox":[734,250,220,28]}
+{"kind":"shape","id":"sh/psbyhsrm","slide":6,"bbox":[734,305,48,48]}
+{"kind":"textbox","id":"sh/lcjmpkfe","slide":6,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[734,316,48,24]}
+{"kind":"textbox","id":"sh/kba5wzet","slide":6,"text":"放款、清算与账务处理","textPreview":"放款、清算与账务处理","textChars":10,"textLines":1,"bbox":[798,317,356,26]}
+{"kind":"shape","id":"sh/ja14nux8","slide":6,"bbox":[734,353,48,48]}
+{"kind":"textbox","id":"sh/y9snupwn","slide":6,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[734,364,48,24]}
+{"kind":"textbox","id":"sh/tg36t4fa","slide":6,"text":"核心信贷系统和客户主数据","textPreview":"核心信贷系统和客户主数据","textChars":12,"textLines":1,"bbox":[798,365,356,26]}
+{"kind":"shape","id":"sh/sfu50zep","slide":6,"bbox":[734,401,48,48]}
+{"kind":"textbox","id":"sh/7elorux4","slide":6,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[734,412,48,24]}
+{"kind":"textbox","id":"sh/6dsnypwz","slide":6,"text":"替代人工审批责任","textPreview":"替代人工审批责任","textChars":8,"textLines":1,"bbox":[798,413,356,26]}
+{"kind":"shape","id":"sh/h436xofm","slide":6,"bbox":[734,449,48,48]}
+{"kind":"textbox","id":"sh/g3u54je1","slide":6,"text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[734,460,48,24]}
+{"kind":"textbox","id":"sh/epojy1cj","slide":6,"text":"生产级外部数据源接入","textPreview":"生产级外部数据源接入","textChars":10,"textLines":1,"bbox":[798,461,356,26]}
+{"kind":"shape","id":"sh/zqxkr6d4","slide":6,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/0r6l0bu9","slide":6,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/1sf2tgvu","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/y2batn","slide":6,"text":"[Sources]\n- docs/开发过程/topics_0714.md\n- docs/prd/scfs_platform_prd.md §1.2"}
+{"kind":"slide","id":"sl/ymwkff","slide":7,"title":"05 / 角色设计","textShapes":21}
+{"kind":"textbox","id":"sh/6p0vi5c7","slide":7,"text":"05 / 角色设计","textPreview":"05 / 角色设计","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/tsret0vi","slide":7,"text":"不同角色看到不同任务，权限边界从业务职责出发","textPreview":"不同角色看到不同任务，权限边界从业务职责出发","textChars":22,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/8ridkvux","slide":7,"bbox":[64,190,48,48]}
+{"kind":"textbox","id":"sh/vu9wvado","slide":7,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[64,201,48,24]}
+{"kind":"textbox","id":"sh/ut0vm5c3","slide":7,"text":"客户经理","textPreview":"客户经理","textChars":4,"textLines":1,"bbox":[134,200,230,25]}
+{"kind":"textbox","id":"sh/hwbexkvu","slide":7,"text":"创建申请 / 上传材料","textPreview":"创建申请 / 上传材料","textChars":11,"textLines":1,"bbox":[380,200,450,25]}
+{"kind":"shape","id":"sh/gvidofu9","slide":7,"bbox":[380,238,560,0]}
+{"kind":"shape","id":"sh/3ytwzadk","slide":7,"bbox":[64,268,48,48]}
+{"kind":"textbox","id":"sh/ixkvqpcf","slide":7,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[64,279,48,24]}
+{"kind":"textbox","id":"sh/sf2pgb6h","slide":7,"text":"风控审核员","textPreview":"风控审核员","textChars":5,"textLines":1,"bbox":[134,278,230,25]}
+{"kind":"textbox","id":"sh/dgb6pgn2","slide":7,"text":"核验 / 审批 / 驳回","textPreview":"核验 / 审批 / 驳回","textChars":12,"textLines":1,"bbox":[380,278,450,25]}
+{"kind":"shape","id":"sh/qdk7e1or","slide":7,"bbox":[380,316,560,0]}
+{"kind":"shape","id":"sh/reton65c","slide":7,"bbox":[64,346,48,48]}
+{"kind":"textbox","id":"sh/0jmpkb6t","slide":7,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[64,357,48,24]}
+{"kind":"textbox","id":"sh/1kv6tgne","slide":7,"text":"规则经办岗","textPreview":"规则经办岗","textChars":5,"textLines":1,"bbox":[134,356,230,25]}
+{"kind":"textbox","id":"sh/ehk7ilon","slide":7,"text":"创建 / 提交规则","textPreview":"创建 / 提交规则","textChars":9,"textLines":1,"bbox":[380,356,450,25]}
+{"kind":"shape","id":"sh/fidor658","slide":7,"bbox":[380,394,560,0]}
+{"kind":"shape","id":"sh/onmpov6p","slide":7,"bbox":[64,424,48,48]}
+{"kind":"textbox","id":"sh/povqx0na","slide":7,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[64,435,48,24]}
+{"kind":"textbox","id":"sh/xsrylwb2","slide":7,"text":"规则复核岗","textPreview":"规则复核岗","textChars":5,"textLines":1,"bbox":[134,434,230,25]}
+{"kind":"textbox","id":"sh/crixsrux","slide":7,"text":"审批 / 驳回规则","textPreview":"审批 / 驳回规则","textChars":9,"textLines":1,"bbox":[380,434,450,25]}
+{"kind":"shape","id":"sh/bqpgjmtc","slide":7,"bbox":[380,472,560,0]}
+{"kind":"shape","id":"sh/apgfqhcr","slide":7,"bbox":[64,502,48,48]}
+{"kind":"textbox","id":"sh/lwrypwbe","slide":7,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[64,513,48,24]}
+{"kind":"textbox","id":"sh/kvixwbat","slide":7,"text":"审计人员","textPreview":"审计人员","textChars":4,"textLines":1,"bbox":[134,512,230,25]}
+{"kind":"textbox","id":"sh/zu9gn6t8","slide":7,"text":"查询 / 导出 / 追溯","textPreview":"查询 / 导出 / 追溯","textChars":12,"textLines":1,"bbox":[380,512,450,25]}
+{"kind":"shape","id":"sh/yt0fu1cn","slide":7,"bbox":[380,550,560,0]}
+{"kind":"shape","id":"sh/107edcba","slide":7,"bbox":[990,210,226,250]}
+{"kind":"textbox","id":"sh/0zyxk7up","slide":7,"text":"RBAC","textPreview":"RBAC","textChars":4,"textLines":1,"bbox":[1010,250,185,38]}
+{"kind":"textbox","id":"sh/q5cvuds7","slide":7,"text":"菜单权限\nAPI 权限\n按钮权限","textPreview":"菜单权限 | API 权限 | 按钮权限","textChars":16,"textLines":3,"bbox":[1010,320,185,90]}
+{"kind":"shape","id":"sh/r6lcni9s","slide":7,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/s7udwnad","slide":7,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/dsnupsry","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/ymwkff","slide":7,"text":"[Sources]\n- docs/开发过程/session_memory_0713.jsonl\n- scfs-backend/scfs-app/src/main/resources/db/migration/V2__init_data.sql"}
+{"kind":"slide","id":"sl/l3dxui","slide":8,"title":"06 / 业务闭环","textShapes":17}
+{"kind":"textbox","id":"sh/j2l8bqt0","slide":8,"text":"06 / 业务闭环","textPreview":"06 / 业务闭环","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/k3u9kval","slide":8,"text":"一笔申请从创建到决策，证据在每一步沉淀","textPreview":"一笔申请从创建到决策，证据在每一步沉淀","textChars":19,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/lo3qd0bq","slide":8,"bbox":[64,270,155,78]}
+{"kind":"textbox","id":"sh/6pcrm5sb","slide":8,"text":"创建申请","textPreview":"创建申请","textChars":4,"textLines":1,"bbox":[76,285,131,24]}
+{"kind":"textbox","id":"sh/7ql8fatw","slide":8,"text":"客户经理","textPreview":"客户经理","textChars":4,"textLines":1,"bbox":[76,316,131,18]}
+{"kind":"shape","id":"sh/8re9ofah","slide":8,"bbox":[222,301,28,16]}
+{"kind":"shape","id":"sh/tsnqh0b2","slide":8,"bbox":[254,270,155,78]}
+{"kind":"textbox","id":"sh/mts7a1s7","slide":8,"text":"上传材料","textPreview":"上传材料","textChars":4,"textLines":1,"bbox":[266,285,131,24]}
+{"kind":"textbox","id":"sh/nu1836ts","slide":8,"text":"文件 + OCR","textPreview":"文件 + OCR","textChars":8,"textLines":1,"bbox":[266,316,131,18]}
+{"kind":"shape","id":"sh/jq1k7ehc","slide":8,"bbox":[412,301,28,16]}
+{"kind":"shape","id":"sh/ips3e9gr","slide":8,"bbox":[444,270,155,78]}
+{"kind":"textbox","id":"sh/5sj29ozi","slide":8,"text":"材料预审","textPreview":"材料预审","textChars":4,"textLines":1,"bbox":[456,285,131,24]}
+{"kind":"textbox","id":"sh/4ralgjyx","slide":8,"text":"完整 / 有效 / 一致","textPreview":"完整 / 有效 / 一致","textChars":12,"textLines":1,"bbox":[456,316,131,18]}
+{"kind":"shape","id":"sh/vmhk3ehg","slide":8,"bbox":[602,301,28,16]}
+{"kind":"shape","id":"sh/ul8ja9gv","slide":8,"bbox":[634,270,155,78]}
+{"kind":"textbox","id":"sh/hoz254zm","slide":8,"text":"真实性核验","textPreview":"真实性核验","textChars":5,"textLines":1,"bbox":[646,285,131,24]}
+{"kind":"textbox","id":"sh/wnq1czy1","slide":8,"text":"主体 / 金额 / 时间 / 重复","textPreview":"主体 / 金额 / 时间 / 重复","textChars":17,"textLines":1,"bbox":[646,316,131,18]}
+{"kind":"shape","id":"sh/7ihkzuh4","slide":8,"bbox":[792,301,28,16]}
+{"kind":"shape","id":"sh/mhoj6pgz","slide":8,"bbox":[824,270,155,78]}
+{"kind":"textbox","id":"sh/ato3ipkr","slide":8,"text":"风险评分","textPreview":"风险评分","textChars":4,"textLines":1,"bbox":[836,285,131,24]}
+{"kind":"textbox","id":"sh/buxkru1c","slide":8,"text":"三维画像","textPreview":"三维画像","textChars":4,"textLines":1,"bbox":[836,316,131,18]}
+{"kind":"shape","id":"sh/cv6lkz2x","slide":8,"bbox":[982,301,28,16]}
+{"kind":"shape","id":"sh/xgfmt4j2","slide":8,"bbox":[1014,270,155,78]}
+{"kind":"textbox","id":"sh/yho3m9kn","slide":8,"text":"人工决策","textPreview":"人工决策","textChars":4,"textLines":1,"bbox":[1026,285,131,24]}
+{"kind":"textbox","id":"sh/zih4vu18","slide":8,"text":"通过 / 驳回","textPreview":"通过 / 驳回","textChars":7,"textLines":1,"bbox":[1026,316,131,18]}
+{"kind":"textbox","id":"sh/kjqloz2t","slide":8,"text":"结果不是孤立分数，而是沿申请链路逐步形成的可解释结论。","textPreview":"结果不是孤立分数，而是沿申请链路逐步形成的可解释结论。","textChars":27,"textLines":1,"bbox":[64,520,1100,30]}
+{"kind":"shape","id":"sh/lkzmx4je","slide":8,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/ml83q90z","slide":8,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/7mh4ze1k","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/l3dxui","slide":8,"text":"[Sources]\n- docs/开发过程/session_memory_0713.jsonl\n- docs/prd/scfs_platform_prd.md §业务流程"}
+{"kind":"slide","id":"sl/hbc7cw","slide":9,"title":"07 / 状态机","textShapes":26}
+{"kind":"textbox","id":"sh/gfadcjel","slide":9,"text":"07 / 状态机","textPreview":"07 / 状态机","textChars":8,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/fe1c3ex0","slide":9,"text":"状态流转把业务规则变成系统第一道防线","textPreview":"状态流转把业务规则变成系统第一道防线","textChars":18,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/edsvatwf","slide":9,"bbox":[92,260,62,62]}
+{"kind":"textbox","id":"sh/tcju1ofu","slide":9,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[92,280,62,24]}
+{"kind":"textbox","id":"sh/sbad8je9","slide":9,"text":"草稿","textPreview":"草稿","textChars":2,"textLines":1,"bbox":[64,350,120,24]}
+{"kind":"textbox","id":"sh/rahczexo","slide":9,"text":"DRAFT","textPreview":"DRAFT","textChars":5,"textLines":1,"bbox":[64,386,120,22]}
+{"kind":"shape","id":"sh/698b69w3","slide":9,"bbox":[160,283,42,16]}
+{"kind":"shape","id":"sh/d83ud8fy","slide":9,"bbox":[257,260,62,62]}
+{"kind":"textbox","id":"sh/c7udk3ed","slide":9,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[257,280,62,24]}
+{"kind":"textbox","id":"sh/q54z6pwj","slide":9,"text":"已提交","textPreview":"已提交","textChars":3,"textLines":1,"bbox":[229,350,120,24]}
+{"kind":"textbox","id":"sh/rqdgzudo","slide":9,"text":"SUBMITTED","textPreview":"SUBMITTED","textChars":9,"textLines":1,"bbox":[229,386,120,22]}
+{"kind":"shape","id":"sh/srmh8ze9","slide":9,"bbox":[325,283,42,16]}
+{"kind":"shape","id":"sh/dsvy14vu","slide":9,"bbox":[422,260,62,62]}
+{"kind":"textbox","id":"sh/i1kz2pw7","slide":9,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[422,280,62,24]}
+{"kind":"textbox","id":"sh/32tgvuds","slide":9,"text":"预审中","textPreview":"预审中","textChars":3,"textLines":1,"bbox":[394,350,120,24]}
+{"kind":"textbox","id":"sh/43mh4zed","slide":9,"text":"PRE_AUDITING","textPreview":"PRE_AUDITING","textChars":12,"textLines":1,"bbox":[394,386,120,22]}
+{"kind":"shape","id":"sh/54vyx4vy","slide":9,"bbox":[490,283,42,16]}
+{"kind":"shape","id":"sh/2xoze9wr","slide":9,"bbox":[587,260,62,62]}
+{"kind":"textbox","id":"sh/nyx07edw","slide":9,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[587,280,62,24]}
+{"kind":"textbox","id":"sh/z2pwz6to","slide":9,"text":"核验中","textPreview":"核验中","textChars":3,"textLines":1,"bbox":[559,350,120,24]}
+{"kind":"textbox","id":"sh/y1gv61c3","slide":9,"text":"VERIFYING","textPreview":"VERIFYING","textChars":9,"textLines":1,"bbox":[559,386,120,22]}
+{"kind":"shape","id":"sh/l4re1gbe","slide":9,"bbox":[655,283,42,16]}
+{"kind":"shape","id":"sh/k3yd8but","slide":9,"bbox":[752,260,62,62]}
+{"kind":"textbox","id":"sh/769w3qtk","slide":9,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[752,280,62,24]}
+{"kind":"textbox","id":"sh/m50valcz","slide":9,"text":"风险评分","textPreview":"风险评分","textChars":4,"textLines":1,"bbox":[724,350,120,24]}
+{"kind":"textbox","id":"sh/98re50bq","slide":9,"text":"RISK_SCORING","textPreview":"RISK_SCORING","textChars":12,"textLines":1,"bbox":[724,386,120,22]}
+{"kind":"shape","id":"sh/87idcvu5","slide":9,"bbox":[820,283,42,16]}
+{"kind":"shape","id":"sh/va9w7qtg","slide":9,"bbox":[917,260,62,62]}
+{"kind":"textbox","id":"sh/u90felcb","slide":9,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[917,280,62,24]}
+{"kind":"textbox","id":"sh/sz2dovq9","slide":9,"text":"人工决策","textPreview":"人工决策","textChars":4,"textLines":1,"bbox":[889,350,120,24]}
+{"kind":"textbox","id":"sh/d0bux0ru","slide":9,"text":"PENDING_DECISION","textPreview":"PENDING_DECISION","textChars":16,"textLines":1,"bbox":[889,386,120,22]}
+{"kind":"shape","id":"sh/qxkvm583","slide":9,"bbox":[985,283,42,16]}
+{"kind":"shape","id":"sh/rytcva9o","slide":9,"bbox":[1082,260,62,62]}
+{"kind":"textbox","id":"sh/4b2dkvqd","slide":9,"text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[1082,280,62,24]}
+{"kind":"textbox","id":"sh/5cbut0ry","slide":9,"text":"终态","textPreview":"终态","textChars":2,"textLines":1,"bbox":[1054,350,120,24]}
+{"kind":"textbox","id":"sh/i90vil87","slide":9,"text":"APPROVED / REJECTED","textPreview":"APPROVED / REJECTED","textChars":19,"textLines":1,"bbox":[1054,386,120,22]}
+{"kind":"shape","id":"sh/3a9crq9s","slide":9,"bbox":[64,500,1152,58]}
+{"kind":"textbox","id":"sh/w7idgba1","slide":9,"text":"异常路径：预审失败 / 核验失败 → 返回补正；每次变更写入状态历史。","textPreview":"异常路径：预审失败 / 核验失败 → 返回补正；每次变更写入状态历史。","textChars":35,"textLines":1,"bbox":[88,519,1100,24]}
+{"kind":"shape","id":"sh/h8rupgrm","slide":9,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/lc7axc7e","slide":9,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/kbe9o76t","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/hbc7cw","slide":9,"text":"[Sources]\n- scfs-backend/scfs-common/src/main/java/com/scfs/common/enums/ApplicationStatus.java\n- docs/开发过程/session_memory_0714.jsonl"}
+{"kind":"slide","id":"sl/bt634n","slide":10,"title":"08 / 总体架构","textShapes":18}
+{"kind":"textbox","id":"sh/ji90r650","slide":10,"text":"08 / 总体架构","textPreview":"08 / 总体架构","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/4ji1kbml","slide":10,"text":"前端体验、业务模块、公共能力和数据基础设施分层协同","textPreview":"前端体验、业务模块、公共能力和数据基础设施分层协同","textChars":25,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/5kritgn6","slide":10,"bbox":[64,190,820,58]}
+{"kind":"shape","id":"sh/udgzeh4j","slide":10,"bbox":[82,195,48,48]}
+{"kind":"textbox","id":"sh/vep0nm5o","slide":10,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[82,206,48,24]}
+{"kind":"textbox","id":"sh/wfihgrm9","slide":10,"text":"前端层","textPreview":"前端层","textChars":3,"textLines":1,"bbox":[148,205,180,24]}
+{"kind":"textbox","id":"sh/hgripwnu","slide":10,"text":"React / Umi / Ant Design / AntV G6","textPreview":"React / Umi / Ant Design / AntV G6","textChars":34,"textLines":1,"bbox":[334,205,520,24]}
+{"kind":"shape","id":"sh/e9kjql4n","slide":10,"bbox":[900,212,70,16]}
+{"kind":"shape","id":"sh/fat0zq58","slide":10,"bbox":[64,272,820,58]}
+{"kind":"shape","id":"sh/nixk3mdw","slide":10,"bbox":[82,277,48,48]}
+{"kind":"textbox","id":"sh/mho3uhcr","slide":10,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[82,288,48,24]}
+{"kind":"textbox","id":"sh/9kf25wv2","slide":10,"text":"业务层","textPreview":"业务层","textChars":3,"textLines":1,"bbox":[148,287,180,24]}
+{"kind":"textbox","id":"sh/oj6lwruh","slide":10,"text":"Graph / Verify / PreAudit / Risk","textPreview":"Graph / Verify / PreAudit / Risk","textChars":32,"textLines":1,"bbox":[334,287,520,24]}
+{"kind":"shape","id":"sh/bmhk76d8","slide":10,"bbox":[900,294,70,16]}
+{"kind":"shape","id":"sh/al83y1cn","slide":10,"bbox":[64,354,820,58]}
+{"kind":"shape","id":"sh/xoz29wve","slide":10,"bbox":[82,359,48,48]}
+{"kind":"textbox","id":"sh/wnql0rut","slide":10,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[82,370,48,24]}
+{"kind":"textbox","id":"sh/jqhkb6d4","slide":10,"text":"公共层","textPreview":"公共层","textChars":3,"textLines":1,"bbox":[148,369,180,24]}
+{"kind":"textbox","id":"sh/yp8321cj","slide":10,"text":"JWT / RBAC / Audit / File / Rule","textPreview":"JWT / RBAC / Audit / File / Rule","textChars":32,"textLines":1,"bbox":[334,369,520,24]}
+{"kind":"shape","id":"sh/ulcnu5wr","slide":10,"bbox":[900,376,70,16]}
+{"kind":"shape","id":"sh/v6lo3axc","slide":10,"bbox":[64,436,820,58]}
+{"kind":"shape","id":"sh/g7u5wfex","slide":10,"bbox":[82,441,48,48]}
+{"kind":"textbox","id":"sh/h8365kfi","slide":10,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[82,452,48,24]}
+{"kind":"textbox","id":"sh/6hsnq5wv","slide":10,"text":"数据层","textPreview":"数据层","textChars":3,"textLines":1,"bbox":[148,451,180,24]}
+{"kind":"textbox","id":"sh/7i1ozqxg","slide":10,"text":"PostgreSQL / Redis / MinIO / Mock","textPreview":"PostgreSQL / Redis / MinIO / Mock","textChars":33,"textLines":1,"bbox":[334,451,520,24]}
+{"kind":"shape","id":"sh/8ja5sve1","slide":10,"bbox":[1000,220,216,220]}
+{"kind":"textbox","id":"sh/tk3610fm","slide":10,"text":"Docker\nCompose","textPreview":"Docker | Compose","textChars":14,"textLines":2,"bbox":[1015,275,185,70]}
+{"kind":"textbox","id":"sh/qdwn2pwz","slide":10,"text":"一键组装演示环境","textPreview":"一键组装演示环境","textChars":8,"textLines":1,"bbox":[1015,370,185,26]}
+{"kind":"shape","id":"sh/re5obuxk","slide":10,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/187q1ozm","slide":10,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/07y9sjyh","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/bt634n","slide":10,"text":"[Sources]\n- docs/开发过程/topics_0713.md\n- readme.md\n- docker-compose.yml"}
+{"kind":"slide","id":"sl/nofjq1","slide":11,"title":"09 / 后端模块","textShapes":22}
+{"kind":"textbox","id":"sh/1sr61wvq","slide":11,"text":"09 / 后端模块","textPreview":"09 / 后端模块","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/e5gn61wz","slide":11,"text":"模块边界让业务能力可以独立演进","textPreview":"模块边界让业务能力可以独立演进","textChars":15,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/f6p4z6dk","slide":11,"bbox":[64,190,48,48]}
+{"kind":"textbox","id":"sh/ovi5cbe1","slide":11,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[64,201,48,24]}
+{"kind":"textbox","id":"sh/pwr65gvm","slide":11,"text":"scfs-common","textPreview":"scfs-common","textChars":11,"textLines":1,"bbox":[134,197,300,24]}
+{"kind":"textbox","id":"sh/2t0na1wv","slide":11,"text":"安全、审计、文件、规则","textPreview":"安全、审计、文件、规则","textChars":11,"textLines":1,"bbox":[134,229,410,22]}
+{"kind":"shape","id":"sh/3u9o36dg","slide":11,"bbox":[134,265,480,0]}
+{"kind":"shape","id":"sh/4zy507ex","slide":11,"bbox":[634,190,48,48]}
+{"kind":"textbox","id":"sh/507mtcvi","slide":11,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[634,201,48,24]}
+{"kind":"textbox","id":"sh/dwj65kv6","slide":11,"text":"scfs-module-graph","textPreview":"scfs-module-graph","textChars":17,"textLines":1,"bbox":[704,197,300,24]}
+{"kind":"textbox","id":"sh/cvapcfel","slide":11,"text":"企业关系与供应链图谱","textPreview":"企业关系与供应链图谱","textChars":10,"textLines":1,"bbox":[704,229,410,22]}
+{"kind":"shape","id":"sh/ru1o3axg","slide":11,"bbox":[704,265,480,0]}
+{"kind":"shape","id":"sh/qts7a5wv","slide":11,"bbox":[64,305,48,48]}
+{"kind":"textbox","id":"sh/l03694vi","slide":11,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[64,316,48,24]}
+{"kind":"textbox","id":"sh/0zapgzex","slide":11,"text":"scfs-module-verify","textPreview":"scfs-module-verify","textChars":18,"textLines":1,"bbox":[134,312,300,24]}
+{"kind":"textbox","id":"sh/zy1o7udc","slide":11,"text":"申请、材料、核验、报告","textPreview":"申请、材料、核验、报告","textChars":11,"textLines":1,"bbox":[134,344,410,22]}
+{"kind":"shape","id":"sh/yxs7epwr","slide":11,"bbox":[134,380,480,0]}
+{"kind":"shape","id":"sh/9o36d4ve","slide":11,"bbox":[634,305,48,48]}
+{"kind":"textbox","id":"sh/83upkzet","slide":11,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[634,316,48,24]}
+{"kind":"textbox","id":"sh/8729gnm5","slide":11,"text":"scfs-module-preaudit","textPreview":"scfs-module-preaudit","textChars":20,"textLines":1,"bbox":[704,312,300,24]}
+{"kind":"textbox","id":"sh/t8bq983q","slide":11,"text":"完整性、有效性、一致性","textPreview":"完整性、有效性、一致性","textChars":11,"textLines":1,"bbox":[704,344,410,22]}
+{"kind":"shape","id":"sh/65kred4z","slide":11,"bbox":[704,380,480,0]}
+{"kind":"shape","id":"sh/76t87ilk","slide":11,"bbox":[64,420,48,48]}
+{"kind":"textbox","id":"sh/gv29knm1","slide":11,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[64,431,48,24]}
+{"kind":"textbox","id":"sh/hwvqds3m","slide":11,"text":"scfs-module-risk","textPreview":"scfs-module-risk","textChars":16,"textLines":1,"bbox":[134,427,300,24]}
+{"kind":"textbox","id":"sh/u9krid4b","slide":11,"text":"风险画像、评分、权重","textPreview":"风险画像、评分、权重","textChars":10,"textLines":1,"bbox":[134,459,410,22]}
+{"kind":"shape","id":"sh/vat8bilw","slide":11,"bbox":[134,495,480,0]}
+{"kind":"shape","id":"sh/wzi98jmx","slide":11,"bbox":[634,420,48,48]}
+{"kind":"textbox","id":"sh/x0rq1o3i","slide":11,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[634,431,48,24]}
+{"kind":"textbox","id":"sh/z6hk3q9c","slide":11,"text":"scfs-app","textPreview":"scfs-app","textChars":8,"textLines":1,"bbox":[704,427,300,24]}
+{"kind":"textbox","id":"sh/e583ulsr","slide":11,"text":"启动、配置、迁移、装配","textPreview":"启动、配置、迁移、装配","textChars":11,"textLines":1,"bbox":[704,459,410,22]}
+{"kind":"shape","id":"sh/l8j250ri","slide":11,"bbox":[704,495,480,0]}
+{"kind":"shape","id":"sh/07qlwvax","slide":11,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/r2hkzq90","slide":11,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/q183qlsf","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/nofjq1","slide":11,"text":"[Sources]\n- docs/开发过程/session_memory_0722.jsonl\n- scfs-backend/pom.xml"}
+{"kind":"slide","id":"sl/3omshm","slide":12,"title":"10 / 数据架构","textShapes":15}
+{"kind":"textbox","id":"sh/l4zi14zy","slide":12,"text":"10 / 数据架构","textPreview":"10 / 数据架构","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/y1oz690n","slide":12,"text":"五个 Schema 对应五类业务事实","textPreview":"五个 Schema 对应五类业务事实","textChars":18,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/z2hgfeh8","slide":12,"bbox":[64,185,270,48]}
+{"kind":"textbox","id":"sh/cz6h4zih","slide":12,"text":"schema_common","textPreview":"schema_common","textChars":13,"textLines":1,"bbox":[78,198,242,20]}
+{"kind":"textbox","id":"sh/d0fyd4z2","slide":12,"text":"用户 / 角色 / 权限 / 规则 / 审计","textPreview":"用户 / 角色 / 权限 / 规则 / 审计","textChars":22,"textLines":1,"bbox":[380,198,720,22]}
+{"kind":"shape","id":"sh/qxoz2p0b","slide":12,"bbox":[64,259,270,48]}
+{"kind":"textbox","id":"sh/byxgbuhw","slide":12,"text":"schema_graph","textPreview":"schema_graph","textChars":12,"textLines":1,"bbox":[78,272,242,20]}
+{"kind":"textbox","id":"sh/ov6h0zil","slide":12,"text":"企业 / 关系 / 角色 / 位置 / 异常","textPreview":"企业 / 关系 / 角色 / 位置 / 异常","textChars":22,"textLines":1,"bbox":[380,272,720,22]}
+{"kind":"shape","id":"sh/pwfy9kzq","slide":12,"bbox":[64,333,270,48]}
+{"kind":"textbox","id":"sh/p4vud8zi","slide":12,"text":"schema_verify","textPreview":"schema_verify","textChars":13,"textLines":1,"bbox":[78,346,242,20]}
+{"kind":"textbox","id":"sh/43mdk3yx","slide":12,"text":"申请 / 材料 / 核验 / 报告","textPreview":"申请 / 材料 / 核验 / 报告","textChars":17,"textLines":1,"bbox":[380,346,720,22]}
+{"kind":"shape","id":"sh/3idcbyhc","slide":12,"bbox":[64,407,270,48]}
+{"kind":"textbox","id":"sh/2h4vitg7","slide":12,"text":"schema_preaudit","textPreview":"schema_preaudit","textChars":15,"textLines":1,"bbox":[78,420,242,20]}
+{"kind":"textbox","id":"sh/hgvu9ozm","slide":12,"text":"完整性 / 有效性 / 一致性 / 补正","textPreview":"完整性 / 有效性 / 一致性 / 补正","textChars":20,"textLines":1,"bbox":[380,420,720,22]}
+{"kind":"shape","id":"sh/gfmdgjy1","slide":12,"bbox":[64,481,270,48]}
+{"kind":"textbox","id":"sh/fedc7ehg","slide":12,"text":"schema_risk","textPreview":"schema_risk","textChars":11,"textLines":1,"bbox":[78,494,242,20]}
+{"kind":"textbox","id":"sh/udkve9gv","slide":12,"text":"画像 / 评分 / 权重","textPreview":"画像 / 评分 / 权重","textChars":12,"textLines":1,"bbox":[380,494,720,22]}
+{"kind":"textbox","id":"sh/tcbu5oza","slide":12,"text":"数据边界清楚，查询、审计和未来拆分都有基础。","textPreview":"数据边界清楚，查询、审计和未来拆分都有基础。","textChars":22,"textLines":1,"bbox":[64,580,1100,28]}
+{"kind":"shape","id":"sh/sb2dcjyp","slide":12,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/kv6dsj6l","slide":12,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/lwfelo76","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/3omshm","slide":12,"text":"[Sources]\n- docs/开发过程/session_memory_0714.jsonl\n- scfs-backend/scfs-app/src/main/resources/db/migration/V1__init_schema.sql"}
+{"kind":"slide","id":"sl/dvmy6k","slide":13,"title":"11 / 供应链图谱","textShapes":12}
+{"kind":"textbox","id":"sh/3atczu5w","slide":13,"text":"11 / 供应链图谱","textPreview":"11 / 供应链图谱","textChars":10,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/4bmdsz6h","slide":13,"text":"图谱把企业关系变成风险判断的上下文","textPreview":"图谱把企业关系变成风险判断的上下文","textChars":17,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/5cvu14n2","slide":13,"bbox":[610,330,90,90]}
+{"kind":"textbox","id":"sh/u5kvmpoz","slide":13,"text":"核心\n企业","textPreview":"核心 | 企业","textChars":5,"textLines":2,"bbox":[610,355,90,40]}
+{"kind":"shape","id":"sh/v6tcvu5k","slide":13,"bbox":[305,375,345,0]}
+{"kind":"shape","id":"sh/g72doz65","slide":13,"bbox":[260,220,70,70]}
+{"kind":"textbox","id":"sh/h8bux4nq","slide":13,"text":"供应商 A","textPreview":"供应商 A","textChars":5,"textLines":1,"bbox":[240,302,110,24]}
+{"kind":"shape","id":"sh/e14vytoj","slide":13,"bbox":[305,375,345,0]}
+{"kind":"shape","id":"sh/f2xw7e54","slide":13,"bbox":[260,430,70,70]}
+{"kind":"textbox","id":"sh/fe14zm9o","slide":13,"text":"供应商 B","textPreview":"供应商 B","textChars":5,"textLines":1,"bbox":[240,512,110,24]}
+{"kind":"shape","id":"sh/etsn6h83","slide":13,"bbox":[650,375,275,0]}
+{"kind":"shape","id":"sh/1gjm1wre","slide":13,"bbox":[880,220,70,70]}
+{"kind":"textbox","id":"sh/0fa58rq9","slide":13,"text":"采购方 C","textPreview":"采购方 C","textChars":5,"textLines":1,"bbox":[860,302,110,24]}
+{"kind":"shape","id":"sh/ni143m9k","slide":13,"bbox":[650,375,275,0]}
+{"kind":"shape","id":"sh/2hsna18z","slide":13,"bbox":[880,430,70,70]}
+{"kind":"textbox","id":"sh/pk3m5wrq","slide":13,"text":"关联企业","textPreview":"关联企业","textChars":4,"textLines":1,"bbox":[860,512,110,24]}
+{"kind":"textbox","id":"sh/oja5crq5","slide":13,"text":"角色识别","textPreview":"角色识别","textChars":4,"textLines":1,"bbox":[64,570,210,28]}
+{"kind":"textbox","id":"sh/bml4769w","slide":13,"text":"位置分析","textPreview":"位置分析","textChars":4,"textLines":1,"bbox":[380,570,210,28]}
+{"kind":"textbox","id":"sh/alcne18b","slide":13,"text":"异常关系","textPreview":"异常关系","textChars":4,"textLines":1,"bbox":[760,570,210,28]}
+{"kind":"shape","id":"sh/mhw765sj","slide":13,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/7i58zat4","slide":13,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/83yp8fa9","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/dvmy6k","slide":13,"text":"[Sources]\n- docs/开发过程/session_memory_0713.jsonl\n- scfs-frontend/src/components/graph/GraphCanvas.tsx"}
+{"kind":"slide","id":"sl/1mm9z4","slide":14,"title":"12 / 材料处理","textShapes":15}
+{"kind":"textbox","id":"sh/sredobut","slide":14,"text":"12 / 材料处理","textPreview":"12 / 材料处理","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/rq5wf6do","slide":14,"text":"文件只是输入，结构化字段才是可核验的证据","textPreview":"文件只是输入，结构化字段才是可核验的证据","textChars":20,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/6pwvm1c3","slide":14,"bbox":[64,260,190,78]}
+{"kind":"textbox","id":"sh/5onedwvi","slide":14,"text":"文件上传","textPreview":"文件上传","textChars":4,"textLines":1,"bbox":[76,275,166,24]}
+{"kind":"textbox","id":"sh/4nudkbux","slide":14,"text":"白名单校验","textPreview":"白名单校验","textChars":5,"textLines":1,"bbox":[76,306,166,18]}
+{"kind":"shape","id":"sh/jmlwb6dc","slide":14,"bbox":[257,291,32,16]}
+{"kind":"shape","id":"sh/ilcvi1cr","slide":14,"bbox":[294,260,190,78]}
+{"kind":"textbox","id":"sh/h03u9wv6","slide":14,"text":"对象存储","textPreview":"对象存储","textChars":4,"textLines":1,"bbox":[306,275,166,24]}
+{"kind":"textbox","id":"sh/wzudgru1","slide":14,"text":"MinIO","textPreview":"MinIO","textChars":5,"textLines":1,"bbox":[306,306,166,18]}
+{"kind":"shape","id":"sh/qpcruh4z","slide":14,"bbox":[487,291,32,16]}
+{"kind":"shape","id":"sh/rql8nm5k","slide":14,"bbox":[524,260,190,78]}
+{"kind":"textbox","id":"sh/sru9w7mp","slide":14,"text":"OCR 识别","textPreview":"OCR 识别","textChars":6,"textLines":1,"bbox":[536,275,166,24]}
+{"kind":"textbox","id":"sh/dsnqpc3a","slide":14,"text":"字段 + 置信度","textPreview":"字段 + 置信度","textChars":8,"textLines":1,"bbox":[536,306,166,18]}
+{"kind":"shape","id":"sh/i1crqx4n","slide":14,"bbox":[717,291,32,16]}
+{"kind":"shape","id":"sh/3ml8j258","slide":14,"bbox":[754,260,190,78]}
+{"kind":"textbox","id":"sh/4nu9s7mt","slide":14,"text":"人工修正","textPreview":"人工修正","textChars":4,"textLines":1,"bbox":[766,275,166,24]}
+{"kind":"textbox","id":"sh/5o3qlcne","slide":14,"text":"低置信度介入","textPreview":"低置信度介入","textChars":6,"textLines":1,"bbox":[766,306,166,18]}
+{"kind":"shape","id":"sh/uxsrmx4r","slide":14,"bbox":[947,291,32,16]}
+{"kind":"shape","id":"sh/vy18fi5c","slide":14,"bbox":[984,260,190,78]}
+{"kind":"textbox","id":"sh/z2honyl4","slide":14,"text":"核验输入","textPreview":"核验输入","textChars":4,"textLines":1,"bbox":[996,275,166,24]}
+{"kind":"textbox","id":"sh/y18nutkj","slide":14,"text":"规则引擎消费","textPreview":"规则引擎消费","textChars":6,"textLines":1,"bbox":[996,306,166,18]}
+{"kind":"shape","id":"sh/l4z6po3u","slide":14,"bbox":[64,480,1152,68]}
+{"kind":"textbox","id":"sh/k3q5wj29","slide":14,"text":"支持合同、订单、发票、验收单、物流材料等供应链融资证据。","textPreview":"支持合同、订单、发票、验收单、物流材料等供应链融资证据。","textChars":28,"textLines":1,"bbox":[86,502,1100,26]}
+{"kind":"shape","id":"sh/76horyl0","slide":14,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/658nytkf","slide":14,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/tsj6t836","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/1mm9z4","slide":14,"text":"[Sources]\n- docs/开发过程/session_memory_0713.jsonl\n- scfs-frontend/src/components/upload/FileUpload.tsx"}
+{"kind":"slide","id":"sl/1z63vg","slide":15,"title":"13 / 材料预审","textShapes":12}
+{"kind":"textbox","id":"sh/ruhsjqhc","slide":15,"text":"13 / 材料预审","textPreview":"13 / 材料预审","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/svqtsvyx","slide":15,"text":"把显而易见的问题前置，把人工精力留给存疑判断","textPreview":"把显而易见的问题前置，把人工精力留给存疑判断","textChars":22,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/dwzal0zi","slide":15,"bbox":[64,210,500,130]}
+{"kind":"shape","id":"sh/ipobmlgv","slide":15,"bbox":[64,210,500,7]}
+{"kind":"textbox","id":"sh/3qxsf6hg","slide":15,"text":"完整性","textPreview":"完整性","textChars":3,"textLines":1,"bbox":[82,237,464,28]}
+{"kind":"textbox","id":"sh/4r6toby1","slide":15,"text":"缺少哪些材料？","textPreview":"缺少哪些材料？","textChars":7,"textLines":1,"bbox":[82,282,464,44]}
+{"kind":"shape","id":"sh/5sfahgz6","slide":15,"bbox":[634,210,500,130]}
+{"kind":"shape","id":"sh/u14ri1gj","slide":15,"bbox":[634,210,500,7]}
+{"kind":"textbox","id":"sh/v2dsb6h4","slide":15,"text":"有效性","textPreview":"有效性","textChars":3,"textLines":1,"bbox":[652,237,464,28]}
+{"kind":"textbox","id":"sh/ru1wj6tw","slide":15,"text":"文件是否过期？字段是否缺失？","textPreview":"文件是否过期？字段是否缺失？","textChars":14,"textLines":1,"bbox":[652,282,464,44]}
+{"kind":"shape","id":"sh/qtsvq1sb","slide":15,"bbox":[64,380,500,130]}
+{"kind":"shape","id":"sh/dgjelgb2","slide":15,"bbox":[64,380,500,7]}
+{"kind":"textbox","id":"sh/svadsbah","slide":15,"text":"一致性","textPreview":"一致性","textChars":3,"textLines":1,"bbox":[82,407,464,28]}
+{"kind":"textbox","id":"sh/fi1wnqts","slide":15,"text":"名称、USCC、法人、地址是否一致？","textPreview":"名称、USCC、法人、地址是否一致？","textChars":18,"textLines":1,"bbox":[82,452,464,44]}
+{"kind":"shape","id":"sh/ehsvulsn","slide":15,"bbox":[634,380,500,130]}
+{"kind":"shape","id":"sh/1k3ep0by","slide":15,"bbox":[634,380,500,7]}
+{"kind":"textbox","id":"sh/0judwvad","slide":15,"text":"补正清单","textPreview":"补正清单","textChars":4,"textLines":1,"bbox":[652,407,464,28]}
+{"kind":"textbox","id":"sh/vmhcbmto","slide":15,"text":"客户经理下一步做什么？","textPreview":"客户经理下一步做什么？","textChars":11,"textLines":1,"bbox":[652,452,464,44]}
+{"kind":"shape","id":"sh/ul8vihs3","slide":15,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/yhwzqpcr","slide":15,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/zipgjudc","slide":15,"text":"15","textPreview":"15","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/1z63vg","slide":15,"text":"[Sources]\n- docs/开发过程/session_memory_0713.jsonl\n- scfs-backend/scfs-module-preaudit/src/main/java/com/scfs/module/preaudit/service/PreAuditService.java"}
+{"kind":"slide","id":"sl/vfoxm9","slide":16,"title":"14 / 真实性核验","textShapes":17}
+{"kind":"textbox","id":"sh/1obmhcfu","slide":16,"text":"14 / 真实性核验","textPreview":"14 / 真实性核验","textChars":10,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/elk3mhw3","slide":16,"text":"四类核验把业务经验变成可解释的判断逻辑","textPreview":"四类核验把业务经验变成可解释的判断逻辑","textChars":19,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/fmt4f2xo","slide":16,"bbox":[64,230,48,48]}
+{"kind":"textbox","id":"sh/sj2lk7ex","slide":16,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[64,241,48,24]}
+{"kind":"textbox","id":"sh/dkbmdcfi","slide":16,"text":"主体一致性","textPreview":"主体一致性","textChars":5,"textLines":1,"bbox":[59,300,180,28]}
+{"kind":"textbox","id":"sh/6x03ixw7","slide":16,"text":"买卖双方信息","textPreview":"买卖双方信息","textChars":6,"textLines":1,"bbox":[59,345,190,42]}
+{"kind":"shape","id":"sh/ri94b2xs","slide":16,"bbox":[352,230,48,48]}
+{"kind":"textbox","id":"sh/4vilgne1","slide":16,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[352,241,48,24]}
+{"kind":"textbox","id":"sh/5wrm9sfm","slide":16,"text":"金额一致性","textPreview":"金额一致性","textChars":5,"textLines":1,"bbox":[347,300,180,28]}
+{"kind":"textbox","id":"sh/hsvahkf6","slide":16,"text":"合同 / 订单 / 发票","textPreview":"合同 / 订单 / 发票","textChars":12,"textLines":1,"bbox":[347,345,190,42]}
+{"kind":"shape","id":"sh/grmt8zel","slide":16,"bbox":[640,230,48,48]}
+{"kind":"textbox","id":"sh/vqdsfux0","slide":16,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[640,241,48,24]}
+{"kind":"textbox","id":"sh/upkr6pwf","slide":16,"text":"时间逻辑","textPreview":"时间逻辑","textChars":4,"textLines":1,"bbox":[635,300,180,28]}
+{"kind":"textbox","id":"sh/tobadkfu","slide":16,"text":"材料时间顺序","textPreview":"材料时间顺序","textChars":6,"textLines":1,"bbox":[635,345,190,42]}
+{"kind":"shape","id":"sh/8n294fe9","slide":16,"bbox":[928,230,48,48]}
+{"kind":"textbox","id":"sh/7mtsbax4","slide":16,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[928,241,48,24]}
+{"kind":"textbox","id":"sh/61kr25wj","slide":16,"text":"重复融资","textPreview":"重复融资","textChars":4,"textLines":1,"bbox":[923,300,180,28]}
+{"kind":"textbox","id":"sh/l0ba90fy","slide":16,"text":"历史融资记录","textPreview":"历史融资记录","textChars":6,"textLines":1,"bbox":[923,345,190,42]}
+{"kind":"shape","id":"sh/kz290fed","slide":16,"bbox":[64,490,1152,64]}
+{"kind":"textbox","id":"sh/c3mtgfm9","slide":16,"text":"规则结果不是终点，而是审核员人工决策的依据。","textPreview":"规则结果不是终点，而是审核员人工决策的依据。","textChars":22,"textLines":1,"bbox":[88,510,1100,25]}
+{"kind":"shape","id":"sh/x4fapknu","slide":16,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/a14be543","slide":16,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/b2dsna5o","slide":16,"text":"16","textPreview":"16","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/vfoxm9","slide":16,"text":"[Sources]\n- docs/开发过程/session_memory_0714.jsonl\n- scfs-backend/scfs-module-verify/src/main/java/com/scfs/module/verify/service/VerifyService.java"}
+{"kind":"slide","id":"sl/mpu9vu","slide":17,"title":"15 / 风险画像","textShapes":11}
+{"kind":"textbox","id":"sh/kvax4b6l","slide":17,"text":"15 / 风险画像","textPreview":"15 / 风险画像","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/ju1wbqp0","slide":17,"text":"三维评分把多个结果汇总成可解释结论","textPreview":"三维评分把多个结果汇总成可解释结论","textChars":17,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/ytsf2lof","slide":17,"bbox":[158,220,100,100]}
+{"kind":"textbox","id":"sh/t03eh0n2","slide":17,"text":"40%","textPreview":"40%","textChars":3,"textLines":1,"bbox":[158,251,100,34]}
+{"kind":"textbox","id":"sh/8zux8v6h","slide":17,"text":"供应链评分","textPreview":"供应链评分","textChars":5,"textLines":1,"bbox":[64,350,290,28]}
+{"kind":"shape","id":"sh/7y1wfq5c","slide":17,"bbox":[109,400,200,0]}
+{"kind":"shape","id":"sh/6xsf6lor","slide":17,"bbox":[542,220,100,100]}
+{"kind":"textbox","id":"sh/94ze5w7y","slide":17,"text":"30%","textPreview":"30%","textChars":3,"textLines":1,"bbox":[542,251,100,34]}
+{"kind":"textbox","id":"sh/o3qdwr6d","slide":17,"text":"交易稳定性","textPreview":"交易稳定性","textChars":5,"textLines":1,"bbox":[448,350,290,28]}
+{"kind":"shape","id":"sh/el0j6d0n","slide":17,"bbox":[493,400,200,0]}
+{"kind":"shape","id":"sh/fm90zih8","slide":17,"bbox":[926,220,100,100]}
+{"kind":"textbox","id":"sh/0ni183it","slide":17,"text":"30%","textPreview":"30%","textChars":3,"textLines":1,"bbox":[926,251,100,34]}
+{"kind":"textbox","id":"sh/1ori18ze","slide":17,"text":"材料质量","textPreview":"材料质量","textChars":4,"textLines":1,"bbox":[832,350,290,28]}
+{"kind":"shape","id":"sh/290jad0z","slide":17,"bbox":[877,400,200,0]}
+{"kind":"textbox","id":"sh/nat03ihk","slide":17,"text":"输出：综合得分、风险等级、风险原因、操作建议。","textPreview":"输出：综合得分、风险等级、风险原因、操作建议。","textChars":23,"textLines":1,"bbox":[64,545,1100,30]}
+{"kind":"shape","id":"sh/ob21cnip","slide":17,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/pcbi5sza","slide":17,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/adkjex0v","slide":17,"text":"17","textPreview":"17","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/mpu9vu","slide":17,"text":"[Sources]\n- docs/开发过程/session_memory_0713.jsonl\n- docs/delivery/SCFS项目介绍材料.md §4.7"}
+{"kind":"slide","id":"sl/6j31mo","slide":18,"title":"16 / 审核落点","textShapes":13}
+{"kind":"textbox","id":"sh/yhwnq1ov","slide":18,"text":"16 / 审核落点","textPreview":"16 / 审核落点","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/lknm1wn6","slide":18,"text":"客户经理提交后，风控审核员在申请详情中完成决策","textPreview":"客户经理提交后，风控审核员在申请详情中完成决策","textChars":23,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/kje5sr6l","slide":18,"bbox":[64,265,240,78]}
+{"kind":"textbox","id":"sh/7m5o365c","slide":18,"text":"审核中心","textPreview":"审核中心","textChars":4,"textLines":1,"bbox":[76,280,216,24]}
+{"kind":"textbox","id":"sh/6lwnu1or","slide":18,"text":"融资申请","textPreview":"融资申请","textChars":4,"textLines":1,"bbox":[76,311,216,18]}
+{"kind":"shape","id":"sh/ton65gni","slide":18,"bbox":[308,296,34,16]}
+{"kind":"shape","id":"sh/8ne5wb6x","slide":18,"bbox":[352,265,240,78]}
+{"kind":"textbox","id":"sh/nql4r258","slide":18,"text":"申请列表","textPreview":"申请列表","textChars":4,"textLines":1,"bbox":[364,280,216,24]}
+{"kind":"textbox","id":"sh/mpsnihon","slide":18,"text":"已提交 / 待决策","textPreview":"已提交 / 待决策","textChars":9,"textLines":1,"bbox":[364,311,216,18]}
+{"kind":"shape","id":"sh/87upgfyd","slide":18,"bbox":[596,296,34,16]}
+{"kind":"shape","id":"sh/983q9kfy","slide":18,"bbox":[640,265,240,78]}
+{"kind":"textbox","id":"sh/m5s7epgn","slide":18,"text":"申请详情","textPreview":"申请详情","textChars":4,"textLines":1,"bbox":[652,280,216,24]}
+{"kind":"textbox","id":"sh/n6l87axs","slide":18,"text":"材料 / 预审 / 报告 / 画像","textPreview":"材料 / 预审 / 报告 / 画像","textChars":17,"textLines":1,"bbox":[652,311,216,18]}
+{"kind":"shape","id":"sh/wbupkzyp","slide":18,"bbox":[884,296,34,16]}
+{"kind":"shape","id":"sh/xc3qd4fa","slide":18,"bbox":[928,265,240,78]}
+{"kind":"textbox","id":"sh/a9c7ipgj","slide":18,"text":"人工决策","textPreview":"人工决策","textChars":4,"textLines":1,"bbox":[940,280,216,24]}
+{"kind":"textbox","id":"sh/val8bux4","slide":18,"text":"审批通过 / 驳回","textPreview":"审批通过 / 驳回","textChars":9,"textLines":1,"bbox":[940,311,216,18]}
+{"kind":"shape","id":"sh/cfap8vy5","slide":18,"bbox":[64,480,1152,62]}
+{"kind":"textbox","id":"sh/dgjq10fq","slide":18,"text":"系统负责组织证据，审核员负责做出最终业务判断。","textPreview":"系统负责组织证据，审核员负责做出最终业务判断。","textChars":23,"textLines":1,"bbox":[88,500,1100,24]}
+{"kind":"shape","id":"sh/dwb65wru","slide":18,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/sv25crq9","slide":18,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/rato3m9o","slide":18,"text":"18","textPreview":"18","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/6j31mo","slide":18,"text":"[Sources]\n- docs/开发过程/topics_0810.md\n- scfs-frontend/src/pages/audit/ApplicationDetail.tsx"}
+{"kind":"slide","id":"sl/m5foek","slide":19,"title":"17 / 安全与审计","textShapes":22}
+{"kind":"textbox","id":"sh/lgzels3a","slide":19,"text":"17 / 安全与审计","textPreview":"17 / 安全与审计","textChars":10,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/ydovqd4j","slide":19,"text":"所有关键结论都要能回答：谁、何时、基于什么、做了什么","textPreview":"所有关键结论都要能回答：谁、何时、基于什么、做了什么","textChars":26,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/jehwjil4","slide":19,"bbox":[64,220,48,48]}
+{"kind":"textbox","id":"sh/wb6do3md","slide":19,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[64,231,48,24]}
+{"kind":"textbox","id":"sh/xcfuh83y","slide":19,"text":"身份","textPreview":"身份","textChars":2,"textLines":1,"bbox":[130,229,160,24]}
+{"kind":"textbox","id":"sh/apovmt4n","slide":19,"text":"JWT","textPreview":"JWT","textChars":3,"textLines":1,"bbox":[130,263,190,20]}
+{"kind":"shape","id":"sh/baxcfyls","slide":19,"bbox":[448,220,48,48]}
+{"kind":"textbox","id":"sh/g7ad07mx","slide":19,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[448,231,48,24]}
+{"kind":"textbox","id":"sh/h8jetc32","slide":19,"text":"权限","textPreview":"权限","textChars":2,"textLines":1,"bbox":[514,229,160,24]}
+{"kind":"textbox","id":"sh/pc7qxo3i","slide":19,"text":"RBAC","textPreview":"RBAC","textChars":4,"textLines":1,"bbox":[514,263,190,20]}
+{"kind":"shape","id":"sh/obyp4j2x","slide":19,"bbox":[832,220,48,48]}
+{"kind":"textbox","id":"sh/3ap8velc","slide":19,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[832,231,48,24]}
+{"kind":"textbox","id":"sh/29g729k7","slide":19,"text":"文件","textPreview":"文件","textChars":2,"textLines":1,"bbox":[898,229,160,24]}
+{"kind":"textbox","id":"sh/187qto3m","slide":19,"text":"白名单","textPreview":"白名单","textChars":3,"textLines":1,"bbox":[898,263,190,20]}
+{"kind":"shape","id":"sh/g7yp0j21","slide":19,"bbox":[64,370,48,48]}
+{"kind":"textbox","id":"sh/fmp8relg","slide":19,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[64,381,48,24]}
+{"kind":"textbox","id":"sh/elg7y9kv","slide":19,"text":"规则","textPreview":"规则","textChars":2,"textLines":1,"bbox":[130,379,160,24]}
+{"kind":"textbox","id":"sh/l4bq583q","slide":19,"text":"双岗复核","textPreview":"双岗复核","textChars":4,"textLines":1,"bbox":[130,413,190,20]}
+{"kind":"shape","id":"sh/03i9c325","slide":19,"bbox":[448,370,48,48]}
+{"kind":"textbox","id":"sh/4za1obet","slide":19,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[448,381,48,24]}
+{"kind":"textbox","id":"sh/50j2xgve","slide":19,"text":"结果","textPreview":"结果","textChars":2,"textLines":1,"bbox":[514,379,160,24]}
+{"kind":"textbox","id":"sh/ixsjm1wn","slide":19,"text":"报告快照","textPreview":"报告快照","textChars":4,"textLines":1,"bbox":[514,413,190,20]}
+{"kind":"shape","id":"sh/jy1kv6d8","slide":19,"bbox":[832,370,48,48]}
+{"kind":"textbox","id":"sh/wva1kbeh","slide":19,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[832,381,48,24]}
+{"kind":"textbox","id":"sh/hwjitwv2","slide":19,"text":"过程","textPreview":"过程","textChars":2,"textLines":1,"bbox":[898,379,160,24]}
+{"kind":"textbox","id":"sh/ut8ji1wb","slide":19,"text":"操作日志","textPreview":"操作日志","textChars":4,"textLines":1,"bbox":[898,413,190,20]}
+{"kind":"shape","id":"sh/vu10r6dw","slide":19,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/8rq1grel","slide":19,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/9szipwf6","slide":19,"text":"19","textPreview":"19","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/m5foek","slide":19,"text":"[Sources]\n- docs/开发过程/session_memory_0722.jsonl\n- scfs-backend/scfs-common/src/main/java/com/scfs/common/audit/AuditLogAspect.java"}
+{"kind":"slide","id":"sl/ju4b39","slide":20,"title":"18 / AI AGENT 协同","textShapes":20}
+{"kind":"textbox","id":"sh/7al8ni94","slide":20,"text":"18 / AI AGENT 协同","textPreview":"18 / AI AGENT 协同","textChars":16,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/8bupwnqp","slide":20,"text":"AI 参与的是系统落地闭环，不只是写代码","textPreview":"AI 参与的是系统落地闭环，不只是写代码","textChars":20,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/tc3qp8ra","slide":20,"bbox":[126,235,70,70]}
+{"kind":"textbox","id":"sh/udc7yd8v","slide":20,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[126,258,70,24]}
+{"kind":"textbox","id":"sh/ve58ri90","slide":20,"text":"需求理解","textPreview":"需求理解","textChars":4,"textLines":1,"bbox":[64,335,195,28]}
+{"kind":"textbox","id":"sh/gzep0nql","slide":20,"text":"读取 PRD / RFC / 代码结构","textPreview":"读取 PRD / RFC / 代码结构","textChars":19,"textLines":1,"bbox":[64,380,195,54]}
+{"kind":"shape","id":"sh/h0nqtsr6","slide":20,"bbox":[259,262,30,16]}
+{"kind":"shape","id":"sh/i1w72x8r","slide":20,"bbox":[356,235,70,70]}
+{"kind":"textbox","id":"sh/3258v2pc","slide":20,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[356,258,70,24]}
+{"kind":"textbox","id":"sh/fml4fe98","slide":20,"text":"系统设计","textPreview":"系统设计","textChars":4,"textLines":1,"bbox":[294,335,195,28]}
+{"kind":"textbox","id":"sh/elcnm98n","slide":20,"text":"模块、数据、接口、权限","textPreview":"模块、数据、接口、权限","textChars":11,"textLines":1,"bbox":[294,380,195,54]}
+{"kind":"shape","id":"sh/1o3mhory","slide":20,"bbox":[489,262,30,16]}
+{"kind":"shape","id":"sh/gnu5ojqt","slide":20,"bbox":[586,235,70,70]}
+{"kind":"textbox","id":"sh/ry14re9w","slide":20,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[586,258,70,24]}
+{"kind":"textbox","id":"sh/6xsni9sb","slide":20,"text":"实现联调","textPreview":"实现联调","textChars":4,"textLines":1,"bbox":[524,335,195,28]}
+{"kind":"textbox","id":"sh/tk3mt4r2","slide":20,"text":"前端、后端、Docker","textPreview":"前端、后端、Docker","textChars":12,"textLines":1,"bbox":[524,380,195,54]}
+{"kind":"shape","id":"sh/sza5kjah","slide":20,"bbox":[719,262,30,16]}
+{"kind":"shape","id":"sh/bu5ony9g","slide":20,"bbox":[816,235,70,70]}
+{"kind":"textbox","id":"sh/atwnut8v","slide":20,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[816,258,70,24]}
+{"kind":"textbox","id":"sh/6l0z21wf","slide":20,"text":"反馈定位","textPreview":"反馈定位","textChars":4,"textLines":1,"bbox":[754,335,195,28]}
+{"kind":"textbox","id":"sh/7m9gb6xk","slide":20,"text":"截图、Network、日志","textPreview":"截图、Network、日志","textChars":13,"textLines":1,"bbox":[754,380,195,54]}
+{"kind":"shape","id":"sh/8nih4be5","slide":20,"bbox":[949,262,30,16]}
+{"kind":"shape","id":"sh/tobydwfq","slide":20,"bbox":[1046,235,70,70]}
+{"kind":"textbox","id":"sh/upkz61wb","slide":20,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1046,258,70,24]}
+{"kind":"textbox","id":"sh/vqtgf6xw","slide":20,"text":"验证交付","textPreview":"验证交付","textChars":4,"textLines":1,"bbox":[984,335,195,28]}
+{"kind":"textbox","id":"sh/gr2h8beh","slide":20,"text":"测试、文档、PPT","textPreview":"测试、文档、PPT","textChars":9,"textLines":1,"bbox":[984,380,195,54]}
+{"kind":"shape","id":"sh/hsbihgf2","slide":20,"bbox":[64,520,1152,56]}
+{"kind":"textbox","id":"sh/atgfahg7","slide":20,"text":"小巧思：把现象变成假设，把假设变成验证，把修复结果沉淀为交付材料。","textPreview":"小巧思：把现象变成假设，把假设变成验证，把修复结果沉淀为交付材料。","textChars":33,"textLines":1,"bbox":[86,538,1110,24]}
+{"kind":"shape","id":"sh/bupg3mxc","slide":20,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/dof29kza","slide":20,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/sn61gfyp","slide":20,"text":"20","textPreview":"20","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/ju4b39","slide":20,"text":"[Sources]\n- docs/开发过程/session_memory_0712-1.jsonl\n- docs/开发过程/session_memory_0728.jsonl"}
+{"kind":"slide","id":"sl/qmmkm7","slide":21,"title":"19 / 典型 DEBUG 案例","textShapes":19}
+{"kind":"textbox","id":"sh/g3ylwjq9","slide":21,"text":"19 / 典型 DEBUG 案例","textPreview":"19 / 典型 DEBUG 案例","textChars":16,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/f2pknyp4","slide":21,"text":"一次“未知错误”，被拆成可验证的工程问题","textPreview":"一次“未知错误”，被拆成可验证的工程问题","textChars":20,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/e1g3ut8j","slide":21,"bbox":[64,190,48,48]}
+{"kind":"textbox","id":"sh/p8r2t876","slide":21,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[64,201,48,24]}
+{"kind":"textbox","id":"sh/o7il036l","slide":21,"text":"浏览器 Network","textPreview":"浏览器 Network","textChars":11,"textLines":1,"bbox":[134,198,230,24]}
+{"kind":"textbox","id":"sh/36pkryp0","slide":21,"text":"确认实际请求路径","textPreview":"确认实际请求路径","textChars":8,"textLines":1,"bbox":[370,198,550,24]}
+{"kind":"shape","id":"sh/25g3yt8f","slide":21,"bbox":[970,208,100,16]}
+{"kind":"shape","id":"sh/5cn2h47m","slide":21,"bbox":[64,265,48,48]}
+{"kind":"textbox","id":"sh/kbe1ozqh","slide":21,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[64,276,48,24]}
+{"kind":"textbox","id":"sh/qpgvu147","slide":21,"text":"后端日志","textPreview":"后端日志","textChars":4,"textLines":1,"bbox":[134,273,230,24]}
+{"kind":"textbox","id":"sh/bqpcn6lc","slide":21,"text":"定位 500 根因","textPreview":"定位 500 根因","textChars":9,"textLines":1,"bbox":[370,273,550,24]}
+{"kind":"shape","id":"sh/crydwbmx","slide":21,"bbox":[970,283,100,16]}
+{"kind":"shape","id":"sh/dsrupg3i","slide":21,"bbox":[64,340,48,48]}
+{"kind":"textbox","id":"sh/yt0vyl43","slide":21,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[64,351,48,24]}
+{"kind":"textbox","id":"sh/zu9wrqlo","slide":21,"text":"代码修复","textPreview":"代码修复","textChars":4,"textLines":1,"bbox":[134,348,230,24]}
+{"kind":"textbox","id":"sh/0vid0vm9","slide":21,"text":"时间类型序列化","textPreview":"时间类型序列化","textChars":7,"textLines":1,"bbox":[370,348,550,24]}
+{"kind":"shape","id":"sh/lwretg3u","slide":21,"bbox":[970,358,100,16]}
+{"kind":"shape","id":"sh/mx0v2l4z","slide":21,"bbox":[64,415,48,48]}
+{"kind":"textbox","id":"sh/ny9wvqlk","slide":21,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[64,426,48,24]}
+{"kind":"textbox","id":"sh/jmtcjq1s","slide":21,"text":"接口补齐","textPreview":"接口补齐","textChars":4,"textLines":1,"bbox":[134,423,230,24]}
+{"kind":"textbox","id":"sh/i1kba507","slide":21,"text":"PDF 导出 Controller","textPreview":"PDF 导出 Controller","textChars":17,"textLines":1,"bbox":[370,423,550,24]}
+{"kind":"shape","id":"sh/5obul0jy","slide":21,"bbox":[970,433,100,16]}
+{"kind":"shape","id":"sh/kn2dcvid","slide":21,"bbox":[64,490,48,48]}
+{"kind":"textbox","id":"sh/vy9cfq1w","slide":21,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[64,501,48,24]}
+{"kind":"textbox","id":"sh/ax0b6l0b","slide":21,"text":"内容优化","textPreview":"内容优化","textChars":4,"textLines":1,"bbox":[134,498,230,24]}
+{"kind":"textbox","id":"sh/x0buh0jm","slide":21,"text":"中文业务报告","textPreview":"中文业务报告","textChars":6,"textLines":1,"bbox":[370,498,550,24]}
+{"kind":"shape","id":"sh/wzit8vih","slide":21,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/nu9cb61k","slide":21,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/mt0b210z","slide":21,"text":"21","textPreview":"21","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/qmmkm7","slide":21,"text":"[Sources]\n- docs/开发过程/session_memory_0728.jsonl\n- 本项目实际联调记录"}
+{"kind":"slide","id":"sl/3bll4o","slide":22,"title":"20 / 测试与验证","textShapes":14}
+{"kind":"textbox","id":"sh/yh4nmhwf","slide":22,"text":"20 / 测试与验证","textPreview":"20 / 测试与验证","textChars":10,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/lkv6xwf6","slide":22,"text":"开发结果通过构建、测试和运行三层验证","textPreview":"开发结果通过构建、测试和运行三层验证","textChars":18,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/0jmporel","slide":22,"bbox":[64,190,500,90]}
+{"kind":"shape","id":"sh/n6dozmxw","slide":22,"bbox":[64,190,500,7]}
+{"kind":"textbox","id":"sh/m547q1wr","slide":22,"text":"单元测试","textPreview":"单元测试","textChars":4,"textLines":1,"bbox":[82,217,464,28]}
+{"kind":"textbox","id":"sh/98f61wv2","slide":22,"text":"后端 20 个 / 前端 40 个","textPreview":"后端 20 个 / 前端 40 个","textChars":17,"textLines":1,"bbox":[82,262,464,4]}
+{"kind":"shape","id":"sh/87mpsreh","slide":22,"bbox":[634,190,500,90]}
+{"kind":"shape","id":"sh/3aton2xs","slide":22,"bbox":[634,190,500,7]}
+{"kind":"textbox","id":"sh/29knexw7","slide":22,"text":"编译构建","textPreview":"编译构建","textChars":4,"textLines":1,"bbox":[652,217,464,28]}
+{"kind":"textbox","id":"sh/c3upcn6d","slide":22,"text":"后端 7 个 Maven 模块","textPreview":"后端 7 个 Maven 模块","textChars":15,"textLines":1,"bbox":[652,262,464,4]}
+{"kind":"shape","id":"sh/x43q5sny","slide":22,"bbox":[64,310,500,90]}
+{"kind":"shape","id":"sh/a1s7axo7","slide":22,"bbox":[64,310,500,7]}
+{"kind":"textbox","id":"sh/b2l83i5s","slide":22,"text":"前端产物","textPreview":"前端产物","textChars":4,"textLines":1,"bbox":[82,337,464,28]}
+{"kind":"textbox","id":"sh/k7u9g76p","slide":22,"text":"Umi 构建 dist 与资源包","textPreview":"Umi 构建 dist 与资源包","textChars":16,"textLines":1,"bbox":[82,382,464,4]}
+{"kind":"shape","id":"sh/l83q9cnu","slide":22,"bbox":[634,310,500,90]}
+{"kind":"shape","id":"sh/y5crexoj","slide":22,"bbox":[634,310,500,7]}
+{"kind":"textbox","id":"sh/z6l87254","slide":22,"text":"运行验证","textPreview":"运行验证","textChars":4,"textLines":1,"bbox":[652,337,464,28]}
+{"kind":"textbox","id":"sh/0bap4365","slide":22,"text":"Docker Compose 联调","textPreview":"Docker Compose 联调","textChars":17,"textLines":1,"bbox":[652,382,464,4]}
+{"kind":"shape","id":"sh/1cjqx8nq","slide":22,"bbox":[64,430,500,90]}
+{"kind":"shape","id":"sh/h8b614ze","slide":22,"bbox":[64,430,500,7]}
+{"kind":"textbox","id":"sh/g7258zy9","slide":22,"text":"问题闭环","textPreview":"问题闭环","textChars":4,"textLines":1,"bbox":[82,457,464,28]}
+{"kind":"textbox","id":"sh/f69ozuho","slide":22,"text":"接口、权限、报告、PDF","textPreview":"接口、权限、报告、PDF","textChars":12,"textLines":1,"bbox":[82,502,464,4]}
+{"kind":"shape","id":"sh/u50n6pg3","slide":22,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/pwb654fq","slide":22,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/4v25cjy5","slide":22,"text":"22","textPreview":"22","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/3bll4o","slide":22,"text":"[Sources]\n- docs/开发过程/topics_0728.md\n- docs/unit-test-report.md"}
+{"kind":"slide","id":"sl/e02yr5","slide":23,"title":"21 / 当前交付","textShapes":23}
+{"kind":"textbox","id":"sh/t07u5w7q","slide":23,"text":"21 / 当前交付","textPreview":"21 / 当前交付","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/6xwbu18f","slide":23,"text":"系统已经形成一套可运行的风控辅助闭环","textPreview":"系统已经形成一套可运行的风控辅助闭环","textChars":18,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/7ypc36pk","slide":23,"bbox":[64,195,48,48]}
+{"kind":"textbox","id":"sh/gnyt0b6h","slide":23,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[64,206,48,24]}
+{"kind":"textbox","id":"sh/ho7u9g72","slide":23,"text":"供应链图谱","textPreview":"供应链图谱","textChars":5,"textLines":1,"bbox":[130,206,260,25]}
+{"kind":"shape","id":"sh/u1gby1ob","slide":23,"bbox":[448,195,48,48]}
+{"kind":"textbox","id":"sh/f2pc76pw","slide":23,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[448,206,48,24]}
+{"kind":"textbox","id":"sh/wretorqx","slide":23,"text":"融资申请","textPreview":"融资申请","textChars":4,"textLines":1,"bbox":[514,206,260,25]}
+{"kind":"shape","id":"sh/xsnaxc7i","slide":23,"bbox":[832,195,48,48]}
+{"kind":"textbox","id":"sh/tczq54z2","slide":23,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[832,206,48,24]}
+{"kind":"textbox","id":"sh/sbqpczyx","slide":23,"text":"材料预审","textPreview":"材料预审","textChars":4,"textLines":1,"bbox":[898,206,260,25]}
+{"kind":"shape","id":"sh/rah83uhc","slide":23,"bbox":[64,300,48,48]}
+{"kind":"textbox","id":"sh/6987a9gr","slide":23,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[64,311,48,24]}
+{"kind":"textbox","id":"sh/1gjq9oze","slide":23,"text":"真实性核验","textPreview":"真实性核验","textChars":5,"textLines":1,"bbox":[130,311,260,25]}
+{"kind":"shape","id":"sh/gfapgjyt","slide":23,"bbox":[448,300,48,48]}
+{"kind":"textbox","id":"sh/fe187eh8","slide":23,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[448,311,48,24]}
+{"kind":"textbox","id":"sh/ed87e9gn","slide":23,"text":"核验报告","textPreview":"核验报告","textChars":4,"textLines":1,"bbox":[514,311,260,25]}
+{"kind":"shape","id":"sh/p4jqdoza","slide":23,"bbox":[832,300,48,48]}
+{"kind":"textbox","id":"sh/o3apkjyp","slide":23,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[832,311,48,24]}
+{"kind":"textbox","id":"sh/8z21wrad","slide":23,"text":"风险画像","textPreview":"风险画像","textChars":4,"textLines":1,"bbox":[898,311,260,25]}
+{"kind":"shape","id":"sh/9kbi5wby","slide":23,"bbox":[64,405,48,48]}
+{"kind":"textbox","id":"sh/mxkjuhs7","slide":23,"text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[64,416,48,24]}
+{"kind":"textbox","id":"sh/7yt03mts","slide":23,"text":"RBAC 权限","textPreview":"RBAC 权限","textChars":7,"textLines":1,"bbox":[130,416,260,25]}
+{"kind":"shape","id":"sh/wnm10ba9","slide":23,"bbox":[448,405,48,48]}
+{"kind":"textbox","id":"sh/hovi9gbu","slide":23,"text":"8","textPreview":"8","textChars":1,"textLines":1,"bbox":[448,416,48,24]}
+{"kind":"textbox","id":"sh/ulkjy1sj","slide":23,"text":"审计日志","textPreview":"审计日志","textChars":4,"textLines":1,"bbox":[514,416,260,25]}
+{"kind":"shape","id":"sh/vmd076to","slide":23,"bbox":[832,405,48,48]}
+{"kind":"textbox","id":"sh/cri1o7a5","slide":23,"text":"9","textPreview":"9","textChars":1,"textLines":1,"bbox":[832,416,48,24]}
+{"kind":"textbox","id":"sh/xsrixcbq","slide":23,"text":"Docker 部署","textPreview":"Docker 部署","textChars":9,"textLines":1,"bbox":[898,416,260,25]}
+{"kind":"shape","id":"sh/fmh43ad8","slide":23,"bbox":[64,535,1152,58]}
+{"kind":"textbox","id":"sh/elo3u5cn","slide":23,"text":"交付价值：业务设计、技术实现、AI 协同和验证材料形成同一条证据链。","textPreview":"交付价值：业务设计、技术实现、AI 协同和验证材料形成同一条证据链。","textChars":34,"textLines":1,"bbox":[86,554,1110,24]}
+{"kind":"shape","id":"sh/1ozm5kve","slide":23,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/gnqlwfut","slide":23,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/rix4zadw","slide":23,"text":"23","textPreview":"23","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/e02yr5","slide":23,"text":"[Sources]\n- docs/开发过程/session_memory_0722.jsonl\n- docs/delivery/SCFS项目介绍材料.md"}
+{"kind":"slide","id":"sl/yhawvi","slide":24,"title":"22 / 后续演进","textShapes":12}
+{"kind":"textbox","id":"sh/e9ofqpwj","slide":24,"text":"22 / 后续演进","textPreview":"22 / 后续演进","textChars":9,"textLines":1,"bbox":[64,30,1152,22]}
+{"kind":"textbox","id":"sh/1czyl4va","slide":24,"text":"从可运行演示走向真实业务环境","textPreview":"从可运行演示走向真实业务环境","textChars":14,"textLines":1,"bbox":[64,67,1152,55]}
+{"kind":"shape","id":"sh/0bqxszep","slide":24,"bbox":[64,210,500,130]}
+{"kind":"shape","id":"sh/nyhgnud0","slide":24,"bbox":[64,210,500,7]}
+{"kind":"textbox","id":"sh/2x8fupwv","slide":24,"text":"数据源真实化","textPreview":"数据源真实化","textChars":6,"textLines":1,"bbox":[82,237,464,28]}
+{"kind":"textbox","id":"sh/p0zyp4v6","slide":24,"text":"工商、征信、物流、核心系统","textPreview":"工商、征信、物流、核心系统","textChars":13,"textLines":1,"bbox":[82,282,464,44]}
+{"kind":"shape","id":"sh/ozqxwzel","slide":24,"bbox":[634,210,500,130]}
+{"kind":"shape","id":"sh/b21gredc","slide":24,"bbox":[634,210,500,7]}
+{"kind":"textbox","id":"sh/a1sfy9wr","slide":24,"text":"智能化增强","textPreview":"智能化增强","textChars":5,"textLines":1,"bbox":[652,237,464,28]}
+{"kind":"textbox","id":"sh/wju10zmx","slide":24,"text":"OCR 置信度、异常模型、图谱推理","textPreview":"OCR 置信度、异常模型、图谱推理","textChars":17,"textLines":1,"bbox":[652,282,464,44]}
+{"kind":"shape","id":"sh/xknit4ni","slide":24,"bbox":[64,380,500,130]}
+{"kind":"shape","id":"sh/ahcjyp4r","slide":24,"bbox":[64,380,500,7]}
+{"kind":"textbox","id":"sh/bil0ru5c","slide":24,"text":"工程化增强","textPreview":"工程化增强","textChars":5,"textLines":1,"bbox":[82,407,464,28]}
+{"kind":"textbox","id":"sh/kne14jmt","slide":24,"text":"消息队列、监控、备份、灾备","textPreview":"消息队列、监控、备份、灾备","textChars":13,"textLines":1,"bbox":[82,452,464,44]}
+{"kind":"shape","id":"sh/lon2x4ne","slide":24,"bbox":[634,380,500,130]}
+{"kind":"shape","id":"sh/ylwj2943","slide":24,"bbox":[634,380,500,7]}
+{"kind":"textbox","id":"sh/jm50ve58","slide":24,"text":"业务闭环增强","textPreview":"业务闭环增强","textChars":6,"textLines":1,"bbox":[652,407,464,28]}
+{"kind":"textbox","id":"sh/8re18jm5","slide":24,"text":"待办、补正通知、企业端上传","textPreview":"待办、补正通知、企业端上传","textChars":13,"textLines":1,"bbox":[652,452,464,44]}
+{"kind":"shape","id":"sh/tc721onq","slide":24,"bbox":[64,668,1152,0]}
+{"kind":"textbox","id":"sh/h83ilofu","slide":24,"text":"SCFS · 开发过程与系统设计","textPreview":"SCFS · 开发过程与系统设计","textChars":16,"textLines":1,"bbox":[64,680,600,18]}
+{"kind":"textbox","id":"sh/g7u1sje9","slide":24,"text":"24","textPreview":"24","textChars":2,"textLines":1,"bbox":[1176,680,40,18]}
+{"kind":"notes","id":"nt/yhawvi","slide":24,"text":"[Sources]\n- docs/开发过程/topics_0714.md\n- docs/delivery/SCFS项目介绍材料.md §九"}
+{"kind":"slide","id":"sl/dbhnfm","slide":25,"title":"SCFS / CLOSING","textShapes":5}
+{"kind":"textbox","id":"sh/mp0jupwn","slide":25,"text":"SCFS / CLOSING","textPreview":"SCFS / CLOSING","textChars":14,"textLines":1,"bbox":[138,64,500,22]}
+{"kind":"textbox","id":"sh/nq90nud8","slide":25,"text":"让判断更可靠，\n让过程可追溯。","textPreview":"让判断更可靠， | 让过程可追溯。","textChars":15,"textLines":2,"bbox":[64,200,760,140]}
+{"kind":"textbox","id":"sh/wf210ze5","slide":25,"text":"让供应链关系看得见，让材料核得清，让风险判断有依据。","textPreview":"让供应链关系看得见，让材料核得清，让风险判断有依据。","textChars":26,"textLines":1,"bbox":[64,410,850,36]}
+{"kind":"shape","id":"sh/hgb2t4vq","slide":25,"bbox":[64,540,510,0]}
+{"kind":"textbox","id":"sh/ad0jypwz","slide":25,"text":"谢谢","textPreview":"谢谢","textChars":2,"textLines":1,"bbox":[1050,565,160,40]}
+{"kind":"textbox","id":"sh/ve9krudk","slide":25,"text":"SCFS · 供应链金融智能风控与尽调辅助平台","textPreview":"SCFS · 供应链金融智能风控与尽调辅助平台","textChars":23,"textLines":1,"bbox":[64,610,800,25]}
+{"kind":"image","id":"im/8jmtofap","slide":25,"name":"","alt":"SCFS","bbox":[64,48,58,58]}
+{"kind":"notes","id":"nt/dbhnfm","slide":25,"text":"[Sources]\n- 项目源代码\n- docs/开发过程\n- docs/prd/scfs_platform_prd.md\n- docs/spec/scfs_platform_rfc.md"}

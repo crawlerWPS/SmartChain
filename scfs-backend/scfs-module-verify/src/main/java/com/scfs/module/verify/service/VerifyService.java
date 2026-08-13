@@ -314,33 +314,98 @@ public class VerifyService {
             throw new IllegalArgumentException("报告不存在: " + reportNo);
         }
         List<String> lines = new ArrayList<>();
-        lines.add("SCFS Verification Report");
-        lines.add("Report No: " + report.getReportNo());
-        lines.add("Application ID: " + report.getApplicationId());
-        lines.add("Version: v" + report.getVersion());
-        lines.add("Overall Assessment: " + report.getOverallAssessment());
-        lines.add("Abnormal Count: " + report.getAbnormalCount());
-        lines.add("Generated At: " + report.getGeneratedAt());
-        lines.add("Content Hash: " + report.getContentHash());
+        lines.add("SCFS 供应链金融风控平台");
+        lines.add("真实性核验报告");
+        lines.add("报告编号：" + report.getReportNo());
+        lines.add("申请编号：" + report.getApplicationId());
+        lines.add("报告版本：v" + report.getVersion());
+        lines.add("总体评估：" + assessmentLabel(report.getOverallAssessment()));
+        lines.add("异常数量：" + report.getAbnormalCount());
+        lines.add("生成时间：" + report.getGeneratedAt());
+        lines.add("核验内容：");
+        appendCheckDetails(lines, report.getContentSnapshot());
         if (report.getRiskHints() != null && !report.getRiskHints().isEmpty()) {
-            lines.add("Risk Hints:");
+            lines.add("风险提示：");
             report.getRiskHints().forEach(hint -> lines.add("- " + hint));
         }
         return buildSimplePdf(lines);
     }
 
+    @SuppressWarnings("unchecked")
+    private void appendCheckDetails(List<String> lines, Map<String, Object> snapshot) {
+        Object rawResults = snapshot == null ? null : snapshot.get("results");
+        if (!(rawResults instanceof List<?> results) || results.isEmpty()) {
+            lines.add("暂无核验明细");
+            return;
+        }
+        for (Object raw : results) {
+            if (!(raw instanceof Map<?, ?> result)) continue;
+            String checkType = String.valueOf(result.containsKey("checkType") ? result.get("checkType") : "-");
+            String status = String.valueOf(result.containsKey("result") ? result.get("result") : "-");
+            lines.add("核验项目：" + checkTypeLabel(checkType));
+            lines.add("核验结果：" + resultLabel(status));
+            lines.add("核验结论：" + conclusionLabel(checkType, status));
+        }
+    }
+
+    private String conclusionLabel(String type, String result) {
+        if (!"PASS".equals(result)) {
+            return switch (type) {
+                case "SUBJECT" -> "发现主体信息异常，请人工复核买卖双方资料。";
+                case "AMOUNT" -> "发现交易金额异常，请核对合同、发票及订单金额。";
+                case "TIME" -> "发现交易时间逻辑异常，请核对业务材料时间顺序。";
+                case "REPEAT" -> "发现重复融资风险，请核对历史融资记录。";
+                default -> "该核验项目未通过，请人工复核。";
+            };
+        }
+        return switch (type) {
+            case "SUBJECT" -> "买卖双方主体信息一致，未发现异常。";
+            case "AMOUNT" -> "合同、订单及发票金额未发现明显差异。";
+            case "TIME" -> "交易材料时间顺序合理，未发现明显异常。";
+            case "REPEAT" -> "未发现同企业已审批的重复融资记录。";
+            default -> "该核验项目已通过。";
+        };
+    }
+
+    private String checkTypeLabel(String type) {
+        return switch (type) {
+            case "SUBJECT" -> "主体一致性";
+            case "AMOUNT" -> "金额一致性";
+            case "TIME" -> "时间逻辑";
+            case "REPEAT" -> "重复融资";
+            default -> type;
+        };
+    }
+
+    private String resultLabel(String result) {
+        return switch (result) {
+            case "PASS" -> "通过";
+            case "ABNORMAL" -> "异常";
+            case "MISSING" -> "缺失";
+            default -> result;
+        };
+    }
+
+    private String assessmentLabel(String assessment) {
+        if ("LOW".equals(assessment)) return "低风险";
+        if ("MID".equals(assessment)) return "中风险";
+        if ("HIGH".equals(assessment)) return "高风险";
+        return assessment == null ? "-" : assessment;
+    }
+
     private byte[] buildSimplePdf(List<String> lines) {
         StringBuilder content = new StringBuilder("BT\n/F1 11 Tf\n50 760 Td\n");
         for (String line : lines) {
-            content.append("(").append(escapePdf(line)).append(") Tj\n0 -20 Td\n");
+            content.append("<FEFF").append(toUtf16Hex(line)).append("> Tj\n0 -20 Td\n");
         }
         content.append("ET\n");
         String stream = content.toString();
         String[] objects = {
                 "<< /Type /Catalog /Pages 2 0 R >>",
                 "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-                "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 6 0 R >>",
+                "<< /Type /Font /Subtype /Type0 /BaseFont /STSong-Light /Encoding /UniGB-UCS2-H /DescendantFonts [5 0 R] >>",
+                "<< /Type /Font /Subtype /CIDFontType0 /BaseFont /STSong-Light /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 4 >> /DW 1000 >>",
                 "<< /Length " + stream.getBytes(StandardCharsets.US_ASCII).length + " >>\nstream\n" + stream + "endstream"
         };
         StringBuilder pdf = new StringBuilder("%PDF-1.4\n");
@@ -359,9 +424,13 @@ public class VerifyService {
         return pdf.toString().getBytes(StandardCharsets.US_ASCII);
     }
 
-    private String escapePdf(String value) {
-        return value == null ? "" : value.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
-                .replaceAll("[^\\x20-\\x7E]", "?");
+    private String toUtf16Hex(String value) {
+        byte[] bytes = (value == null ? "" : value).getBytes(StandardCharsets.UTF_16BE);
+        StringBuilder hex = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            hex.append(String.format("%02X", b & 0xFF));
+        }
+        return hex.toString();
     }
 
     public List<VerifyCheckResult> getCheckResults(Long applicationId) {

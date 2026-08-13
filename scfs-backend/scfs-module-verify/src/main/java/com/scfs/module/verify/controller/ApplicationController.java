@@ -100,7 +100,7 @@ public class ApplicationController {
     @RequirePermission(module = "VERIFY", permission = "approve")
     @PostMapping("/{id}/assign")
     public Result<Void> assign(@PathVariable Long id, @RequestParam Long handlerId) {
-        applicationService.assign(id, handlerId);
+        applicationService.assignHandler(id, handlerId);
         return Result.success();
     }
 

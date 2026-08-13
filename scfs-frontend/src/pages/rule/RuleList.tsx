@@ -2,21 +2,26 @@
  * 规则管理页 - 双岗经办/复核
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Button, Space, Input, Select, Tag, message, Modal, Form } from 'antd';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
-import { pageRules, createRule, submitRuleChange, toggleRuleStatus, pagePendingChanges, approveRuleChange, rejectRuleChange } from '@/api/rule';
+import { Card, Table, Button, Space, Input, Select, Tag, message, Modal, Form, Descriptions, Typography } from 'antd';
+import { PlusOutlined, ReloadOutlined, EyeOutlined } from '@ant-design/icons';
+import { pageRules, getRule, createRule, submitRuleChange, toggleRuleStatus, pagePendingChanges, approveRuleChange, rejectRuleChange } from '@/api/rule';
 import { Permission } from '@/components/common/Permission';
 import { formatDate } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 import { CodeTag } from '@/components/common/CodeTag';
 
 const RuleList: React.FC = () => {
+  const formatDrlContent = (content?: string) => content ? content.replace(/\\n/g, '\n').replace(/\\r/g, '\r') : '暂无规则内容';
   const [list, setList] = useState<any[]>([]);
   const [pendingList, setPendingList] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState({ page: 1, size: 10, keyword: '', category: undefined, status: undefined });
   const [createVisible, setCreateVisible] = useState(false);
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [selectedRule, setSelectedRule] = useState<any>(null);
+  const [submitMode, setSubmitMode] = useState(false);
   const [createForm] = Form.useForm();
   const dictionary = useCodeDictionary();
 
@@ -39,20 +44,32 @@ const RuleList: React.FC = () => {
 
   useEffect(() => { load(); }, [query.page, query.size]);
 
-  const handleSubmit = async (id: number) => {
-    Modal.confirm({
-      title: '提交规则变更审核？',
-      content: '提交后将进入待复核状态，复核通过后规则才生效',
-      onOk: async () => {
-        try {
-          await submitRuleChange(id, 'UPDATE', { remark: '提交审核' });
-          message.success('已提交');
-          load();
-        } catch (e: any) {
-          message.error(e.message);
-        }
-      },
-    });
+  const openRuleDetail = async (id: number, forSubmit = false) => {
+    setDetailLoading(true);
+    setSubmitMode(forSubmit);
+    setDetailVisible(true);
+    try {
+      setSelectedRule(await getRule(id));
+    } catch (e: any) {
+      setDetailVisible(false);
+      message.error(e.message);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedRule) return;
+    try {
+      await submitRuleChange(selectedRule.id, 'UPDATE', { remark: '已查看完整规则内容，提交审核' });
+      message.success('已提交，等待复核');
+      setDetailVisible(false);
+      setSelectedRule(null);
+      setSubmitMode(false);
+      load();
+    } catch (e: any) {
+      message.error(e.message);
+    }
   };
 
   const handleApprove = async (id: number) => {
@@ -101,16 +118,17 @@ const RuleList: React.FC = () => {
   };
 
   const columns = [
-    { title: '规则编码', dataIndex: 'ruleCode', key: 'ruleCode' },
-    { title: '规则名称', dataIndex: 'ruleName', key: 'ruleName' },
+    { title: '规则编码', dataIndex: 'ruleCode', key: 'ruleCode', render: (v: string, r: any) => <a onClick={() => openRuleDetail(r.id)}>{v}</a> },
+    { title: '规则名称', dataIndex: 'ruleName', key: 'ruleName', render: (v: string, r: any) => <a onClick={() => openRuleDetail(r.id)}>{v}</a> },
     { title: '分类', dataIndex: 'category', key: 'category', render: (v: string) => <CodeTag type="RULE_CATEGORY" code={v} /> },
     { title: '版本', dataIndex: 'version', key: 'version', render: (v: number) => `v${v}` },
     { title: '状态', dataIndex: 'status', key: 'status', render: (v: number) => <CodeTag type="ENABLE_STATUS" code={v} /> },
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
+        <a onClick={() => openRuleDetail(r.id)}><EyeOutlined /> 查看详情</a>
         <Permission perm={['RULE', 'create']}>
-          <a onClick={() => handleSubmit(r.id)}>提交</a>
+          <a onClick={() => openRuleDetail(r.id, true)}>提交</a>
         </Permission>
         <Permission perm={['RULE', 'update']}>
           <a onClick={() => handleToggleStatus(r.id, r.status === 1 ? 0 : 1)}>{r.status === 1 ? '禁用' : '启用'}</a>
@@ -165,6 +183,42 @@ const RuleList: React.FC = () => {
           </Form.Item>
           <Form.Item name="drlContent" label="DRL 内容" rules={[{ required: true }]}><Input.TextArea rows={8} placeholder="package com.scfs.rules; ..." /></Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title={submitMode ? '提交前确认：完整规则内容' : '规则详情'}
+        open={detailVisible}
+        confirmLoading={detailLoading}
+        width={900}
+        onCancel={() => { setDetailVisible(false); setSelectedRule(null); setSubmitMode(false); }}
+        footer={submitMode ? [
+          <Button key="cancel" onClick={() => { setDetailVisible(false); setSubmitMode(false); }}>取消</Button>,
+          <Button key="submit" type="primary" onClick={handleSubmit} disabled={!selectedRule}>确认提交审核</Button>,
+        ] : [<Button key="close" onClick={() => setDetailVisible(false)}>关闭</Button>]}
+      >
+        {selectedRule && <>
+          <Descriptions bordered column={2} size="small">
+            <Descriptions.Item label="规则编码">{selectedRule.ruleCode}</Descriptions.Item>
+            <Descriptions.Item label="规则名称">{selectedRule.ruleName}</Descriptions.Item>
+            <Descriptions.Item label="分类">{dictionary.label('RULE_CATEGORY', selectedRule.category)}</Descriptions.Item>
+            <Descriptions.Item label="版本">v{selectedRule.version}</Descriptions.Item>
+            <Descriptions.Item label="状态"><CodeTag type="ENABLE_STATUS" code={selectedRule.status} /></Descriptions.Item>
+            <Descriptions.Item label="创建人">{selectedRule.createdBy}</Descriptions.Item>
+          </Descriptions>
+          <Card size="small" title="规则参数" style={{ marginTop: 16 }}>
+            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {selectedRule.params ? JSON.stringify(selectedRule.params, null, 2) : '无参数'}
+            </pre>
+          </Card>
+          <Card size="small" title="DRL 规则内容" style={{ marginTop: 16 }}>
+            <pre style={{ margin: 0, maxHeight: 320, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word', background: '#fafafa', padding: 16 }}>
+              {formatDrlContent(selectedRule.drlContent)}
+            </pre>
+          </Card>
+          {submitMode && <Typography.Text type="warning" style={{ display: 'block', marginTop: 16 }}>
+            请确认已查看规则编码、分类、版本、参数和完整 DRL 内容；确认后才会提交复核。
+          </Typography.Text>}
+        </>}
       </Modal>
     </Card>
   );

@@ -59,6 +59,23 @@ public class RuleController {
         return Result.success();
     }
 
+    @RequirePermission(module = "RULE", permission = "create")
+    @PostMapping("/rules/{id}/submit")
+    public Result<Void> submitRule(@PathVariable Long id,
+                                   @RequestParam(required = false, defaultValue = "UPDATE") String changeType,
+                                   @RequestBody(required = false) Map<String, Object> body) {
+        String remark = body == null ? null : (String) body.get("remark");
+        ruleService.submitRuleChange(id, changeType, remark);
+        return Result.success();
+    }
+
+    @RequirePermission(module = "RULE", permission = "update")
+    @PatchMapping("/rules/{id}/status")
+    public Result<Void> updateRuleStatus(@PathVariable Long id, @RequestParam Short status) {
+        ruleService.updateRuleStatus(id, status);
+        return Result.success();
+    }
+
     // ========== 变更日志（双岗审批）==========
     @RequirePermission(module = "RULE", permission = "view")
     @GetMapping("/rule-changes/pending")

@@ -116,15 +116,17 @@ ifconfig
 
 所有种子用户密码统一为 `admin123`（BCrypt 哈希）。
 
-| 用户名 | 密码 | 角色代码 | 角色名称 |
-| --- | --- | --- | --- |
-| `admin` | `admin123` | ADMIN | 系统管理员 |
-| `rm_zhang` | `admin123` | RM | 客户经理 |
-| `rco_li` | `admin123` | RCO | 风控审核员 |
-| `maker_wang` | `admin123` | OPS_MAKER | 规则经办岗 |
-| `checker_zhao` | `admin123` | OPS_CHECKER | 规则复核岗 |
-| `ops_sun` | `admin123` | OPS | 运营主管 |
-| `audit_zhou` | `admin123` | AUDIT | 审计人员 |
+| 用户 ID（初始化） | 用户名 | 密码 | 角色代码 | 角色名称 |
+| ---: | --- | --- | --- | --- |
+| 1 | `admin` | `admin123` | ADMIN | 系统管理员 |
+| 2 | `rm_zhang` | `admin123` | RM | 客户经理 |
+| 3 | `rco_li` | `admin123` | RCO | 风控审核员 |
+| 4 | `maker_wang` | `admin123` | OPS_MAKER | 规则经办岗 |
+| 5 | `checker_zhao` | `admin123` | OPS_CHECKER | 规则复核岗 |
+| 6 | `ops_sun` | `admin123` | OPS | 运营主管 |
+| 7 | `audit_zhou` | `admin123` | AUDIT | 审计人员 |
+
+> 用户 ID 是 `schema_common.sys_user.id`，不是用户名。以上 ID 适用于按项目迁移脚本全新初始化的数据库；如果数据库曾经导入过其他数据，ID 可能不同，请以实际查询结果为准。分配审核人时，风控审核员 `rco_li` 默认使用用户 ID `3`。
 
 ### 2. 各角色可见菜单
 

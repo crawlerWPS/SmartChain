@@ -107,6 +107,12 @@
         SELECT * FROM schema_common.rule_change_log WHERE id = #{id}
     </select>
 
+    <select id="selectPendingChangeLogByRuleId" resultMap="ChangeLogResultMap">
+        SELECT * FROM schema_common.rule_change_log
+        WHERE rule_id = #{ruleId} AND status = 'PENDING'
+        ORDER BY created_at DESC LIMIT 1
+    </select>
+
     <select id="selectChangeLogsByRuleId" resultMap="ChangeLogResultMap">
         SELECT * FROM schema_common.rule_change_log WHERE rule_id = #{ruleId} ORDER BY created_at DESC
     </select>

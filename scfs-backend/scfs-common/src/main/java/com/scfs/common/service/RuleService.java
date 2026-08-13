@@ -60,6 +60,22 @@ public class RuleService {
         return ruleMapper.selectByCategory(category.name());
     }
 
+    /** 启用或禁用规则。 */
+    @Audit(module = "RULE", action = "STATUS_UPDATE", targetType = "RULE_DEFINITION", targetIdExpr = "#ruleId", snapshot = true)
+    @Transactional
+    public void updateRuleStatus(Long ruleId, Short status) {
+        securityContextHelper.getCurrentUserIdOrThrow();
+        if (status == null || (status != 0 && status != 1)) {
+            throw new IllegalArgumentException("规则状态只能是 0（禁用）或 1（启用）");
+        }
+        RuleDefinition rule = ruleMapper.selectById(ruleId);
+        if (rule == null) {
+            throw new IllegalArgumentException("规则不存在");
+        }
+        ruleMapper.updateStatus(ruleId, status, rule.getVersion());
+        log.info("[Rule] 规则状态已更新: ruleId={}, status={}", ruleId, status);
+    }
+
     /**
      * 经办创建规则（status=PENDING）
      */
@@ -121,6 +137,36 @@ public class RuleService {
 
         log.info("[Rule] 规则更新待复核: ruleId={}, oldVersion={}, newVersion={}, makerId={}",
                 rule.getId(), oldVersion, newVersion, currentUserId);
+    }
+
+    /**
+     * 提交规则当前版本进行双岗复核。提交前由前端展示完整规则内容，后端再次校验待复核状态。
+     */
+    @Audit(module = "RULE", action = "SUBMIT", targetType = "RULE_DEFINITION", targetIdExpr = "#ruleId", snapshot = true)
+    @Transactional
+    public void submitRuleChange(Long ruleId, String changeType, String remark) {
+        Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
+        RuleDefinition rule = ruleMapper.selectById(ruleId);
+        if (rule == null) {
+            throw new IllegalArgumentException("规则不存在");
+        }
+        if (ruleMapper.selectPendingChangeLogByRuleId(ruleId) != null) {
+            // 新建规则时已经创建待复核记录；前端要求用户查看完整内容后再确认，确认只需幂等通过。
+            log.info("[Rule] 规则已有待复核变更，提交确认幂等返回: ruleId={}", ruleId);
+            return;
+        }
+        RuleChangeLog changeLog = new RuleChangeLog();
+        changeLog.setRuleId(ruleId);
+        changeLog.setRuleCode(rule.getRuleCode());
+        changeLog.setChangeType(changeType == null || changeType.isBlank() ? "UPDATE" : changeType);
+        changeLog.setOldVersion(rule.getVersion());
+        changeLog.setNewVersion(rule.getVersion() + 1);
+        changeLog.setOldContent(rule.getDrlContent());
+        changeLog.setNewContent(rule.getDrlContent());
+        changeLog.setStatus(DualControlStatus.PENDING.name());
+        changeLog.setMakerId(currentUserId);
+        ruleMapper.insertChangeLog(changeLog);
+        log.info("[Rule] 规则已提交复核: ruleId={}, changeLogId={}, remark={}", ruleId, changeLog.getId(), remark);
     }
 
     /**
