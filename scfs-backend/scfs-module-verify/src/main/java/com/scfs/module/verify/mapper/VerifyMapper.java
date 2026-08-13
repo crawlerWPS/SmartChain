@@ -97,6 +97,8 @@ public interface VerifyMapper {
 
     int insertCheckResult(VerifyCheckResult result);
 
+    int deleteCheckResultsByApplication(@Param("applicationId") Long applicationId);
+
     // 核验报告
     VerifyReport selectReportByApplication(@Param("applicationId") Long applicationId);
 

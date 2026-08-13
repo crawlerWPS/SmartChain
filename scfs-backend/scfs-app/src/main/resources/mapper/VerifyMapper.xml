@@ -9,7 +9,9 @@
         <result column="buyer_enterprise_id" property="buyerEnterpriseId"/>
         <result column="seller_enterprise_id" property="sellerEnterpriseId"/>
         <result column="buyer_name" property="buyerName"/>
+        <result column="buyer_uscc" property="buyerUscc"/>
         <result column="seller_name" property="sellerName"/>
+        <result column="seller_uscc" property="sellerUscc"/>
         <result column="business_type" property="businessType"/>
         <result column="financing_amount" property="financingAmount"/>
         <result column="submitted_by" property="submittedBy"/>
@@ -104,7 +106,8 @@
 
     <!-- 融资申请 -->
     <select id="selectApplicationById" resultMap="ApplicationMap">
-        SELECT a.*, buyer.name AS buyer_name, seller.name AS seller_name
+        SELECT a.*, buyer.name AS buyer_name, buyer.uscc AS buyer_uscc,
+               seller.name AS seller_name, seller.uscc AS seller_uscc
         FROM schema_verify.financing_application a
         LEFT JOIN schema_graph.enterprise buyer ON buyer.id = a.buyer_enterprise_id
         LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
@@ -112,7 +115,8 @@
     </select>
 
     <select id="selectApplicationByNo" resultMap="ApplicationMap">
-        SELECT a.*, buyer.name AS buyer_name, seller.name AS seller_name
+        SELECT a.*, buyer.name AS buyer_name, buyer.uscc AS buyer_uscc,
+               seller.name AS seller_name, seller.uscc AS seller_uscc
         FROM schema_verify.financing_application a
         LEFT JOIN schema_graph.enterprise buyer ON buyer.id = a.buyer_enterprise_id
         LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
@@ -120,7 +124,8 @@
     </select>
 
     <select id="selectApplicationPage" resultMap="ApplicationMap">
-        SELECT a.*, buyer.name AS buyer_name, seller.name AS seller_name
+        SELECT a.*, buyer.name AS buyer_name, buyer.uscc AS buyer_uscc,
+               seller.name AS seller_name, seller.uscc AS seller_uscc
         FROM schema_verify.financing_application a
         LEFT JOIN schema_graph.enterprise buyer ON buyer.id = a.buyer_enterprise_id
         LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
@@ -268,7 +273,7 @@
 
     <update id="updateMaterialRecognitionStatus">
         UPDATE schema_verify.application_material
-        SET status = #{status}, confidence = #{confidence}, updated_at = NOW()
+        SET status = #{status}, confidence = #{confidence}
         WHERE id = #{id}
     </update>
 
@@ -354,6 +359,10 @@
                 CAST(#{details, typeHandler=com.scfs.common.mybatis.JsonMapTypeHandler} AS jsonb),
                 CAST(#{executedRules, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb))
     </insert>
+
+    <delete id="deleteCheckResultsByApplication">
+        DELETE FROM schema_verify.verify_check_result WHERE application_id = #{applicationId}
+    </delete>
 
     <!-- 报告 -->
     <select id="selectReportByApplication" resultMap="ReportMap">

@@ -52,6 +52,9 @@ public class VerifyService {
     @Transactional
     public List<VerifyCheckResult> verifyAll(Long applicationId) {
         log.info("[Verify] 开始核验: applicationId={}", applicationId);
+        FinancingApplication application = verifyMapper.selectApplicationById(applicationId);
+        if (application == null) throw new IllegalArgumentException("融资申请不存在");
+        verifyMapper.deleteCheckResultsByApplication(applicationId);
         List<VerifyCheckResult> results = new ArrayList<>();
 
         // 1. 主体一致性
@@ -71,29 +74,54 @@ public class VerifyService {
      * SUBJECT 核验：买卖方名称跨材料一致性
      */
     private VerifyCheckResult verifySubject(Long applicationId) {
+        FinancingApplication application = verifyMapper.selectApplicationById(applicationId);
         List<ApplicationMaterial> materials = verifyMapper.selectMaterialsByApplication(applicationId);
-        Set<String> buyerNames = new HashSet<>();
-        Set<String> sellerNames = new HashSet<>();
+        List<Map<String, Object>> comparisons = new ArrayList<>();
+        boolean hasComparableMaterial = false;
+        boolean mismatch = false;
+        boolean missingField = false;
         List<String> executedRules = new ArrayList<>();
 
         for (ApplicationMaterial material : materials) {
+            if (!Set.of("CONTRACT", "INVOICE").contains(material.getMaterialType())) continue;
             MaterialRecognitionResult result = verifyMapper.selectRecognitionResult(material.getId());
-            if (result != null) {
-                if (result.getBuyerName() != null) buyerNames.add(result.getBuyerName());
-                if (result.getSellerName() != null) sellerNames.add(result.getSellerName());
-            }
+            if (result == null) continue;
+            hasComparableMaterial = true;
+            boolean buyerPresent = hasText(result.getBuyerName()) || hasText(result.getBuyerUscc());
+            boolean sellerPresent = hasText(result.getSellerName()) || hasText(result.getSellerUscc());
+            boolean buyerMatch = partyMatches(application.getBuyerName(), application.getBuyerUscc(), result.getBuyerName(), result.getBuyerUscc());
+            boolean sellerMatch = partyMatches(application.getSellerName(), application.getSellerUscc(), result.getSellerName(), result.getSellerUscc());
+            missingField |= !buyerPresent || !sellerPresent;
+            mismatch |= (buyerPresent && !buyerMatch) || (sellerPresent && !sellerMatch);
+            Map<String, Object> comparison = new LinkedHashMap<>();
+            comparison.put("materialId", material.getId());
+            comparison.put("materialType", material.getMaterialType());
+            comparison.put("ocrBuyerName", result.getBuyerName());
+            comparison.put("ocrBuyerUscc", result.getBuyerUscc());
+            comparison.put("buyerMatch", buyerMatch);
+            comparison.put("ocrSellerName", result.getSellerName());
+            comparison.put("ocrSellerUscc", result.getSellerUscc());
+            comparison.put("sellerMatch", sellerMatch);
+            comparisons.add(comparison);
         }
 
-        boolean pass = buyerNames.size() <= 1 && sellerNames.size() <= 1;
+        boolean missing = !hasComparableMaterial || missingField;
+        boolean pass = !missing && !mismatch;
         Map<String, Object> details = new HashMap<>();
-        details.put("buyerNames", buyerNames);
-        details.put("sellerNames", sellerNames);
+        details.put("applicationBuyer", partyDetail(application.getBuyerName(), application.getBuyerUscc()));
+        details.put("applicationSeller", partyDetail(application.getSellerName(), application.getSellerUscc()));
+        details.put("comparisons", comparisons);
+        List<String> hints = new ArrayList<>();
+        if (!hasComparableMaterial) hints.add("没有已完成OCR识别的合同或发票");
+        if (missingField) hints.add("合同或发票未完整识别买卖方信息");
+        if (mismatch) hints.add("合同或发票中的买卖方与融资申请登记客户不一致");
+        details.put("hints", hints);
         executedRules.add("R_SUBJECT_CONSISTENCY");
 
         VerifyCheckResult result = new VerifyCheckResult();
         result.setApplicationId(applicationId);
         result.setCheckType(CheckType.SUBJECT.name());
-        result.setResult(pass ? "PASS" : "ABNORMAL");
+        result.setResult(mismatch ? "ABNORMAL" : missing ? "MISSING" : pass ? "PASS" : "ABNORMAL");
         result.setDetails(details);
         result.setExecutedRules(executedRules);
         result.setExecutedAt(Instant.now());
@@ -105,6 +133,7 @@ public class VerifyService {
      * AMOUNT 核验：合同/发票/验收金额一致性
      */
     private VerifyCheckResult verifyAmount(Long applicationId) {
+        FinancingApplication application = verifyMapper.selectApplicationById(applicationId);
         List<ApplicationMaterial> materials = verifyMapper.selectMaterialsByApplication(applicationId);
         Map<String, BigDecimal> amounts = new HashMap<>();
         List<String> executedRules = new ArrayList<>();
@@ -116,18 +145,35 @@ public class VerifyService {
             }
         }
 
-        boolean pass = true;
-        List<String> hints = new ArrayList<>();
         BigDecimal contract = amounts.get("CONTRACT");
         BigDecimal invoice = amounts.get("INVOICE");
         BigDecimal acceptance = amounts.get("ACCEPTANCE");
+        boolean missing = contract == null || invoice == null;
+        boolean pass = !missing;
+        boolean amountViolation = false;
+        List<String> hints = new ArrayList<>();
+        if (contract == null) hints.add("缺少合同金额或合同尚未完成识别");
+        if (invoice == null) hints.add("缺少发票金额或发票尚未完成识别");
+
+        BigDecimal financingAmount = application.getFinancingAmount();
+        if (financingAmount != null && contract != null && financingAmount.compareTo(contract) > 0) {
+            pass = false;
+            amountViolation = true;
+            hints.add("融资申请金额大于合同金额");
+            executedRules.add("R_FINANCING_AMOUNT_CONTRACT");
+        }
+        if (financingAmount != null && invoice != null && financingAmount.compareTo(invoice) > 0) {
+            pass = false;
+            amountViolation = true;
+            hints.add("融资申请金额大于发票金额");
+            executedRules.add("R_FINANCING_AMOUNT_INVOICE");
+        }
 
         if (contract != null && invoice != null) {
-            BigDecimal diff = contract.subtract(invoice).abs();
-            BigDecimal tolerance = contract.multiply(new BigDecimal("0.01"));
-            if (diff.compareTo(tolerance) > 0) {
+            if (contract.compareTo(invoice) != 0) {
                 pass = false;
-                hints.add("合同金额与发票金额差异超过 1%");
+                amountViolation = true;
+                hints.add("合同金额与发票金额不一致");
                 executedRules.add("R_AMOUNT_DIFF");
             }
         }
@@ -139,13 +185,14 @@ public class VerifyService {
 
         Map<String, Object> details = new HashMap<>();
         details.put("amounts", amounts);
+        details.put("financingAmount", financingAmount);
         details.put("hints", hints);
         if (executedRules.isEmpty()) executedRules.add("R_AMOUNT_CONSISTENCY");
 
         VerifyCheckResult result = new VerifyCheckResult();
         result.setApplicationId(applicationId);
         result.setCheckType(CheckType.AMOUNT.name());
-        result.setResult(pass ? "PASS" : "ABNORMAL");
+        result.setResult(amountViolation ? "ABNORMAL" : missing ? "MISSING" : pass ? "PASS" : "ABNORMAL");
         result.setDetails(details);
         result.setExecutedRules(executedRules);
         result.setExecutedAt(Instant.now());
@@ -175,13 +222,16 @@ public class VerifyService {
             }
         }
 
-        boolean pass = true;
-        List<String> hints = new ArrayList<>();
         java.time.LocalDate contract = dates.get("CONTRACT");
         java.time.LocalDate invoice = dates.get("INVOICE");
         java.time.LocalDate logistics = dates.get("LOGISTICS");
         java.time.LocalDate acceptance = dates.get("ACCEPTANCE");
         java.time.LocalDate payment = dates.get("PAYMENT");
+        boolean missing = contract == null || invoice == null;
+        boolean pass = !missing;
+        List<String> hints = new ArrayList<>();
+        if (contract == null) hints.add("缺少合同日期或合同尚未完成识别");
+        if (invoice == null) hints.add("缺少发票日期或发票尚未完成识别");
 
         if (contract != null && invoice != null && invoice.isBefore(contract)) {
             pass = false;
@@ -211,7 +261,7 @@ public class VerifyService {
         VerifyCheckResult result = new VerifyCheckResult();
         result.setApplicationId(applicationId);
         result.setCheckType(CheckType.TIME.name());
-        result.setResult(pass ? "PASS" : "ABNORMAL");
+        result.setResult(missing ? "MISSING" : pass ? "PASS" : "ABNORMAL");
         result.setDetails(details);
         result.setExecutedRules(executedRules);
         result.setExecutedAt(Instant.now());
@@ -251,13 +301,13 @@ public class VerifyService {
         List<VerifyCheckResult> results = verifyMapper.selectCheckResultsByApplication(applicationId);
 
         // 综合评定
-        long abnormalCount = results.stream().filter(r -> "ABNORMAL".equals(r.getResult())).count();
+        long abnormalCount = results.stream().filter(r -> !"PASS".equals(r.getResult())).count();
         String overall = abnormalCount == 0 ? "LOW" : abnormalCount <= 2 ? "MID" : "HIGH";
 
         // 风险提示
         List<String> riskHints = new ArrayList<>();
         for (VerifyCheckResult r : results) {
-            if ("ABNORMAL".equals(r.getResult()) && r.getDetails() != null) {
+            if (!"PASS".equals(r.getResult()) && r.getDetails() != null) {
                 Object hints = r.getDetails().get("hints");
                 if (hints instanceof List) {
                     riskHints.addAll((List<String>) hints);
@@ -435,5 +485,31 @@ public class VerifyService {
 
     public List<VerifyCheckResult> getCheckResults(Long applicationId) {
         return verifyMapper.selectCheckResultsByApplication(applicationId);
+    }
+
+    private String normalizePartyName(String value) {
+        return value.replaceFirst("^(名称|甲方|乙方|买方|卖方|购买方|销售方)[：:]*\\s*", "")
+                .replaceAll("\\s+", "").trim();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private boolean partyMatches(String expectedName, String expectedUscc, String actualName, String actualUscc) {
+        if (hasText(expectedUscc) && hasText(actualUscc)) {
+            return expectedUscc.replaceAll("\\s+", "").equalsIgnoreCase(actualUscc.replaceAll("\\s+", ""));
+        }
+        if (!hasText(expectedName) || !hasText(actualName)) return false;
+        String expected = normalizePartyName(expectedName);
+        String actual = normalizePartyName(actualName);
+        return actual.equals(expected) || actual.contains(expected) || expected.contains(actual);
+    }
+
+    private Map<String, Object> partyDetail(String name, String uscc) {
+        Map<String, Object> detail = new LinkedHashMap<>();
+        detail.put("name", name);
+        detail.put("uscc", uscc);
+        return detail;
     }
 }

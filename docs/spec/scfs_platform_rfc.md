@@ -581,7 +581,7 @@ PostgreSQL (scfs_db)
 
 **迁移归属**：V1 创建融资申请基础表；V5 集中完成买卖方客户号字段新增、历史数据回填、非空约束、企业外键及买卖方索引。V5 不重复 V1 的建表及既有字段、索引语句。
 
-客户维护直接写入 `schema_graph.enterprise`，贸易关系维护写入 `schema_graph.supply_chain_relation`，本轮不新增客户或关系表。V6 将文档列出的演示账号密码统一为 `admin123`；V7 清理只有数据库元数据、没有 MinIO 对象的演示 file_object、application_material 及 recognition 记录，避免暴露不可预览/下载的悬空数据。
+客户维护直接写入 `schema_graph.enterprise`，贸易关系维护写入 `schema_graph.supply_chain_relation`，本轮不新增客户或关系表。V6 将文档列出的演示账号密码统一为 `admin123`；V7 清理只有数据库元数据、没有 MinIO 对象的演示 file_object、application_material 及 recognition 记录，避免暴露不可预览/下载的悬空数据；V9 规范化规则 DRL 换行。
 
 #### 表 15：application_status_history（申请状态流转历史）
 

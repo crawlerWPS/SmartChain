@@ -27,8 +27,12 @@ public class FinancingApplication extends com.scfs.common.entity.BaseEntity {
     private Long sellerEnterpriseId;
     /** 查询时由企业主数据联表返回 */
     private String buyerName;
+    /** 买方统一社会信用代码（查询时由企业主数据联表返回） */
+    private String buyerUscc;
     /** 查询时由企业主数据联表返回 */
     private String sellerName;
+    /** 卖方统一社会信用代码（查询时由企业主数据联表返回） */
+    private String sellerUscc;
     /** AR_FINANCING/FACTORING/ORDER_FINANCING */
     private String businessType;
     /** 融资金额 */
