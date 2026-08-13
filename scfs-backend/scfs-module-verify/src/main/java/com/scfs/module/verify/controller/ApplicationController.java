@@ -50,6 +50,26 @@ public class ApplicationController {
         return Result.success(applicationService.searchCustomers(keyword));
     }
 
+    @RequirePermission(module = "VERIFY", permission = "create")
+    @PostMapping("/customers")
+    public Result<Long> createCustomer(@RequestBody ApplicationCustomer customer) {
+        return Result.success(applicationService.saveCustomer(customer));
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "update")
+    @PutMapping("/customers/{id}")
+    public Result<Long> updateCustomer(@PathVariable Long id, @RequestBody ApplicationCustomer customer) {
+        customer.setEnterpriseId(id);
+        return Result.success(applicationService.saveCustomer(customer));
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "create")
+    @PostMapping("/trade-relations")
+    public Result<Void> tradeRelation(@RequestBody Map<String, Long> body) {
+        applicationService.maintainTradeRelation(body.get("buyerEnterpriseId"), body.get("sellerEnterpriseId"));
+        return Result.success();
+    }
+
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping("/{id}")
     public Result<FinancingApplication> get(@PathVariable Long id) {
@@ -74,6 +94,13 @@ public class ApplicationController {
     @PostMapping("/{id}/submit")
     public Result<Void> submit(@PathVariable Long id) {
         applicationService.submit(id);
+        return Result.success();
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "approve")
+    @PostMapping("/{id}/assign")
+    public Result<Void> assign(@PathVariable Long id, @RequestParam Long handlerId) {
+        applicationService.assign(id, handlerId);
         return Result.success();
     }
 

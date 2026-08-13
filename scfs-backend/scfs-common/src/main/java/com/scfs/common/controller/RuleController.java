@@ -123,6 +123,20 @@ public class RuleController {
         return Result.success(ruleService.createTemplate(template));
     }
 
+    @RequirePermission(module = "RULE", permission = "update")
+    @PutMapping("/templates/{id}")
+    public Result<Void> updateTemplate(@PathVariable Long id, @RequestBody MaterialChecklistTemplate template) {
+        ruleService.updateTemplate(id, template);
+        return Result.success();
+    }
+
+    @RequirePermission(module = "RULE", permission = "delete")
+    @DeleteMapping("/templates/{id}")
+    public Result<Void> deleteTemplate(@PathVariable Long id) {
+        ruleService.deleteTemplate(id);
+        return Result.success();
+    }
+
     @RequirePermission(module = "RULE", permission = "approve")
     @PostMapping("/templates/{id}/review")
     public Result<Void> reviewTemplate(@PathVariable Long id, @RequestBody Map<String, Object> body) {

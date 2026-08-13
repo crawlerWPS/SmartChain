@@ -79,6 +79,27 @@ services:
       timeout: 5s
       retries: 5
 
+  # 5. PaddleOCR 本地文字识别服务（首次启动会下载中文模型）
+  scfs-ocr:
+    build:
+      context: ./scfs-ocr-server
+      dockerfile: Dockerfile
+    container_name: scfs-ocr
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      PADDLEOCR_LANG: ch
+    ports:
+      - "9003:9003"
+    volumes:
+      - paddleocr-models:/root/.paddlex
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9003/health')"]
+      interval: 20s
+      timeout: 10s
+      retries: 15
+      start_period: 180s
+
   # 5. 后端业务应用（Spring Boot 3.x）
   scfs-app:
     build:
@@ -98,7 +119,7 @@ services:
       MINIO_ENDPOINT: http://scfs-minio:9000
       MINIO_ACCESS_KEY: scfs
       MINIO_SECRET_KEY: scfs123456
-      OCR_ENDPOINT: http://scfs-mock:9002
+      OCR_ENDPOINT: http://scfs-ocr:9003
       JWT_SECRET: scfs-secret-key-must-be-at-least-256-bits-long-for-HS256-algorithm-2026
       SCFS_SECURITY_JWT_SECRET: scfs-secret-key-must-be-at-least-256-bits-long-for-HS256-algorithm-2026
       TZ: Asia/Shanghai
@@ -112,6 +133,8 @@ services:
       scfs-minio:
         condition: service_healthy
       scfs-mock:
+        condition: service_healthy
+      scfs-ocr:
         condition: service_healthy
 
   # 6. 前端 React 静态托管 + 反向代理
@@ -132,3 +155,4 @@ volumes:
   redis-data:
   minio-data:
   mock-data:
+  paddleocr-models:

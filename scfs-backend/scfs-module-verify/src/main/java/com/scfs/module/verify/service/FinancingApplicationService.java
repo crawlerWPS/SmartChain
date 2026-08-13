@@ -91,6 +91,36 @@ public class FinancingApplicationService {
         return verifyMapper.selectApplicationCustomers(keyword);
     }
 
+    @Transactional
+    public Long saveCustomer(ApplicationCustomer customer) {
+        if (customer.getName() == null || customer.getName().isBlank()
+                || customer.getUscc() == null || customer.getUscc().isBlank()) {
+            throw new IllegalArgumentException("客户名称和统一社会信用代码不能为空");
+        }
+        if (customer.getEnterpriseId() == null) verifyMapper.insertApplicationCustomer(customer);
+        else if (verifyMapper.updateApplicationCustomer(customer) == 0) throw new IllegalArgumentException("客户不存在");
+        return customer.getEnterpriseId();
+    }
+
+    @Transactional
+    public void maintainTradeRelation(Long buyerId, Long sellerId) {
+        if (buyerId == null || sellerId == null || buyerId.equals(sellerId)) throw new IllegalArgumentException("请选择不同的买方和卖方客户");
+        if (verifyMapper.countEnterpriseById(buyerId) == 0 || verifyMapper.countEnterpriseById(sellerId) == 0) throw new IllegalArgumentException("买方或卖方客户不存在");
+        if (verifyMapper.countRelationByEnterpriseIds(buyerId, sellerId) == 0) verifyMapper.insertTradeRelation(buyerId, sellerId);
+    }
+
+    @Transactional
+    public void assign(Long id, Long handlerId) {
+        if (handlerId == null) throw new IllegalArgumentException("审核人不能为空");
+        FinancingApplication app = verifyMapper.selectApplicationById(id);
+        if (app == null) throw new IllegalArgumentException("申请不存在");
+        ApplicationStatus status = ApplicationStatus.valueOf(app.getStatus());
+        if (status == ApplicationStatus.DRAFT || status.isFinalState()) throw new IllegalStateException("当前状态不允许指派审核人");
+        int version = app.getVersion() + 1;
+        verifyMapper.updateApplicationStatus(id, app.getStatus(), handlerId, version);
+        recordStatusHistory(id, app.getStatus(), app.getStatus(), securityContextHelper.getCurrentUserIdOrThrow(), "指派审核人: " + handlerId);
+    }
+
     private void validateTradeParties(FinancingApplication application) {
         Long buyer = application.getBuyerEnterpriseId();
         Long seller = application.getSellerEnterpriseId();

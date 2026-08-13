@@ -2,34 +2,29 @@
  * 申请详情页 - 整合申请信息、状态流转、操作按钮
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Descriptions, Steps, Button, Space, Tag, message, Modal, Input, Typography } from 'antd';
+import { Card, Descriptions, Button, Space, message, Modal, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useSearchParams, history } from '@umijs/max';
-import { getApplication, submitApplication, assignApplication, rejectApplication, approveApplication, getStatusHistory } from '@/api/application';
+import { getApplication, submitApplication, assignApplication, rejectApplication, approveApplication } from '@/api/application';
 import { canSubmit, canAssign, canReject, canApprove, formatDate, formatAmount } from '@/utils';
 import { ApplicationStatusTag } from '@/components/common/StatusTag';
 import { Permission } from '@/components/common/Permission';
 import { ApplicationStatus } from '@/types';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const ApplicationDetail: React.FC = () => {
   const [searchParams] = useSearchParams();
   const appId = Number(searchParams.get('appId') || 0);
   const [detail, setDetail] = useState<any>(null);
-  const [statusHistory, setStatusHistory] = useState<any[]>([]);
   const dictionary = useCodeDictionary();
 
   const load = async () => {
     if (!appId) return;
     try {
-      const [d, h] = await Promise.all([
-        getApplication(appId),
-        getStatusHistory(appId).catch(() => []),
-      ]);
+      const d = await getApplication(appId);
       setDetail(d);
-      setStatusHistory(h || []);
     } catch (e: any) {
       message.error(e.message);
     }
@@ -136,18 +131,6 @@ const ApplicationDetail: React.FC = () => {
         </Space>
       </Card>
 
-      {statusHistory.length > 0 && (
-        <Card title="状态流转历史" style={{ marginTop: 16 }}>
-          <Steps
-            direction="vertical"
-            current={statusHistory.length - 1}
-            items={statusHistory.map((h) => ({
-              title: <ApplicationStatusTag status={h.toStatus} />,
-              description: `操作人: ${h.operatorId} | ${formatDate(h.createdAt)} | ${h.remark || ''}`,
-            }))}
-          />
-        </Card>
-      )}
     </div>
   );
 };

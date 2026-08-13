@@ -39,10 +39,21 @@ export interface ApplicationCustomer {
   enterpriseId: number;
   name: string;
   uscc: string;
+  industry?: string;
+  legalPerson?: string;
+  address?: string;
 }
 
 export async function listApplicationCustomers(keyword?: string): Promise<ApplicationCustomer[]> {
   return request('/applications/customers', { method: 'GET', params: { keyword } });
+}
+
+export async function createApplicationCustomer(data: Omit<ApplicationCustomer, 'enterpriseId'>): Promise<number> {
+  return request('/applications/customers', { method: 'POST', data });
+}
+
+export async function maintainTradeRelation(buyerEnterpriseId: number, sellerEnterpriseId: number) {
+  return request('/applications/trade-relations', { method: 'POST', data: { buyerEnterpriseId, sellerEnterpriseId } });
 }
 
 export async function createApplication(data: ApplicationCreate): Promise<number> {
@@ -76,7 +87,15 @@ export async function approveApplication(id: number, remark?: string) {
 
 /** IF-APP-009 状态历史 */
 export async function getStatusHistory(id: number): Promise<ApplicationStatusHistory[]> {
-  return request(`/applications/${id}/history`, { method: 'GET' });
+  return request(`/applications/${id}/status-history`, { method: 'GET' });
+}
+
+export async function downloadMaterial(fileObjectId: number): Promise<Blob> {
+  return request(`/files/${fileObjectId}/download`, { method: 'GET', responseType: 'blob' });
+}
+
+export async function previewMaterial(fileObjectId: number): Promise<Blob> {
+  return request(`/files/${fileObjectId}/preview`, { method: 'GET', responseType: 'blob' });
 }
 
 // ========== 材料 ==========

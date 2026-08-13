@@ -45,17 +45,36 @@ public class FileController {
 
     @GetMapping("/{id}/download")
     public ResponseEntity<InputStreamResource> download(@PathVariable Long id) {
+        return stream(id, false);
+    }
+
+    @GetMapping("/{id}/preview")
+    public ResponseEntity<InputStreamResource> preview(@PathVariable Long id) {
+        return stream(id, true);
+    }
+
+    private ResponseEntity<InputStreamResource> stream(Long id, boolean inline) {
         InputStream stream = fileStorageService.download(id);
         FileObject info = fileStorageService.getFileInfo(id);
         String fileName = URLEncoder.encode(info.getFileName(), StandardCharsets.UTF_8);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + fileName);
-        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, (inline ? "inline" : "attachment") + "; filename*=UTF-8''" + fileName);
+        headers.add(HttpHeaders.CONTENT_TYPE, mediaType(info.getFileType()));
         headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(info.getFileSize()));
 
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(new InputStreamResource(stream));
+    }
+
+    private String mediaType(String extension) {
+        if (extension == null) return MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        return switch (extension.toLowerCase()) {
+            case "pdf" -> MediaType.APPLICATION_PDF_VALUE;
+            case "png" -> MediaType.IMAGE_PNG_VALUE;
+            case "jpg", "jpeg" -> MediaType.IMAGE_JPEG_VALUE;
+            default -> MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        };
     }
 }

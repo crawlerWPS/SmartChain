@@ -105,6 +105,7 @@
     <update id="updateTemplate" parameterType="com.scfs.common.entity.MaterialChecklistTemplate">
         UPDATE schema_common.material_checklist_template
         <set>
+            <if test="businessType != null">business_type = #{businessType},</if>
             <if test="requiredMaterials != null">required_materials = CAST(#{requiredMaterials, typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),</if>
             <if test="version != null">version = #{version},</if>
             <if test="status != null">status = #{status},</if>
@@ -115,5 +116,9 @@
         </set>
         WHERE id = #{id}
     </update>
+
+    <delete id="deleteTemplate">
+        DELETE FROM schema_common.material_checklist_template WHERE id = #{id}
+    </delete>
 
 </mapper>

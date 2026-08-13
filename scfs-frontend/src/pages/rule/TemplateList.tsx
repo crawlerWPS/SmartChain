@@ -2,9 +2,9 @@
  * 材料清单模板页 - 双岗
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Button, Tag, Modal, Form, Select, message } from 'antd';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
-import { listTemplates, createTemplate, submitTemplate, approveTemplate, rejectTemplate } from '@/api/risk';
+import { Card, Table, Button, Modal, Form, Select, message, Popconfirm, Space } from 'antd';
+import { PlusOutlined, ReloadOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { listTemplates, createTemplate, updateTemplate, deleteTemplate, approveTemplate, rejectTemplate } from '@/api/risk';
 import { Permission } from '@/components/common/Permission';
 import { formatDate } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
@@ -14,7 +14,9 @@ const TemplateList: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [createVisible, setCreateVisible] = useState(false);
+  const [editing, setEditing] = useState<any>();
   const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
   const dictionary = useCodeDictionary();
 
   const load = async () => {
@@ -28,10 +30,6 @@ const TemplateList: React.FC = () => {
 
   useEffect(() => { load(); }, []);
 
-  const handleSubmit = async (id: number) => {
-    try { await submitTemplate(id); message.success('已提交'); load(); }
-    catch (e: any) { message.error(e.message); }
-  };
   const handleApprove = async (id: number) => {
     try { await approveTemplate(id); message.success('已通过'); load(); }
     catch (e: any) { message.error(e.message); }
@@ -54,6 +52,27 @@ const TemplateList: React.FC = () => {
     } catch (e: any) { message.error(e.message); }
   };
 
+  const openEdit = (record: any) => {
+    setEditing(record);
+    editForm.setFieldsValue(record);
+  };
+
+  const handleUpdate = async () => {
+    const values = await editForm.validateFields();
+    try {
+      await updateTemplate(editing.id, values);
+      message.success('修改成功');
+      setEditing(undefined);
+      editForm.resetFields();
+      load();
+    } catch (e: any) { message.error(e.message); }
+  };
+
+  const handleDelete = async (id: number) => {
+    try { await deleteTemplate(id); message.success('删除成功'); load(); }
+    catch (e: any) { message.error(e.message); }
+  };
+
   const columns = [
     { title: '业务类型', dataIndex: 'businessType', key: 'businessType', render: (v: string) => dictionary.label('BUSINESS_TYPE', v) },
     { title: '必需材料', dataIndex: 'requiredMaterials', key: 'requiredMaterials', render: (v: string[]) => v?.map((x) => dictionary.label('MATERIAL_TYPE', x)).join('、') },
@@ -63,15 +82,22 @@ const TemplateList: React.FC = () => {
     }},
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
-      <>
-        {r.status === 'DRAFT' && <Permission perm={['RULE', 'create']}><a onClick={() => handleSubmit(r.id)}>提交</a></Permission>}
+      <Space>
+        <Permission perm={['RULE', 'update']}>
+          <a onClick={() => openEdit(r)}><EditOutlined /> 修改</a>
+        </Permission>
+        <Permission perm={['RULE', 'delete']}>
+          <Popconfirm title="确认删除该材料清单模板？" description="删除后不可恢复" onConfirm={() => handleDelete(r.id)}>
+            <a style={{ color: '#ff4d4f' }}><DeleteOutlined /> 删除</a>
+          </Popconfirm>
+        </Permission>
         {r.status === 'PENDING' && (
           <Permission perm={['RULE', 'approve']}>
-            <a onClick={() => handleApprove(r.id)} style={{ marginRight: 8 }}>通过</a>
+            <a onClick={() => handleApprove(r.id)}>通过</a>
             <a style={{ color: '#ff4d4f' }} onClick={() => handleReject(r.id)}>驳回</a>
           </Permission>
         )}
-      </>
+      </Space>
     )},
   ];
 
@@ -88,6 +114,17 @@ const TemplateList: React.FC = () => {
 
       <Modal title="新建材料清单模板" open={createVisible} onOk={handleCreate} onCancel={() => { setCreateVisible(false); createForm.resetFields(); }}>
         <Form form={createForm} layout="vertical">
+          <Form.Item name="businessType" label="业务类型" rules={[{ required: true }]}>
+            <Select options={dictionary.options('BUSINESS_TYPE')} />
+          </Form.Item>
+          <Form.Item name="requiredMaterials" label="必需材料" rules={[{ required: true }]}>
+            <Select mode="multiple" options={materialOptions} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal title="修改材料清单模板" open={!!editing} onOk={handleUpdate} onCancel={() => { setEditing(undefined); editForm.resetFields(); }}>
+        <Form form={editForm} layout="vertical">
           <Form.Item name="businessType" label="业务类型" rules={[{ required: true }]}>
             <Select options={dictionary.options('BUSINESS_TYPE')} />
           </Form.Item>

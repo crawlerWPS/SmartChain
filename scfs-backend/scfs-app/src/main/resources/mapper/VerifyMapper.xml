@@ -178,7 +178,7 @@
     </update>
 
     <select id="selectApplicationCustomers" resultType="com.scfs.module.verify.entity.ApplicationCustomer">
-        SELECT id AS enterpriseId, name, uscc
+        SELECT id AS enterpriseId, name, uscc, industry, legal_person AS legalPerson, address
         FROM schema_graph.enterprise
         <where>
             <if test="keyword != null and keyword != ''">
@@ -189,6 +189,21 @@
         </where>
         ORDER BY id
     </select>
+
+    <insert id="insertApplicationCustomer" parameterType="com.scfs.module.verify.entity.ApplicationCustomer" useGeneratedKeys="true" keyProperty="enterpriseId" keyColumn="id">
+        INSERT INTO schema_graph.enterprise (name, uscc, industry, legal_person, address, data_source)
+        VALUES (#{name}, #{uscc}, #{industry}, #{legalPerson}, #{address}, 'MANUAL')
+    </insert>
+
+    <update id="updateApplicationCustomer" parameterType="com.scfs.module.verify.entity.ApplicationCustomer">
+        UPDATE schema_graph.enterprise SET name=#{name}, uscc=#{uscc}, industry=#{industry}, legal_person=#{legalPerson}, address=#{address}, updated_at=NOW()
+        WHERE id=#{enterpriseId}
+    </update>
+
+    <insert id="insertTradeRelation">
+        INSERT INTO schema_graph.supply_chain_relation (from_enterprise_id, to_enterprise_id, relation_type)
+        VALUES (#{buyerEnterpriseId}, #{sellerEnterpriseId}, 'TRADE')
+    </insert>
 
     <select id="countEnterpriseById" resultType="long">
         SELECT COUNT(*) FROM schema_graph.enterprise WHERE id = #{enterpriseId}
@@ -245,6 +260,12 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateMaterialRecognitionStatus">
+        UPDATE schema_verify.application_material
+        SET status = #{status}, confidence = #{confidence}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
     <!-- 识别结果 -->
     <select id="selectRecognitionResult" resultMap="RecognitionMap">
         SELECT * FROM schema_verify.material_recognition_result
@@ -255,6 +276,39 @@
         DELETE FROM schema_verify.material_recognition_result
         WHERE application_material_id = #{applicationMaterialId}
     </delete>
+
+    <resultMap id="OcrTemplateMap" type="com.scfs.module.verify.entity.OcrRecognitionTemplate">
+        <id property="id" column="id"/><result property="templateName" column="template_name"/>
+        <result property="materialType" column="material_type"/><result property="enterpriseId" column="enterprise_id"/>
+        <result property="priority" column="priority"/><result property="enabled" column="enabled"/>
+        <result property="matchAnchors" column="match_anchors" typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result property="fieldRules" column="field_rules" typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
+        <result property="createdAt" column="created_at"/><result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="selectOcrTemplates" resultMap="OcrTemplateMap">
+        SELECT * FROM schema_verify.ocr_recognition_template
+        <if test="materialType != null and materialType != ''">WHERE material_type=#{materialType}</if>
+        ORDER BY material_type, priority DESC, id DESC
+    </select>
+    <select id="selectOcrTemplateById" resultMap="OcrTemplateMap">SELECT * FROM schema_verify.ocr_recognition_template WHERE id=#{id}</select>
+    <select id="selectEnabledOcrTemplate" resultMap="OcrTemplateMap">
+        SELECT * FROM schema_verify.ocr_recognition_template
+        WHERE material_type=#{materialType} AND enabled=TRUE AND (enterprise_id=#{enterpriseId} OR enterprise_id IS NULL)
+        ORDER BY CASE WHEN enterprise_id=#{enterpriseId} THEN 0 ELSE 1 END, priority DESC LIMIT 1
+    </select>
+    <insert id="insertOcrTemplate" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schema_verify.ocr_recognition_template(template_name,material_type,enterprise_id,priority,enabled,match_anchors,field_rules)
+        VALUES(#{templateName},#{materialType},#{enterpriseId},#{priority},#{enabled},
+        CAST(#{matchAnchors,typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+        CAST(#{fieldRules,typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb))
+    </insert>
+    <update id="updateOcrTemplate">
+        UPDATE schema_verify.ocr_recognition_template SET template_name=#{templateName},material_type=#{materialType},enterprise_id=#{enterpriseId},
+        priority=#{priority},enabled=#{enabled},match_anchors=CAST(#{matchAnchors,typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
+        field_rules=CAST(#{fieldRules,typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),updated_at=NOW() WHERE id=#{id}
+    </update>
+    <delete id="deleteOcrTemplate">DELETE FROM schema_verify.ocr_recognition_template WHERE id=#{id}</delete>
 
     <insert id="insertRecognitionResult" parameterType="com.scfs.module.verify.entity.MaterialRecognitionResult" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO schema_verify.material_recognition_result (application_material_id, buyer_name, buyer_uscc,

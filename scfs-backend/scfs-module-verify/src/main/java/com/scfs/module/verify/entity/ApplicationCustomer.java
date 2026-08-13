@@ -9,4 +9,7 @@ public class ApplicationCustomer {
     private Long enterpriseId;
     private String name;
     private String uscc;
+    private String industry;
+    private String legalPerson;
+    private String address;
 }

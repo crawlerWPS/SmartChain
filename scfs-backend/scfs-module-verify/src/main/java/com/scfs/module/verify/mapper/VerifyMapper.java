@@ -36,6 +36,11 @@ public interface VerifyMapper {
 
     List<ApplicationCustomer> selectApplicationCustomers(@Param("keyword") String keyword);
 
+    int insertApplicationCustomer(ApplicationCustomer customer);
+    int updateApplicationCustomer(ApplicationCustomer customer);
+    int insertTradeRelation(@Param("buyerEnterpriseId") Long buyerEnterpriseId,
+                            @Param("sellerEnterpriseId") Long sellerEnterpriseId);
+
     long countEnterpriseById(@Param("enterpriseId") Long enterpriseId);
 
     long countRelationByEnterpriseIds(@Param("buyerEnterpriseId") Long buyerEnterpriseId,
@@ -62,6 +67,10 @@ public interface VerifyMapper {
                            @Param("materialType") String materialType,
                            @Param("identifiedBy") String identifiedBy);
 
+    int updateMaterialRecognitionStatus(@Param("id") Long id,
+                                        @Param("status") String status,
+                                        @Param("confidence") BigDecimal confidence);
+
     // 材料识别结果
     MaterialRecognitionResult selectRecognitionResult(@Param("applicationMaterialId") Long applicationMaterialId);
 
@@ -70,6 +79,14 @@ public interface VerifyMapper {
     int insertRecognitionResult(MaterialRecognitionResult result);
 
     int updateRecognitionResult(MaterialRecognitionResult result);
+
+    List<OcrRecognitionTemplate> selectOcrTemplates(@Param("materialType") String materialType);
+    OcrRecognitionTemplate selectOcrTemplateById(@Param("id") Long id);
+    OcrRecognitionTemplate selectEnabledOcrTemplate(@Param("materialType") String materialType,
+                                                     @Param("enterpriseId") Long enterpriseId);
+    int insertOcrTemplate(OcrRecognitionTemplate template);
+    int updateOcrTemplate(OcrRecognitionTemplate template);
+    int deleteOcrTemplate(@Param("id") Long id);
 
     // 核验项检查结果
     List<VerifyCheckResult> selectCheckResultsByApplication(@Param("applicationId") Long applicationId);

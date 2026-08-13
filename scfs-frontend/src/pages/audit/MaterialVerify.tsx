@@ -3,9 +3,9 @@ import { Card, Tabs, Button, message, List, Tag, Empty, Row, Col, Progress, Moda
 import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons';
 import { history, useParams } from '@umijs/max';
 import FileUpload from '@/components/upload/FileUpload';
-import { listMaterials, getRecognitionResult, reRecognizeMaterial } from '@/api/application';
+import { listMaterials, getRecognitionResult, reRecognizeMaterial, downloadMaterial, previewMaterial } from '@/api/application';
 import { verifyAll } from '@/api/verify';
-import { formatFileSize, formatDate } from '@/utils';
+import { formatFileSize, formatDate, downloadBlob } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 import { CodeTag } from '@/components/common/CodeTag';
 import type { ApplicationMaterial, MaterialRecognitionResult } from '@/types';
@@ -75,6 +75,19 @@ const MaterialVerify: React.FC = () => {
     }
   };
 
+  const handlePreview = async (item: ApplicationMaterial) => {
+    try {
+      const url = URL.createObjectURL(await previewMaterial(item.fileObjectId));
+      window.open(url, '_blank', 'noopener,noreferrer');
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e: any) { message.error(e.message); }
+  };
+
+  const handleDownload = async (item: ApplicationMaterial) => {
+    try { downloadBlob(await downloadMaterial(item.fileObjectId), item.fileName || `material-${item.id}`); }
+    catch (e: any) { message.error(e.message); }
+  };
+
   useEffect(() => { load(); }, [appId]);
 
   return (
@@ -89,6 +102,8 @@ const MaterialVerify: React.FC = () => {
           <FileUpload applicationId={appId} onUploaded={load} />
           <List style={{ marginTop: 24 }} loading={loading} dataSource={list}
             renderItem={(item) => <List.Item actions={[
+              <a key="preview" onClick={() => handlePreview(item)}>在线预览</a>,
+              <a key="download" onClick={() => handleDownload(item)}>下载</a>,
               <a key="view" onClick={() => handleView(item.id)}>查看</a>,
               <a key="recognize" onClick={() => handleReRecognize(item.id)}>
                 {recognizingId === item.id ? '识别中...' : '重新识别'}

@@ -21,14 +21,14 @@ import java.util.List;
  * <p>用于 sys_role_permission.permissions 等字段</p>
  */
 @MappedTypes(List.class)
-public class JsonListTypeHandler extends BaseTypeHandler<List<String>> {
+public class JsonListTypeHandler extends BaseTypeHandler<List<Object>> {
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, List<String> parameter, JdbcType jdbcType)
+    public void setNonNullParameter(PreparedStatement ps, int i, List<Object> parameter, JdbcType jdbcType)
             throws SQLException {
         PGobject pgo = new PGobject();
         pgo.setType("jsonb");
@@ -41,29 +41,29 @@ public class JsonListTypeHandler extends BaseTypeHandler<List<String>> {
     }
 
     @Override
-    public List<String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
+    public List<Object> getNullableResult(ResultSet rs, String columnName) throws SQLException {
         String json = rs.getString(columnName);
         return parse(json);
     }
 
     @Override
-    public List<String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+    public List<Object> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
         String json = rs.getString(columnIndex);
         return parse(json);
     }
 
     @Override
-    public List<String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+    public List<Object> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
         String json = cs.getString(columnIndex);
         return parse(json);
     }
 
-    private List<String> parse(String json) {
+    private List<Object> parse(String json) {
         if (json == null || json.isEmpty()) {
             return null;
         }
         try {
-            return MAPPER.readValue(json, new TypeReference<List<String>>() {});
+            return MAPPER.readValue(json, new TypeReference<List<Object>>() {});
         } catch (Exception e) {
             return null;
         }

@@ -130,6 +130,12 @@ const routes: RouteConfig[] = [
         component: '@/pages/rule/TemplateList',
         access: 'rule:view',
       },
+      {
+        name: 'OCR识别模板',
+        path: '/rule/ocr-template',
+        component: '@/pages/rule/OcrTemplateList',
+        access: 'rule:view',
+      },
     ],
   },
   // 审计查询

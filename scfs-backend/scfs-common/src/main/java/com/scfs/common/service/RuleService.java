@@ -272,6 +272,33 @@ public class RuleService {
         return template.getId();
     }
 
+    @Audit(module = "RULE", action = "UPDATE", targetType = "MATERIAL_TEMPLATE", targetIdExpr = "#templateId")
+    @Transactional
+    public void updateTemplate(Long templateId, MaterialChecklistTemplate changes) {
+        MaterialChecklistTemplate template = findTemplateById(templateId);
+        template.setBusinessType(changes.getBusinessType());
+        template.setRequiredMaterials(changes.getRequiredMaterials());
+        if (weightConfigMapper.updateTemplate(template) == 0) {
+            throw new IllegalArgumentException("材料模板不存在");
+        }
+    }
+
+    @Audit(module = "RULE", action = "DELETE", targetType = "MATERIAL_TEMPLATE", targetIdExpr = "#templateId")
+    @Transactional
+    public void deleteTemplate(Long templateId) {
+        findTemplateById(templateId);
+        if (weightConfigMapper.deleteTemplate(templateId) == 0) {
+            throw new IllegalArgumentException("材料模板不存在");
+        }
+    }
+
+    private MaterialChecklistTemplate findTemplateById(Long templateId) {
+        return listAllTemplates().stream()
+                .filter(t -> t.getId().equals(templateId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("材料模板不存在"));
+    }
+
     /**
      * 复核审批材料模板
      */
@@ -279,11 +306,7 @@ public class RuleService {
     @Transactional
     public void reviewTemplate(Long templateId, boolean approved, String rejectReason) {
         Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
-        // 简化：直接通过 selectAll 查找
-        MaterialChecklistTemplate template = listAllTemplates().stream()
-                .filter(t -> t.getId().equals(templateId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("材料模板不存在"));
+        MaterialChecklistTemplate template = findTemplateById(templateId);
 
         if (!DualControlStatus.PENDING.name().equals(template.getStatus())) {
             throw new IllegalStateException("该模板已处理");

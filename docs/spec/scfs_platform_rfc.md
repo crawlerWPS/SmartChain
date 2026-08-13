@@ -120,6 +120,9 @@ M4 risk ────── 依赖 M1+M2+M3 ───→│
 | `scfs-redis` | redis:7-alpine | 6379 | 缓存 / 会话 | - |
 | `scfs-minio` | minio/minio | 9000, 9001 | 文件存储（S3 兼容） | - |
 | `scfs-mock` | 自构建 python:3.11-slim | 9002 | Mock 外部数据源 | - |
+| `scfs-ocr` | Python + PaddleOCR | 9003 | PDF/图片文字、置信度、坐标框及页码识别 | - |
+
+后端镜像采用 Maven 多阶段构建：构建阶段复制完整多模块源码并执行 `mvn clean package -DskipTests`，运行阶段仅复制新生成的 `scfs-app.jar`。禁止仅复制宿主机已有 `target/scfs-app.jar`，否则 `docker compose up --build` 可能运行旧接口代码。
 
 #### 启动顺序
 
@@ -322,6 +325,7 @@ PostgreSQL (scfs_db)
 │   └── [按钮] 创建权重 (button: weight:create)
 │   └── [按钮] 审批权重 (button: weight:approve)
 └── 材料模板 (menu: rule.template, path: /rule/template)
+└── OCR识别模板 (route: /rule/ocr-template, permission: RULE.view)
     └── [按钮] 创建模板 (button: template:create)
     └── [按钮] 审批模板 (button: template:approve)
 
@@ -577,6 +581,8 @@ PostgreSQL (scfs_db)
 
 **迁移归属**：V1 创建融资申请基础表；V5 集中完成买卖方客户号字段新增、历史数据回填、非空约束、企业外键及买卖方索引。V5 不重复 V1 的建表及既有字段、索引语句。
 
+客户维护直接写入 `schema_graph.enterprise`，贸易关系维护写入 `schema_graph.supply_chain_relation`，本轮不新增客户或关系表。V6 将文档列出的演示账号密码统一为 `admin123`；V7 清理只有数据库元数据、没有 MinIO 对象的演示 file_object、application_material 及 recognition 记录，避免暴露不可预览/下载的悬空数据。
+
 #### 表 15：application_status_history（申请状态流转历史）
 
 | 字段 | 类型 | 约束 | 说明 |
@@ -635,6 +641,45 @@ PostgreSQL (scfs_db)
 | recognized_at | TIMESTAMP | NOT NULL DEFAULT NOW() | |
 
 **索引**：idx_recog_material(application_material_id)
+
+#### 表 17a：ocr_recognition_template（OCR结构化识别模板）
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| id | BIGSERIAL | PK | 模板主键 |
+| template_name | VARCHAR(128) | NOT NULL | 模板名称 |
+| material_type | VARCHAR(32) | NOT NULL | 当前支持 CONTRACT/INVOICE |
+| enterprise_id | BIGINT | 可空 | 指定企业模板；空表示通用模板 |
+| priority | INT | NOT NULL DEFAULT 0 | 匹配优先级，数值越大越优先 |
+| enabled | BOOLEAN | NOT NULL DEFAULT TRUE | 启停状态 |
+| match_anchors | JSONB | NOT NULL DEFAULT `[]` | 模板匹配关键词列表 |
+| field_rules | JSONB | NOT NULL DEFAULT `[]` | 字段提取规则列表 |
+| created_at | TIMESTAMP | NOT NULL DEFAULT NOW() | 创建时间 |
+| updated_at | TIMESTAMP | NOT NULL DEFAULT NOW() | 更新时间 |
+
+**索引**：idx_ocr_template_match(material_type, enterprise_id, enabled, priority DESC)
+
+**迁移归属**：V8 创建表、索引，并预置“标准贸易合同”和“标准增值税发票”模板。
+
+**field_rules 结构**：
+
+```json
+[
+  {
+    "fieldCode": "buyerName",
+    "extractMode": "ANCHOR_REGION",
+    "page": 1,
+    "anchors": ["甲方", "买方", "购买方"],
+    "direction": "RIGHT",
+    "region": {"x": 0, "y": -0.02, "width": 0.45, "height": 0.06},
+    "removeLabels": true,
+    "required": true,
+    "minConfidence": 0.75
+  }
+]
+```
+
+`region` 使用归一化坐标，原点位于页面左上角；固定区域的 x/y/width/height 相对于整页宽高，相对锚点区域的 x/y 表示相对偏移。OCR 返回的 `items[].box` 和 `items[].page` 用于换算实际区域并按从上到下、从左到右拼接文本。
 
 #### 表 18：verify_check_result（核验项检查结果）
 
@@ -822,6 +867,8 @@ financing_application (M2) ──┬── application_status_history
                              ├── supplement_list (M3)
                              └── risk_profile (M4) ── transaction_stability
 
+ocr_recognition_template (M2) ── material_type/enterprise_id 匹配 ── application_material
+
 file_object (common) ←── application_material (M2)
 rule_definition (common) ←── verify_check_result.executed_rules
 rule_change_log (common) — 双岗审批
@@ -838,6 +885,7 @@ material_checklist_template (common) — 双岗审批
 | 审计日志 | ≥ 5 年，按月分区 |
 | 规则变更日志 | 永久保留 |
 | OCR 原始结果 | 5 年（随报告） |
+| OCR 识别模板及规则 | 启用期间保留；变更操作写审计日志，历史识别结果保留命中模板 ID |
 
 ### 2.9 数据更新策略
 
@@ -846,6 +894,7 @@ material_checklist_template (common) — 双岗审批
 | 企业基础信息（工商） | T+1 批量同步 |
 | 供应链关系 | T+1 批量构建 |
 | OCR 识别结果 | 实时（申请提交时） |
+| OCR 识别模板 | 规则配置页面实时维护；下一次上传或重新识别时生效 |
 | 核验/预审/画像 | 实时（按申请触发） |
 
 ---
@@ -1157,6 +1206,21 @@ http://{host}:8080/api/v1
 }
 ```
 
+#### IF-010a：融资申请客户查询与维护
+
+- **查询**：`GET /applications/customers?keyword=`，权限 VERIFY.view
+- **新增**：`POST /applications/customers`，权限 VERIFY.create
+- **修改**：`PUT /applications/customers/{id}`，权限 VERIFY.update
+- **字段**：name、uscc 必填；industry、legalPerson、address 可选
+- **校验**：客户不存在或名称/统一社会信用代码为空时返回业务错误
+
+#### IF-010b：维护买卖方贸易关系
+
+- **Method**：`POST /applications/trade-relations`
+- **权限**：VERIFY.create
+- **Request**：`{"buyerEnterpriseId":1,"sellerEnterpriseId":2}`
+- **校验**：双方必须存在且不能相同；任一方向已有关系时不重复插入
+
 - **Response**：
 
 ```json
@@ -1197,6 +1261,13 @@ http://{host}:8080/api/v1
 - **权限**：RM/RCO/OPS/AUDIT
 - **Response**：状态流转列表（含判定理由）
 
+#### IF-014a：指派申请审核人
+
+- **Method**：`POST /applications/{id}/assign?handlerId={userId}`
+- **权限**：VERIFY.approve
+- **前置条件**：申请不是 DRAFT 且未进入终态
+- **效果**：更新 current_handler 和乐观锁版本，并写入 application_status_history
+
 #### IF-015：人工审核决策
 
 - **Method**：`POST /applications/{id}/decision`
@@ -1225,10 +1296,10 @@ http://{host}:8080/api/v1
 
 #### IF-017：上传材料文件
 
-- **Method**：`POST /applications/{id}/materials/upload`
+- **Method**：`POST /applications/{id}/materials`
 - **权限**：RM
 - **Content-Type**：`multipart/form-data`
-- **Request**：`file`（文件）、`materialType?`（可空，空则自动识别）
+- **Request**：`file`（文件）、`materialType`（材料类型）
 - **Response**：
 
 ```json
@@ -1247,7 +1318,7 @@ http://{host}:8080/api/v1
 }
 ```
 
-- **错误**：1001 文件类型不在白名单；1001 文件超过 50MB
+- **错误**：1001 文件类型不在白名单、文件超过 50MB、PDF 扩展名与 `%PDF-` 文件签名不匹配
 
 #### IF-018：材料列表
 
@@ -1258,29 +1329,36 @@ http://{host}:8080/api/v1
 
 #### IF-019：手动指定材料类型
 
-- **Method**：`PATCH /materials/{id}/type`
+- **Method**：`PUT /applications/materials/{id}/type`
 - **权限**：RM
 - **Request**：`{"materialType": "INVOICE"}`
 - **使用场景**：材料识别 status=UNRECOGNIZED 时人工指定
 
 #### IF-020：获取材料识别结果
 
-- **Method**：`GET /materials/{id}/recognition`
+- **Method**：`GET /applications/materials/{id}/recognition`
 - **权限**：RM/RCO/OPS/AUDIT
 - **Response**：material_recognition_result 完整字段 + field_positions
 
 #### IF-021：手动修正识别字段
 
-- **Method**：`PUT /materials/{id}/recognition`
+- **Method**：`PUT /applications/materials/{id}/recognition`
 - **权限**：RM
 - **Request**：识别结果字段（部分更新）
 - **使用场景**：OCR 置信度低或识别错误时人工修正
 
 #### IF-022：下载材料文件
 
-- **Method**：`GET /materials/{id}/download`
+- **Method**：`GET /files/{fileObjectId}/download`
 - **权限**：RM/RCO/OPS/AUDIT
-- **Response**：文件流（Content-Type 按 file_type 设置）
+- **Response**：附件文件流（Content-Disposition=attachment）
+
+#### IF-022a：在线预览材料文件
+
+- **Method**：`GET /files/{fileObjectId}/preview`
+- **权限**：已认证用户
+- **Response**：内联文件流（Content-Disposition=inline），PDF/PNG/JPEG 返回对应媒体类型，其余返回 application/octet-stream
+- **错误处理**：文件元数据或 MinIO 对象不存在时返回“文件内容不存在或已被清理”
 
 ### 3.5 供应链图谱模块（M1）
 
@@ -1663,12 +1741,12 @@ http://{host}:8080/api/v1
 
 #### IF-052：模板列表
 
-- **Method**：`GET /material-templates`
+- **Method**：`GET /templates`
 - **权限**：R-03a/R-03b/AUDIT
 
 #### IF-053：创建模板变更（经办）
 
-- **Method**：`POST /material-templates`
+- **Method**：`POST /templates`
 - **权限**：R-03a
 - **Request**：
 
@@ -1681,9 +1759,58 @@ http://{host}:8080/api/v1
 
 #### IF-054：审批模板变更（复核）
 
-- **Method**：`POST /material-templates/{id}/approve`
+- **Method**：`POST /templates/{id}/review`
 - **权限**：R-03b
-- **Request**：`{"approved": true, "comment": "..."}`
+- **Request**：`{"approved": true, "remark": "..."}` 或 `{"approved": false, "rejectReason": "..."}`
+
+#### IF-054a：修改材料清单模板
+
+- **Method**：`PUT /templates/{id}`
+- **权限**：RULE.update
+- **Request**：`{"businessType":"FACTORING","requiredMaterials":["CONTRACT","INVOICE"]}`
+- **效果**：更新业务类型和必需材料 JSONB，记录 UPDATE 审计日志
+
+#### IF-054b：删除材料清单模板
+
+- **Method**：`DELETE /templates/{id}`
+- **权限**：RULE.delete
+- **效果**：物理删除模板，记录 DELETE 审计日志；前端必须二次确认
+
+### 3.12a OCR 识别模板配置模块
+
+#### IF-054c：OCR模板列表
+
+- **Method**：`GET /ocr-templates?materialType=CONTRACT|INVOICE`
+- **权限**：RULE.view
+- **Response**：按材料类型、优先级降序返回模板及 fieldRules
+
+#### IF-054d：创建OCR模板
+
+- **Method**：`POST /ocr-templates`
+- **权限**：RULE.create
+- **Request**：模板名称、材料类型、适用企业、优先级、enabled、matchAnchors、fieldRules
+- **校验**：模板名称不能为空；当前材料类型仅允许 CONTRACT/INVOICE
+
+#### IF-054e：修改OCR模板
+
+- **Method**：`PUT /ocr-templates/{id}`
+- **权限**：RULE.update
+- **效果**：完整更新模板属性和 JSONB 规则，下一次上传或重新识别时生效
+
+#### IF-054f：删除OCR模板
+
+- **Method**：`DELETE /ocr-templates/{id}`
+- **权限**：RULE.delete
+- **效果**：删除指定模板；前端必须二次确认
+
+#### OCR结构化提取顺序
+
+1. PaddleOCR 服务对图片或 PDF 各页执行方向分类、页面矫正、文字行方向识别，返回文本、置信度、坐标框和页码。
+2. 后端按 application_material.material_type 查询启用模板，校验 matchAnchors 并选择优先级最高的模板。
+3. `FULL_TEXT` 对全文执行正则；`ABSOLUTE_REGION` 将归一化区域换算为实际坐标；`ANCHOR_REGION` 先定位锚点文本框再计算相对区域。
+4. 区域内 OCR 项按 y、x 排序后拼接，映射到 MaterialRecognitionResult 字段。
+5. 模板未命中的字段继续使用通用信用代码、金额和交易编号正则兜底。
+6. field_confidence 保存 overall 和 templateId，raw_ocr_result/field_positions 保存原始证据。
 
 ### 3.13 审计日志模块
 

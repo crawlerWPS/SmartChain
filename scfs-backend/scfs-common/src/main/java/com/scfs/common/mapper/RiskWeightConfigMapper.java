@@ -37,4 +37,6 @@ public interface RiskWeightConfigMapper {
     List<MaterialChecklistTemplate> selectAllTemplates();
 
     int updateTemplate(MaterialChecklistTemplate template);
+
+    int deleteTemplate(@Param("id") Long id);
 }

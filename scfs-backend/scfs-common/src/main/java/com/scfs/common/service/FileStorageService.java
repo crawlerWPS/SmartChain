@@ -1,6 +1,8 @@
 package com.scfs.common.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.scfs.common.core.BusinessException;
+import com.scfs.common.core.ErrorCode;
 import com.scfs.common.entity.FileObject;
 import com.scfs.common.mapper.FileObjectMapper;
 import io.minio.MinioClient;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 
@@ -52,6 +55,7 @@ public class FileStorageService {
     public Long upload(MultipartFile file, Long uploaderId) {
         try {
             byte[] bytes = file.getBytes();
+            validateFileContent(file.getOriginalFilename(), bytes);
             String contentHash = sha256(bytes);
 
             // 查重
@@ -105,6 +109,10 @@ public class FileStorageService {
                     .object(fileObject.getMinioObjectKey())
                     .build());
         } catch (ErrorResponseException e) {
+            if ("NoSuchBucket".equals(e.errorResponse().code()) || "NoSuchKey".equals(e.errorResponse().code())
+                    || "NoSuchObject".equals(e.errorResponse().code())) {
+                throw new BusinessException(ErrorCode.NOT_FOUND, "文件内容不存在或已被清理", e);
+            }
             throw new RuntimeException("文件下载失败: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new RuntimeException("文件下载失败: " + e.getMessage(), e);
@@ -142,5 +150,19 @@ public class FileStorageService {
             return "unknown";
         }
         return fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    }
+
+    private static void validateFileContent(String fileName, byte[] bytes) {
+        if ("pdf".equals(getFileExtension(fileName))) {
+            byte[] signature = "%PDF-".getBytes(StandardCharsets.US_ASCII);
+            if (bytes.length < signature.length) {
+                throw new BusinessException(ErrorCode.FILE_UPLOAD_REJECTED, "PDF 文件内容无效");
+            }
+            for (int i = 0; i < signature.length; i++) {
+                if (bytes[i] != signature[i]) {
+                    throw new BusinessException(ErrorCode.FILE_UPLOAD_REJECTED, "PDF 文件格式与扩展名不匹配");
+                }
+            }
+        }
     }
 }
