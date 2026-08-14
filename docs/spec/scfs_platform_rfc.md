@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |----|------|
 | 文档名称 | 供应链金融智能风控与尽调辅助平台 RFC |
-| 文档版本 | V1.1 |
+| 文档版本 | V1.2 |
 | 编写日期 | 2026-08-14 |
 | 关联文档 | [PRD](../prd/scfs_platform_prd.md) |
 
@@ -623,9 +623,9 @@ PostgreSQL (scfs_db)
 | id | BIGSERIAL | PK | |
 | application_material_id | BIGINT | UNIQUE NOT NULL | 1:1 关联材料 |
 | buyer_name | VARCHAR(128) | | 买方名称 |
-| buyer_uscc | VARCHAR(18) | | 买方信用代码 |
+| buyer_uscc | VARCHAR(18) | | 买方信用代码；合同材料不写入 |
 | seller_name | VARCHAR(128) | | 卖方名称 |
-| seller_uscc | VARCHAR(18) | | 卖方信用代码 |
+| seller_uscc | VARCHAR(18) | | 卖方信用代码；合同材料不写入 |
 | commodity | TEXT | | 商品信息 |
 | amount | DECIMAL(18,2) | | 金额 |
 | amount_in_words | VARCHAR(128) | | 金额大写 |
@@ -645,7 +645,7 @@ PostgreSQL (scfs_db)
 
 **索引**：idx_recog_material(application_material_id)
 
-**展示映射**：结构化字段保持通用存储模型，前端按材料类型显示业务名称。发票的 `transaction_no` 显示为“发票号码”，`invoice_date` 显示为“开票时间”；合同和订单分别显示合同编号/日期、订单编号/日期。发票结果页不再以“商品”占用开票时间展示位。
+**展示映射**：结构化字段保持通用存储模型，前端按材料类型显示业务名称。发票的 `transaction_no` 显示为“发票号码”，`invoice_date` 显示为“开票时间”；合同和订单分别显示合同编号/日期、订单编号/日期。发票结果页不再以“商品”占用开票时间展示位。合同 OCR 详情不渲染 `buyer_uscc`、`seller_uscc`。
 
 #### 表 17a：ocr_recognition_template（OCR结构化识别模板）
 
@@ -1842,8 +1842,10 @@ http://{host}:8080/api/v1
 2. 上传时指定 `ocr_template_id` 则直接使用该模板；否则按 `application_material.material_type` 查询启用模板，校验 matchAnchors 并选择优先级最高的模板。
 3. `FULL_TEXT` 对全文执行正则；`ABSOLUTE_REGION` 将归一化区域换算为实际坐标；`ANCHOR_REGION` 先定位锚点文本框再计算相对区域。
 4. 区域内 OCR 项按 y、x 排序后拼接，映射到 MaterialRecognitionResult 字段。
-5. 模板未命中的字段继续使用通用信用代码、金额和交易编号正则兜底。
-6. field_confidence 保存 overall、templateId 和 templateCode，raw_ocr_result/field_positions 保存原始证据。
+5. 模板未命中的字段继续使用通用金额和交易编号正则兜底；仅非合同材料执行通用信用代码兜底。即使历史合同模板仍包含 `buyerUscc`/`sellerUscc` 规则，结果映射阶段也忽略这两个值。
+6. 模板配置端按 `materialType` 过滤字段选项：合同模板不提供 `buyerUscc`、`sellerUscc`，打开历史合同模板或切换为合同类型时清理这两类规则。
+7. 模板金额区域可能返回包含标签、币种、单位、千分位或 OCR 断字空白的文本。入库前先移除空白（含不换行空格），提取首个合法十进制金额，再移除中英文千分位并统一全角小数点；例如 `合同金额：￥4,854,00 0.00元` 转换为 `4854000.00`。无法转换时保留通用兜底结果并记录告警，不以异常文本覆盖已识别金额。
+8. field_confidence 保存 overall、templateId 和 templateCode，raw_ocr_result/field_positions 保存原始证据。
 
 ### 3.13 审计日志模块
 
@@ -2358,7 +2360,7 @@ public interface VerifyReportService {
 - 材料类型识别
 - 完整性检查（对照模板）
 - 有效性检查（过期/缺页/异常）
-- 企业信息一致性检查（4 要素：名称/信用代码/法人/地址）
+- 企业信息一致性检查（当前纳入结论的 2 类要素：买卖方名称、统一社会信用代码；法人和地址字段仅兼容保留）
 - 生成补正清单
 
 #### 4.4.2 核心 Service 接口
@@ -2382,7 +2384,7 @@ public interface ValidityChecker {
 }
 
 public interface ConsistencyChecker {
-    /** 企业信息一致性检查（4 要素） */
+    /** 企业信息一致性检查（名称、统一社会信用代码） */
     ConsistencyResult check(Long applicationId);
 }
 
@@ -3225,7 +3227,7 @@ sequenceDiagram
 **任务清单**：
 - [ ] S5-1 实现 `CompletenessChecker`（对照模板检查缺失）
 - [ ] S5-2 实现 `ValidityChecker`（过期/缺页/异常检查）
-- [ ] S5-3 实现 `ConsistencyChecker`（4 要素对比，主表 + 明细表）
+- [ ] S5-3 实现 `ConsistencyChecker`（名称、统一社会信用代码对比，主表 + 明细表；法人和地址不参与当前结论）
 - [ ] S5-4 实现 `SupplementListService`（生成补正清单）
 - [ ] S5-5 实现补正清单导出（PDF + Excel）
 - [ ] S5-6 实现 `PreAuditService`（聚合 3 项检查）
@@ -3237,7 +3239,7 @@ sequenceDiagram
 
 **验证**：
 - 缺失材料时，完整性检查正确识别
-- 企业信息不一致时，4 要素明细正确记录
+- 企业名称或统一社会信用代码不一致时，按角色和材料来源正确记录明细
 - 补正清单导出内容正确
 
 **依赖**：阶段 4（复用材料识别结果）
@@ -4144,21 +4146,21 @@ docker/postgres/init/
 
 ```
 scfs-app/src/main/resources/db/migration/
-├── V1.0.0__create_schemas.sql
-├── V1.0.1__create_common_tables.sql
-├── V1.0.2__create_graph_tables.sql
-├── V1.0.3__create_verify_tables.sql
-├── V1.0.4__create_preaudit_tables.sql
-├── V1.0.5__create_risk_tables.sql
-├── V1.0.6__create_indexes.sql
-├── V1.0.7__seed_roles_permissions.sql
-├── V1.0.8__seed_menus.sql
-├── V1.0.9__seed_rules.sql
-├── V1.1.0__seed_risk_weights.sql
-└── V1.1.1__seed_material_templates.sql
+├── V1__init_schema.sql
+├── V2__init_data.sql
+├── V3__seed_data.sql
+├── V4__init_code_dictionary.sql
+├── V5__link_application_trade_parties.sql
+├── V6__fix_seed_user_passwords.sql
+├── V7__remove_missing_seed_materials.sql
+├── V8__add_ocr_recognition_template.sql
+├── V9__normalize_drl_newlines.sql
+├── V10__add_ocr_template_code_and_material_selection.sql
+├── V11__remove_material_template_review.sql
+└── V12__add_invoice_date_to_standard_ocr_template.sql
 ```
 
-应用启动时自动执行 Flyway migrate。
+应用启动时自动执行 Flyway migrate。迁移采用仅追加策略：已经在环境中执行过的脚本不得改名、改版本或改内容；新增结构使用下一个未占用整数版本。V1 已包含五个 schema、基础业务表和索引，新增迁移前必须先检查 V1 及 V2～V12，避免重复建表、重复加列或重复初始化数据。
 
 ### 8.8 部署流程
 
@@ -4564,13 +4566,14 @@ mc mirror --overwrite /data/backups/minio/materials_20240101 minio/scfs-material
 
 | Schema | 表数 | 表清单 |
 |--------|------|--------|
-| common | 9 | sys_user, sys_role, sys_role_permission, sys_menu, sys_role_menu, file_object, audit_log, data_source_config, material_checklist_template |
+| common | 12 | sys_user, sys_role, sys_role_permission, sys_menu, sys_role_menu, sys_audit_log, file_object, rule_definition, rule_change_log, risk_weight_config, material_checklist_template, code_dictionary |
 | graph | 5 | enterprise, supply_chain_relation, enterprise_role, enterprise_position_analysis, abnormal_relation |
-| verify | 6 | application_material, material_recognition_result, ocr_recognition_template, verify_check_result, verify_report, verify_report_snapshot |
+| verify | 7 | financing_application, application_status_history, application_material, material_recognition_result, ocr_recognition_template, verify_check_result, verify_report |
 | preaudit | 5 | material_completeness_result, material_validity_result, enterprise_info_consistency_result, enterprise_info_mismatch_detail, supplement_list |
-| risk | 4 | risk_profile, risk_profile_snapshot, risk_weight_config, rule_change_log |
-| 跨 schema | 2 | financing_application, application_status_history |
+| risk | 2 | risk_profile, transaction_stability |
 | **合计** | **31** | |
+
+`sys_audit_log_202607`、`sys_audit_log_202608` 是 `sys_audit_log` 的物理分区，不重复计入逻辑业务表数量。代码及当前迁移中不存在 `data_source_config`、`verify_report_snapshot`、`risk_profile_snapshot` 表；`risk_weight_config`、`rule_change_log` 实际归属 `schema_common`。
 
 ### 10.7 文档变更记录
 
@@ -4578,6 +4581,7 @@ mc mirror --overwrite /data/backups/minio/materials_20240101 minio/scfs-material
 |------|------|---------|------|
 | 1.0.0 | 2026-07-14 | 初始版本，包含 Section 1-10 | 架构师 |
 | 1.1.0 | 2026-08-14 | 增加材料删除重传、OCR 全材料类型/唯一编号/上传选模、样本设计器、预审真实结果展示、材料模板取消复核、发票字段展示映射及页面一致的 PDF 导出；同步 V10-V12 数据库变更 | Codex |
+| 1.2.0 | 2026-08-14 | 反向同步当前实现：合同 OCR 禁止识别和展示买卖方信用代码；补充金额文本归一化规则；修正实际 Flyway V1-V12 清单和 31 张逻辑表的 schema 归属。审计确认无新增表、字段或索引，因此不新增迁移 SQL | Codex |
 
 ### 10.8 待确认事项
 
