@@ -2,15 +2,16 @@
  * 申请详情页 - 整合申请信息、状态流转、操作按钮
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Descriptions, Button, Space, message, Modal, Typography } from 'antd';
+import { Card, Descriptions, Button, Space, message, Modal, Typography, Form, Input, InputNumber } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useSearchParams, history } from '@umijs/max';
-import { getApplication, submitApplication, assignApplication, rejectApplication, approveApplication } from '@/api/application';
-import { canSubmit, canAssign, canReject, canApprove, formatDate, formatAmount } from '@/utils';
+import { getApplication, submitApplication, rejectApplication, approveApplication, escalateApplicationToOps } from '@/api/application';
+import { canSubmit, formatDate, formatAmount } from '@/utils';
 import { ApplicationStatusTag } from '@/components/common/StatusTag';
 import { Permission } from '@/components/common/Permission';
 import { ApplicationStatus } from '@/types';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
+import { hasRole } from '@/access/access';
 
 const { Title } = Typography;
 
@@ -18,7 +19,14 @@ const ApplicationDetail: React.FC = () => {
   const [searchParams] = useSearchParams();
   const appId = Number(searchParams.get('appId') || 0);
   const [detail, setDetail] = useState<any>(null);
+  const [reviewAction, setReviewAction] = useState<'approve' | 'escalate'>();
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewForm] = Form.useForm();
   const dictionary = useCodeDictionary();
+  const riskOfficer = hasRole('RCO');
+  const operationsSupervisor = hasRole('OPS');
+  const canReview = (riskOfficer && detail?.status === ApplicationStatus.SUBMITTED)
+    || (operationsSupervisor && detail?.status === ApplicationStatus.PENDING_DECISION);
 
   const load = async () => {
     if (!appId) return;
@@ -40,21 +48,6 @@ const ApplicationDetail: React.FC = () => {
     } catch (e: any) { message.error(e.message); }
   };
 
-  const handleAssign = async () => {
-    const handlerId = window.prompt('请输入风控审核员 ID');
-    if (!handlerId) return;
-    const parsedHandlerId = Number(handlerId.trim());
-    if (!Number.isInteger(parsedHandlerId) || parsedHandlerId <= 0) {
-      message.error('审核人 ID 必须是正整数');
-      return;
-    }
-    try {
-      await assignApplication(appId, parsedHandlerId);
-      message.success('已分配');
-      load();
-    } catch (e: any) { message.error(e.message); }
-  };
-
   const handleReject = async () => {
     const reason = window.prompt('驳回原因');
     if (!reason) return;
@@ -65,17 +58,30 @@ const ApplicationDetail: React.FC = () => {
     } catch (e: any) { message.error(e.message); }
   };
 
-  const handleApprove = async () => {
-    Modal.confirm({
-      title: '确认审批通过？',
-      onOk: async () => {
-        try {
-          await approveApplication(appId);
-          message.success('已通过');
-          load();
-        } catch (e: any) { message.error(e.message); }
-      },
-    });
+  const handleReviewSubmit = async () => {
+    const values = await reviewForm.validateFields();
+    setReviewSubmitting(true);
+    try {
+      if (reviewAction === 'approve') {
+        await approveApplication(appId, values.remark.trim());
+        message.success('融资申请已通过');
+      } else if (reviewAction === 'escalate') {
+        await escalateApplicationToOps(appId, values.supervisorId, values.remark.trim());
+        message.success('已升级并分配至运营主管');
+      }
+      setReviewAction(undefined);
+      reviewForm.resetFields();
+      load();
+    } catch (e: any) {
+      message.error(e.message);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  const openReview = (action: 'approve' | 'escalate') => {
+    reviewForm.resetFields();
+    setReviewAction(action);
   };
 
   if (!detail) return <Card loading />;
@@ -109,19 +115,19 @@ const ApplicationDetail: React.FC = () => {
               <Button type="primary" onClick={handleSubmit}>提交申请</Button>
             </Permission>
           )}
-          {canAssign(detail.status) && (
-            <Permission perm={['VERIFY', 'approve']}>
-              <Button onClick={handleAssign}>分配审核人</Button>
-            </Permission>
-          )}
-          {canReject(detail.status) && (
+          {canReview && (
             <Permission perm={['VERIFY', 'reject']}>
               <Button danger onClick={handleReject}>驳回</Button>
             </Permission>
           )}
-          {canApprove(detail.status) && (
+          {canReview && (
             <Permission perm={['VERIFY', 'approve']}>
-              <Button type="primary" onClick={handleApprove}>审批通过</Button>
+              <Button type="primary" onClick={() => openReview('approve')}>通过</Button>
+            </Permission>
+          )}
+          {riskOfficer && detail.status === ApplicationStatus.SUBMITTED && (
+            <Permission perm={['VERIFY', 'approve']}>
+              <Button onClick={() => openReview('escalate')}>无法判断，升级运营主管</Button>
             </Permission>
           )}
         </Space>
@@ -135,6 +141,29 @@ const ApplicationDetail: React.FC = () => {
           <Button onClick={() => window.location.href = `/audit/risk/${appId}`}>风险画像</Button>
         </Space>
       </Card>
+
+      <Modal
+        title={reviewAction === 'approve' ? '通过融资申请' : '升级运营主管'}
+        open={!!reviewAction}
+        confirmLoading={reviewSubmitting}
+        okText="提交"
+        cancelText="取消"
+        onOk={handleReviewSubmit}
+        onCancel={() => { setReviewAction(undefined); reviewForm.resetFields(); }}
+      >
+        <Form form={reviewForm} layout="vertical">
+          {reviewAction === 'escalate' && (
+            <Form.Item name="supervisorId" label="运营主管用户 ID"
+              rules={[{ required: true, message: '请输入运营主管用户 ID' }, { type: 'number', min: 1, message: '用户 ID 必须是正整数' }]}>
+              <InputNumber min={1} precision={0} style={{ width: '100%' }} placeholder="请输入启用状态的运营主管用户 ID" />
+            </Form.Item>
+          )}
+          <Form.Item name="remark" label="审核意见"
+            rules={[{ required: true, whitespace: true, message: '请填写审核意见' }]}>
+            <Input.TextArea rows={4} maxLength={500} showCount placeholder="请填写本次审核判断依据和意见" />
+          </Form.Item>
+        </Form>
+      </Modal>
 
     </div>
   );

@@ -7,7 +7,6 @@ import {
   formatDate,
   formatFileSize,
   canSubmit,
-  canAssign,
   canReject,
   canApprove,
   APPLICATION_STATUS_MAP,
@@ -152,16 +151,6 @@ describe('状态流转判断', () => {
 
     it('APPROVED 状态不可提交', () => {
       expect(canSubmit(ApplicationStatus.APPROVED)).toBe(false);
-    });
-  });
-
-  describe('canAssign', () => {
-    it('SUBMITTED 状态可分配审核人', () => {
-      expect(canAssign(ApplicationStatus.SUBMITTED)).toBe(true);
-    });
-
-    it('DRAFT 状态不可分配', () => {
-      expect(canAssign(ApplicationStatus.DRAFT)).toBe(false);
     });
   });
 

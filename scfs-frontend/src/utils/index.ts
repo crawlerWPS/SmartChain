@@ -52,12 +52,14 @@ export const APPLICATION_STATUS_MAP: Record<ApplicationStatus, { label: string; 
   [ApplicationStatus.OCR_RECOGNIZING]: { label: 'OCR识别中', color: 'processing' },
   [ApplicationStatus.OCR_FAILED]: { label: 'OCR失败', color: 'red' },
   [ApplicationStatus.PREAUDIT]: { label: '材料预审', color: 'processing' },
+  [ApplicationStatus.PRE_AUDITING]: { label: '材料预审', color: 'processing' },
   [ApplicationStatus.PREAUDIT_FAILED]: { label: '预审未通过', color: 'red' },
   [ApplicationStatus.PREAUDIT_PASSED]: { label: '预审通过', color: 'blue' },
   [ApplicationStatus.VERIFYING]: { label: '真实性核验', color: 'processing' },
   [ApplicationStatus.VERIFY_FAILED]: { label: '核验未通过', color: 'red' },
   [ApplicationStatus.VERIFY_PASSED]: { label: '核验通过', color: 'blue' },
   [ApplicationStatus.RISK_SCORING]: { label: '风险评分', color: 'processing' },
+  [ApplicationStatus.PENDING_DECISION]: { label: '等待人工决策', color: 'warning' },
   [ApplicationStatus.APPROVED]: { label: '已通过', color: 'success' },
   [ApplicationStatus.REJECTED]: { label: '已驳回', color: 'red' },
 };
@@ -90,11 +92,6 @@ export const BUSINESS_TYPE_MAP: Record<string, string> = {
 /** 是否可提交（DRAFT 状态） */
 export function canSubmit(status: ApplicationStatus): boolean {
   return status === ApplicationStatus.DRAFT || status === ApplicationStatus.MATERIAL_SUPPLEMENT;
-}
-
-/** 是否可分配审核人（SUBMITTED 状态） */
-export function canAssign(status: ApplicationStatus): boolean {
-  return status === ApplicationStatus.SUBMITTED;
 }
 
 /** 是否可驳回 */

@@ -103,6 +103,25 @@ public class JwtAuthService {
         return result;
     }
 
+    /** Return the current user's latest role and permissions. */
+    public Map<String, Object> currentUserInfo() {
+        Long userId = securityContextHelper.getCurrentUserIdOrThrow();
+        SysUser user = userService.getById(userId);
+        if (user == null || user.getStatus() == null || user.getStatus() != 1) {
+            throw new IllegalStateException("用户不存在或已被禁用");
+        }
+
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("userId", user.getId());
+        userInfo.put("username", user.getUsername());
+        userInfo.put("realName", user.getRealName());
+        userInfo.put("roleCode", user.getRoleCode());
+        Map<String, List<String>> permissions = loadPermissions(user.getId());
+        userInfo.put("permissions", permissions);
+        securityContextHelper.cacheRolePermissions(user.getRoleCode(), permissions);
+        return userInfo;
+    }
+
     /**
      * 加载用户角色的权限映射：module -> permissions[]
      */

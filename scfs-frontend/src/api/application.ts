@@ -75,19 +75,22 @@ export async function submitApplication(id: number, remark?: string) {
   return request(`/applications/${id}/submit`, { method: 'POST', data: { remark } });
 }
 
-/** IF-APP-006 分配审核人 */
-export async function assignApplication(id: number, handlerId: number) {
-  return request(`/applications/${id}/assign`, { method: 'POST', params: { handlerId } });
-}
-
 /** IF-APP-007 驳回 */
 export async function rejectApplication(id: number, reason: string) {
-  return request(`/applications/${id}/reject`, { method: 'POST', data: { reason } });
+  return request(`/applications/${id}/reject`, { method: 'POST', data: { remark: reason } });
 }
 
 /** IF-APP-008 通过 */
-export async function approveApplication(id: number, remark?: string) {
+export async function approveApplication(id: number, remark: string) {
   return request(`/applications/${id}/approve`, { method: 'POST', data: { remark } });
+}
+
+/** 风控无法判断时升级运营主管 */
+export async function escalateApplicationToOps(id: number, supervisorId: number, remark: string) {
+  return request(`/applications/${id}/escalate-to-ops`, {
+    method: 'POST',
+    data: { supervisorId, remark },
+  });
 }
 
 /** IF-APP-009 状态历史 */

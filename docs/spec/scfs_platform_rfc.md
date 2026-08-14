@@ -1248,12 +1248,14 @@ http://{host}:8080/api/v1
 - **权限**：RM/RCO/OPS/AUDIT（按角色过滤可见范围）
 - **Query**：`page, size, status?, businessType?, enterpriseId?, dateFrom?, dateTo?, handler?`
 - **Response**：申请列表
+- **角色可见状态**：RM 可查看全部状态（包含 VERIFYING）；RCO 仅返回 SUBMITTED、APPROVED、REJECTED；OPS 仅返回 PENDING_DECISION、APPROVED、REJECTED；其他角色不返回 VERIFYING。请求不在角色可见集合内的状态时返回空页。
 
 #### IF-012：申请详情
 
 - **Method**：`GET /applications/{id}`
 - **权限**：RM/RCO/OPS/AUDIT
 - **Response**：申请完整信息 + 当前状态 + 状态流转历史
+- **详情约束**：详情接口复用列表的角色状态可见集合，禁止通过申请 ID 绕过列表过滤；VERIFYING 仅 RM 可查看。
 
 #### IF-013：提交申请（触发预审+核验）
 
@@ -1269,28 +1271,30 @@ http://{host}:8080/api/v1
 - **权限**：RM/RCO/OPS/AUDIT
 - **Response**：状态流转列表（含判定理由）
 
-#### IF-014a：指派申请审核人
+#### IF-015：人工审核通过/拒绝
 
-- **Method**：`POST /applications/{id}/assign?handlerId={userId}`
-- **权限**：VERIFY.approve
-- **前置条件**：申请不是 DRAFT 且未进入终态
-- **效果**：更新 current_handler 和乐观锁版本，并写入 application_status_history
-
-#### IF-015：人工审核决策
-
-- **Method**：`POST /applications/{id}/decision`
-- **权限**：RM（PENDING_REVIEW）/ RCO（RISK_REVIEW）/ OPS（ESCALATED）
-- **Request**：
+- **Method**：`POST /applications/{id}/approve`、`POST /applications/{id}/reject`
+- **权限**：VERIFY.approve / VERIFY.reject
+- **Request**（两种操作均必填审核意见）：
 
 ```json
 {
-  "decision": "APPROVED",
   "remark": "材料齐全，风险可控"
 }
 ```
 
-- **decision 取值**：APPROVED / REJECTED / ESCALATED（仅 RCO 可用）
+- **角色状态约束**：RCO 仅可对 SUBMITTED 执行通过/拒绝；OPS 仅可对 PENDING_DECISION 执行通过/拒绝。前端按相同条件展示按钮，后端服务再次强制校验。
+- **校验**：`remark` 去除首尾空白后不能为空，前端表单与后端服务双重校验。
 - **错误**：1005 当前状态不可审核；1003 无权审核当前状态
+
+#### IF-015a：升级运营主管
+
+- **Method**：`POST /applications/{id}/escalate-to-ops`
+- **权限**：VERIFY.approve，且当前登录角色必须为 RCO
+- **Request**：`{"supervisorId": 6, "remark": "交易背景仍需运营主管判断"}`，两个字段均必填
+- **用户校验**：`supervisorId` 必须对应存在、启用且角色编码为 OPS 的用户
+- **状态处理**：仅允许 RCO 将 SUBMITTED 流转至 PENDING_DECISION，并将 `current_handler` 更新为运营主管 ID
+- **审计处理**：写入 application_status_history，记录风控人员、运营主管姓名/ID和审核意见；写入 VERIFY.ESCALATE 审计日志
 
 #### IF-016：撤销人工判定
 
@@ -1378,7 +1382,7 @@ http://{host}:8080/api/v1
 #### IF-022c：删除申请材料
 
 - **Method**：`DELETE /applications/materials/{id}`
-- **权限**：VERIFY.delete
+- **权限**：VERIFY.delete（V13 为全部现有角色补齐；已有 VERIFY 权限记录追加 `delete`，缺少 VERIFY 记录时创建最小权限记录）
 - **效果**：删除材料及其 OCR 识别结果，清除该申请的历史核验结果；之后允许重新选择文件、材料类型和 OCR 模板上传。
 - **存储策略**：不直接删除可能被内容去重机制复用的文件对象和 MinIO 内容。
 
@@ -4157,7 +4161,9 @@ scfs-app/src/main/resources/db/migration/
 ├── V9__normalize_drl_newlines.sql
 ├── V10__add_ocr_template_code_and_material_selection.sql
 ├── V11__remove_material_template_review.sql
-└── V12__add_invoice_date_to_standard_ocr_template.sql
+├── V12__add_invoice_date_to_standard_ocr_template.sql
+├── V13__grant_material_delete_to_all_roles.sql
+└── V14__grant_ops_application_review_permissions.sql
 ```
 
 应用启动时自动执行 Flyway migrate。迁移采用仅追加策略：已经在环境中执行过的脚本不得改名、改版本或改内容；新增结构使用下一个未占用整数版本。V1 已包含五个 schema、基础业务表和索引，新增迁移前必须先检查 V1 及 V2～V12，避免重复建表、重复加列或重复初始化数据。
@@ -4581,7 +4587,7 @@ mc mirror --overwrite /data/backups/minio/materials_20240101 minio/scfs-material
 |------|------|---------|------|
 | 1.0.0 | 2026-07-14 | 初始版本，包含 Section 1-10 | 架构师 |
 | 1.1.0 | 2026-08-14 | 增加材料删除重传、OCR 全材料类型/唯一编号/上传选模、样本设计器、预审真实结果展示、材料模板取消复核、发票字段展示映射及页面一致的 PDF 导出；同步 V10-V12 数据库变更 | Codex |
-| 1.2.0 | 2026-08-14 | 反向同步当前实现：合同 OCR 禁止识别和展示买卖方信用代码；补充金额文本归一化规则；修正实际 Flyway V1-V12 清单和 31 张逻辑表的 schema 归属。审计确认无新增表、字段或索引，因此不新增迁移 SQL | Codex |
+| 1.2.0 | 2026-08-14 | 反向同步当前实现：合同 OCR 禁止识别和展示买卖方信用代码；补充金额文本归一化规则；修正实际 Flyway 清单和 31 张逻辑表的 schema 归属；V13 为所有角色补齐材料删除权限 | Codex |
 
 ### 10.8 待确认事项
 

@@ -51,7 +51,7 @@ export default function access(initialState: { currentUser?: CurrentUser }) {
     // 菜单可见权限 - 基于角色代码
     canViewWorkspace: !!user,
     canViewGraph: !!user && (isAdmin() || hasRole('RM') || hasRole('RCO') || hasRole('AUDIT')),
-    canViewAudit: !!user && (isAdmin() || hasRole('RM') || hasRole('RCO')),
+    canViewAudit: !!user && (isAdmin() || hasRole('RM') || hasRole('RCO') || hasRole('OPS')),
     canViewRule: !!user && (isAdmin() || hasRole('OPS_MAKER') || hasRole('OPS_CHECKER') || hasRole('OPS')),
     canViewAuditTrail: !!user && (isAdmin() || hasRole('AUDIT') || hasRole('OPS')),
     canViewSystem: !!user && isAdmin(),
@@ -65,6 +65,7 @@ export default function access(initialState: { currentUser?: CurrentUser }) {
     'application:reject': () => can('VERIFY', 'reject'),
     'material:view': () => can('VERIFY', 'view'),
     'material:upload': () => can('VERIFY', 'create'),
+    'material:delete': () => can('VERIFY', 'delete'),
     'material:re-recognize': () => can('VERIFY', 'update'),
     'preaudit:view': () => can('PREAUDIT', 'view'),
     'preaudit:check': () => can('PREAUDIT', 'view'),

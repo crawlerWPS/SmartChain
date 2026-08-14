@@ -5,7 +5,8 @@
 import { history } from '@umijs/max';
 import { message as antdMessage } from 'antd';
 import type { RequestConfig, RunTimeLayoutConfig } from '@umijs/max';
-import { getCurrentUser, setCurrentUser, type CurrentUser } from '@/access/access';
+import { setCurrentUser, type CurrentUser } from '@/access/access';
+import { getCurrentUser as fetchCurrentUser } from '@/api/auth';
 import { clearTokens, getAccessToken } from '@/utils/auth';
 import { normalizeRequestError } from '@/utils/requestError';
 
@@ -16,15 +17,14 @@ export async function getInitialState(): Promise<{ currentUser?: CurrentUser }> 
     return {};
   }
   try {
-    // 调用 /auth/me 获取用户信息（此处略，依赖 api 层）
-    const userStr = localStorage.getItem('scfs_current_user');
-    if (userStr) {
-      const currentUser = JSON.parse(userStr) as CurrentUser;
-      setCurrentUser(currentUser);
-      return { currentUser };
-    }
+    const currentUser = await fetchCurrentUser();
+    localStorage.setItem('scfs_current_user', JSON.stringify(currentUser));
+    setCurrentUser(currentUser);
+    return { currentUser };
   } catch (e) {
     clearTokens();
+    localStorage.removeItem('scfs_current_user');
+    setCurrentUser(null);
   }
   return {};
 }

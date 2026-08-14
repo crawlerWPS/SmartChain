@@ -22,6 +22,8 @@ export interface LoginResult {
   };
 }
 
+export type CurrentUserInfo = LoginResult['userInfo'];
+
 /** IF-AUTH-001 登录 */
 export async function login(params: LoginParams): Promise<LoginResult> {
   return request('/auth/login', { method: 'POST', data: params });
@@ -39,5 +41,5 @@ export async function logout(): Promise<void> {
 
 /** IF-AUTH-004 获取当前用户 */
 export async function getCurrentUser() {
-  return request<LoginResult['user']>('/auth/me', { method: 'GET' });
+  return request<CurrentUserInfo>('/auth/me', { method: 'GET' });
 }

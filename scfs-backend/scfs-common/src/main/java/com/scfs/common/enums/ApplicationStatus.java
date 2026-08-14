@@ -67,14 +67,14 @@ public enum ApplicationStatus {
     private Set<ApplicationStatus> allowedTransitions() {
         return switch (this) {
             case DRAFT -> EnumSet.of(SUBMITTED);
-            case SUBMITTED -> EnumSet.of(PRE_AUDITING);
-            case PRE_AUDITING -> EnumSet.of(PRE_AUDIT_PASSED, PRE_AUDIT_FAILED);
-            case PRE_AUDIT_PASSED -> EnumSet.of(VERIFYING);
+            case SUBMITTED -> EnumSet.of(PRE_AUDITING, PENDING_DECISION, APPROVED, REJECTED);
+            case PRE_AUDITING -> EnumSet.of(PRE_AUDIT_PASSED, PRE_AUDIT_FAILED, PENDING_DECISION, APPROVED);
+            case PRE_AUDIT_PASSED -> EnumSet.of(VERIFYING, PENDING_DECISION, APPROVED);
             case PRE_AUDIT_FAILED -> EnumSet.of(SUBMITTED); // 重新提交补正
-            case VERIFYING -> EnumSet.of(VERIFY_PASSED, VERIFY_FAILED);
-            case VERIFY_PASSED -> EnumSet.of(RISK_SCORING);
+            case VERIFYING -> EnumSet.of(VERIFY_PASSED, VERIFY_FAILED, PENDING_DECISION, APPROVED);
+            case VERIFY_PASSED -> EnumSet.of(RISK_SCORING, PENDING_DECISION, APPROVED);
             case VERIFY_FAILED -> EnumSet.of(SUBMITTED); // 重新提交补正
-            case RISK_SCORING -> EnumSet.of(PENDING_DECISION);
+            case RISK_SCORING -> EnumSet.of(PENDING_DECISION, APPROVED);
             case PENDING_DECISION -> EnumSet.of(APPROVED, REJECTED);
             case APPROVED -> EnumSet.of(APPROVED_REVOKED);
             case REJECTED -> EnumSet.of(REJECTED_REVOKED);

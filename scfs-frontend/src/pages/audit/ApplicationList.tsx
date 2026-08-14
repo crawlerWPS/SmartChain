@@ -15,6 +15,7 @@ import { Permission } from '@/components/common/Permission';
 import { formatAmount, formatDate } from '@/utils';
 import { ApplicationStatus } from '@/types';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
+import { hasRole } from '@/access/access';
 
 const ApplicationList: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
@@ -29,6 +30,15 @@ const ApplicationList: React.FC = () => {
   const [createForm] = Form.useForm();
   const buyerEnterpriseId = Form.useWatch('buyerEnterpriseId', createForm);
   const dictionary = useCodeDictionary();
+  const visibleStatusCodes = hasRole('RCO')
+    ? [ApplicationStatus.SUBMITTED, ApplicationStatus.APPROVED, ApplicationStatus.REJECTED]
+    : hasRole('OPS')
+      ? [ApplicationStatus.PENDING_DECISION, ApplicationStatus.APPROVED, ApplicationStatus.REJECTED]
+      : undefined;
+  const statusOptions = dictionary.options('APPLICATION_STATUS')
+    .filter((option) => visibleStatusCodes
+      ? visibleStatusCodes.includes(option.value as ApplicationStatus)
+      : hasRole('RM') || option.value !== ApplicationStatus.VERIFYING);
 
   const load = async () => {
     setLoading(true);
@@ -140,7 +150,7 @@ const ApplicationList: React.FC = () => {
         <Input.Search placeholder="申请编号/买卖方名称" allowClear
           onSearch={(v) => setQuery({ ...query, keyword: v, page: 1 })} style={{ width: 240 }} />
         <Select placeholder="状态" allowClear style={{ width: 160 }}
-          options={dictionary.options('APPLICATION_STATUS')}
+          options={statusOptions}
           onChange={(v) => setQuery({ ...query, status: v, page: 1 })} />
       </Space>
       <Table columns={columns} dataSource={list} rowKey="id" loading={loading}

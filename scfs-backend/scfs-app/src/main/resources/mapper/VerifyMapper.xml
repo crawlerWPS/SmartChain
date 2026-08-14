@@ -134,6 +134,10 @@
         LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
         <where>
             <if test="status != null and status != ''">AND a.status = #{status}</if>
+            AND a.status IN
+            <foreach collection="visibleStatuses" item="visibleStatus" open="(" separator="," close=")">
+                #{visibleStatus}
+            </foreach>
             <if test="submittedBy != null">AND a.submitted_by = #{submittedBy}</if>
             <if test="enterpriseId != null">AND a.enterprise_id = #{enterpriseId}</if>
             <if test="keyword != null and keyword != ''">
@@ -151,6 +155,10 @@
         LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
         <where>
             <if test="status != null and status != ''">AND a.status = #{status}</if>
+            AND a.status IN
+            <foreach collection="visibleStatuses" item="visibleStatus" open="(" separator="," close=")">
+                #{visibleStatus}
+            </foreach>
             <if test="submittedBy != null">AND a.submitted_by = #{submittedBy}</if>
             <if test="enterpriseId != null">AND a.enterprise_id = #{enterpriseId}</if>
             <if test="keyword != null and keyword != ''">
@@ -249,12 +257,6 @@
     <update id="updateApplicationStatus">
         UPDATE schema_verify.financing_application
         SET status = #{status}, current_handler = #{currentHandler}, version = #{version}, updated_at = NOW()
-        WHERE id = #{id}
-    </update>
-
-    <update id="updateApplicationHandler">
-        UPDATE schema_verify.financing_application
-        SET current_handler = #{currentHandler}, version = #{version}, updated_at = NOW()
         WHERE id = #{id}
     </update>
 

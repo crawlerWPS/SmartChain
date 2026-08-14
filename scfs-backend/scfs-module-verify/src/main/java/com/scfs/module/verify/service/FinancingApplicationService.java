@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,7 +38,11 @@ public class FinancingApplicationService {
     private final SysUserService sysUserService;
 
     public FinancingApplication getById(Long id) {
-        return verifyMapper.selectApplicationById(id);
+        FinancingApplication application = verifyMapper.selectApplicationById(id);
+        if (application != null && !visibleStatusesForCurrentRole().contains(application.getStatus())) {
+            throw new IllegalArgumentException("申请不存在或当前角色无权查看该状态数据");
+        }
+        return application;
     }
 
     public FinancingApplication getByAppNo(String appNo) {
@@ -46,12 +51,33 @@ public class FinancingApplicationService {
 
     public PageResult<FinancingApplication> search(String status, Long submittedBy, Long enterpriseId, String keyword,
                                                     long offset, int size) {
-        long total = verifyMapper.countApplications(status, submittedBy, enterpriseId, keyword);
+        List<String> visibleStatuses = visibleStatusesForCurrentRole();
+        if (status != null && !status.isBlank() && !visibleStatuses.contains(status)) {
+            return PageResult.empty();
+        }
+        long total = verifyMapper.countApplications(status, visibleStatuses, submittedBy, enterpriseId, keyword);
         if (total == 0) {
             return PageResult.empty();
         }
-        return PageResult.of(verifyMapper.selectApplicationPage(status, submittedBy, enterpriseId, keyword, offset, size),
+        return PageResult.of(verifyMapper.selectApplicationPage(status, visibleStatuses, submittedBy, enterpriseId, keyword, offset, size),
                 total);
+    }
+
+    private List<String> visibleStatusesForCurrentRole() {
+        String role = securityContextHelper.getCurrentRoleCodeOrThrow();
+        if ("RCO".equals(role)) {
+            return List.of(ApplicationStatus.SUBMITTED.name(), ApplicationStatus.APPROVED.name(), ApplicationStatus.REJECTED.name());
+        }
+        if ("OPS".equals(role)) {
+            return List.of(ApplicationStatus.PENDING_DECISION.name(), ApplicationStatus.APPROVED.name(), ApplicationStatus.REJECTED.name());
+        }
+        if ("RM".equals(role)) {
+            return Arrays.stream(ApplicationStatus.values()).map(Enum::name).toList();
+        }
+        return Arrays.stream(ApplicationStatus.values())
+                .filter(value -> value != ApplicationStatus.VERIFYING)
+                .map(Enum::name)
+                .toList();
     }
 
     /**
@@ -178,40 +204,6 @@ public class FinancingApplicationService {
     }
 
     /**
-     * 为已提交申请分配风控审核员，不改变申请状态。
-     */
-    @Audit(module = "VERIFY", action = "ASSIGN", targetType = "FINANCING_APPLICATION", targetIdExpr = "#id")
-    @Transactional
-    public void assignHandler(Long id, Long handlerId) {
-        Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
-        if (handlerId == null) {
-            throw new IllegalArgumentException("请选择审核人");
-        }
-        FinancingApplication app = verifyMapper.selectApplicationById(id);
-        if (app == null) {
-            throw new IllegalArgumentException("申请不存在");
-        }
-        if (!ApplicationStatus.SUBMITTED.name().equals(app.getStatus())) {
-            throw new IllegalStateException("仅已提交状态的申请可以分配审核人");
-        }
-        SysUser handler = sysUserService.getById(handlerId);
-        if (handler == null) {
-            throw new IllegalArgumentException("审核人不存在");
-        }
-        if (handler.getStatus() == null || handler.getStatus() != 1) {
-            throw new IllegalStateException("审核人账号未启用");
-        }
-        if (!"RCO".equals(handler.getRoleCode())) {
-            throw new IllegalArgumentException("只能分配给风控审核员");
-        }
-        verifyMapper.updateApplicationHandler(id, handlerId, app.getVersion() + 1);
-        recordStatusHistory(id, app.getStatus(), app.getStatus(), currentUserId,
-                "分配审核人: " + (handler.getRealName() == null ? handlerId : handler.getRealName()));
-        log.info("[Application] 已分配审核人: appNo={}, handlerId={}, operatorId={}",
-                app.getAppNo(), handlerId, currentUserId);
-    }
-
-    /**
      * 推进到预审（SUBMITTED → PRE_AUDITING）
      */
     @Transactional
@@ -282,10 +274,12 @@ public class FinancingApplicationService {
     @Transactional
     public void approve(Long id, String remark) {
         Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
+        requireReviewRemark(remark);
         FinancingApplication app = verifyMapper.selectApplicationById(id);
         if (app == null) {
             throw new IllegalArgumentException("申请不存在");
         }
+        requireDecisionRoleAndStatus(app);
         ApplicationStatus current = ApplicationStatus.valueOf(app.getStatus());
         if (!current.canTransitTo(ApplicationStatus.APPROVED)) {
             throw new IllegalStateException("当前状态不允许审批通过: " + app.getStatus());
@@ -296,16 +290,62 @@ public class FinancingApplicationService {
     }
 
     /**
+     * 风控人员无法判断时升级给运营主管处理。
+     */
+    @Audit(module = "VERIFY", action = "ESCALATE", targetType = "FINANCING_APPLICATION", targetIdExpr = "#id")
+    @Transactional
+    public void escalateToOps(Long id, Long supervisorId, String remark) {
+        Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
+        if (!"RCO".equals(securityContextHelper.getCurrentRoleCodeOrThrow())) {
+            throw new IllegalStateException("仅风控审核员可以升级运营主管");
+        }
+        requireReviewRemark(remark);
+        if (supervisorId == null || supervisorId <= 0) {
+            throw new IllegalArgumentException("请输入有效的运营主管用户ID");
+        }
+        FinancingApplication app = verifyMapper.selectApplicationById(id);
+        if (app == null) {
+            throw new IllegalArgumentException("申请不存在");
+        }
+        requireDecisionRoleAndStatus(app);
+        ApplicationStatus current = ApplicationStatus.valueOf(app.getStatus());
+        if (current != ApplicationStatus.PENDING_DECISION
+                && !current.canTransitTo(ApplicationStatus.PENDING_DECISION)) {
+            throw new IllegalStateException("当前状态不允许升级运营主管: " + app.getStatus());
+        }
+        SysUser supervisor = sysUserService.getById(supervisorId);
+        if (supervisor == null) {
+            throw new IllegalArgumentException("运营主管用户不存在");
+        }
+        if (supervisor.getStatus() == null || supervisor.getStatus() != 1) {
+            throw new IllegalStateException("运营主管账号未启用");
+        }
+        if (!"OPS".equals(supervisor.getRoleCode())) {
+            throw new IllegalArgumentException("指定用户不是运营主管");
+        }
+        String fromStatus = app.getStatus();
+        verifyMapper.updateApplicationStatus(id, ApplicationStatus.PENDING_DECISION.name(),
+                supervisorId, app.getVersion() + 1);
+        recordStatusHistory(id, fromStatus, ApplicationStatus.PENDING_DECISION.name(), currentUserId,
+                "升级运营主管（" + (supervisor.getRealName() == null ? supervisorId : supervisor.getRealName())
+                        + "）：" + remark.trim());
+        log.info("[Application] 已升级运营主管: appNo={}, supervisorId={}, operatorId={}",
+                app.getAppNo(), supervisorId, currentUserId);
+    }
+
+    /**
      * 审批拒绝
      */
     @Audit(module = "VERIFY", action = "REJECT", targetType = "FINANCING_APPLICATION", targetIdExpr = "#id")
     @Transactional
     public void reject(Long id, String remark) {
         Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
+        requireReviewRemark(remark);
         FinancingApplication app = verifyMapper.selectApplicationById(id);
         if (app == null) {
             throw new IllegalArgumentException("申请不存在");
         }
+        requireDecisionRoleAndStatus(app);
         ApplicationStatus current = ApplicationStatus.valueOf(app.getStatus());
         if (!current.canTransitTo(ApplicationStatus.REJECTED)) {
             throw new IllegalStateException("当前状态不允许拒绝: " + app.getStatus());
@@ -365,6 +405,21 @@ public class FinancingApplicationService {
         history.setOperatorId(operatorId);
         history.setRemark(remark);
         verifyMapper.insertStatusHistory(history);
+    }
+
+    private void requireReviewRemark(String remark) {
+        if (remark == null || remark.trim().isEmpty()) {
+            throw new IllegalArgumentException("请填写审核意见");
+        }
+    }
+
+    private void requireDecisionRoleAndStatus(FinancingApplication application) {
+        String role = securityContextHelper.getCurrentRoleCodeOrThrow();
+        boolean allowed = ("RCO".equals(role) && ApplicationStatus.SUBMITTED.name().equals(application.getStatus()))
+                || ("OPS".equals(role) && ApplicationStatus.PENDING_DECISION.name().equals(application.getStatus()));
+        if (!allowed) {
+            throw new IllegalStateException("当前角色不能操作该状态的融资申请");
+        }
     }
 
     private String generateAppNo() {

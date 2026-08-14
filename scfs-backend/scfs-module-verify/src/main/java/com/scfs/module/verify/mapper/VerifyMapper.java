@@ -19,6 +19,7 @@ public interface VerifyMapper {
     FinancingApplication selectApplicationByNo(@Param("appNo") String appNo);
 
     List<FinancingApplication> selectApplicationPage(@Param("status") String status,
+                                                     @Param("visibleStatuses") List<String> visibleStatuses,
                                                        @Param("submittedBy") Long submittedBy,
                                                      @Param("enterpriseId") Long enterpriseId,
                                                      @Param("keyword") String keyword,
@@ -26,6 +27,7 @@ public interface VerifyMapper {
                                                        @Param("size") int size);
 
     long countApplications(@Param("status") String status,
+                           @Param("visibleStatuses") List<String> visibleStatuses,
                            @Param("submittedBy") Long submittedBy,
                            @Param("enterpriseId") Long enterpriseId,
                            @Param("keyword") String keyword);
@@ -52,10 +54,6 @@ public interface VerifyMapper {
 
     int updateApplicationStatus(@Param("id") Long id,
                                  @Param("status") String status,
-                                 @Param("currentHandler") Long currentHandler,
-                                 @Param("version") Integer version);
-
-    int updateApplicationHandler(@Param("id") Long id,
                                  @Param("currentHandler") Long currentHandler,
                                  @Param("version") Integer version);
 

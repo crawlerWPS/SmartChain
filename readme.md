@@ -126,7 +126,7 @@ ifconfig
 | 6 | `ops_sun` | `admin123` | OPS | 运营主管 |
 | 7 | `audit_zhou` | `admin123` | AUDIT | 审计人员 |
 
-> 用户 ID 是 `schema_common.sys_user.id`，不是用户名。以上 ID 适用于按项目迁移脚本全新初始化的数据库；如果数据库曾经导入过其他数据，ID 可能不同，请以实际查询结果为准。分配审核人时，风控审核员 `rco_li` 默认使用用户 ID `3`。
+> 用户 ID 是 `schema_common.sys_user.id`，不是用户名。以上 ID 适用于按项目迁移脚本全新初始化的数据库；如果数据库曾经导入过其他数据，ID 可能不同，请以实际查询结果为准。升级运营主管时，`ops_sun` 默认使用用户 ID `6`。
 
 ### 2. 各角色可见菜单
 

@@ -1,9 +1,9 @@
 # 后端镜像 - 多阶段构建（对应 RFC 6.2 阶段 0 S0-5）
-#FROM maven:3.9-eclipse-temurin-17 AS builder
-#WORKDIR /build
-#COPY .mvn/settings.xml /root/.m2/settings.xml
-#COPY . .
-#RUN mvn clean package -DskipTests
+FROM maven:3.9-eclipse-temurin-17 AS builder
+WORKDIR /build
+COPY .mvn/settings.xml /root/.m2/settings.xml
+COPY . .
+RUN mvn clean package -DskipTests
 
 # 运行阶段
 # 本地开发阶段复用已下载的 Maven/JDK 镜像，避免额外拉取运行时镜像。
@@ -16,7 +16,7 @@ WORKDIR /app
 ENV TZ=Asia/Shanghai
 ENV JAVA_OPTS="-Xms512m -Xmx2g -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError"
 
-COPY /scfs-app/target/scfs-app.jar /app/scfs-app.jar
+COPY --from=builder /build/scfs-app/target/scfs-app.jar /app/scfs-app.jar
 
 EXPOSE 8080
 

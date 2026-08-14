@@ -108,13 +108,6 @@ public class ApplicationController {
         return Result.success();
     }
 
-    @RequirePermission(module = "VERIFY", permission = "approve")
-    @PostMapping("/{id}/assign")
-    public Result<Void> assign(@PathVariable Long id, @RequestParam Long handlerId) {
-        applicationService.assignHandler(id, handlerId);
-        return Result.success();
-    }
-
     @RequirePermission(module = "VERIFY", permission = "update")
     @PostMapping("/{id}/move-to-pre-audit")
     public Result<Void> moveToPreAudit(@PathVariable Long id) {
@@ -161,6 +154,16 @@ public class ApplicationController {
     @PostMapping("/{id}/approve")
     public Result<Void> approve(@PathVariable Long id, @RequestBody Map<String, String> body) {
         applicationService.approve(id, body.get("remark"));
+        return Result.success();
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "approve")
+    @PostMapping("/{id}/escalate-to-ops")
+    public Result<Void> escalateToOps(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Object supervisorId = body.get("supervisorId");
+        applicationService.escalateToOps(id,
+                supervisorId instanceof Number number ? number.longValue() : null,
+                body.get("remark") == null ? null : String.valueOf(body.get("remark")));
         return Result.success();
     }
 

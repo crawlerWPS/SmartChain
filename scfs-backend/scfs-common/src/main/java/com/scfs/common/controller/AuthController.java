@@ -42,4 +42,9 @@ public class AuthController {
         authService.logout(refreshToken);
         return Result.success();
     }
+
+    @GetMapping("/me")
+    public Result<Map<String, Object>> me() {
+        return Result.success(authService.currentUserInfo());
+    }
 }
