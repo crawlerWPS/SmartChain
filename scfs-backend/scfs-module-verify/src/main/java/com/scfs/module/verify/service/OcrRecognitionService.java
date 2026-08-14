@@ -38,6 +38,7 @@ public class OcrRecognitionService {
 
     private static final Pattern USCC = Pattern.compile("[0-9A-HJ-NPQRTUWXY]{18}");
     private static final Pattern AMOUNT = Pattern.compile("(?:价税合计|合同金额|总金额|金额)[：:\\s￥¥]*([0-9,]+(?:\\.[0-9]{1,2})?)");
+    private static final Pattern DECIMAL_AMOUNT = Pattern.compile("[-+]?(?:\\d{1,3}(?:[,，\\s]\\d{3})+|\\d+)(?:[.．]\\d{1,2})?");
     private static final Pattern TRANSACTION_NO = Pattern.compile("(?:合同编号|订单编号|发票号码|单据编号)[：:\\s]*([A-Za-z0-9_-]{4,})");
     private static final Pattern INVOICE_DATE = Pattern.compile("(?:开票日期|开具日期|发票日期)[：:\\s]*(\\d{4}[年./-]\\d{1,2}[月./-]\\d{1,2}日?)");
 
@@ -119,9 +120,11 @@ public class OcrRecognitionService {
                 : verifyMapper.selectOcrTemplateById(material.getOcrTemplateId());
         Map<String, Object> extracted = template == null ? Map.of() : extractByTemplate(template.getFieldRules(), response);
 
-        Matcher uscc = USCC.matcher(text.replace(" ", "").toUpperCase());
-        if (uscc.find()) result.setBuyerUscc(uscc.group());
-        if (uscc.find()) result.setSellerUscc(uscc.group());
+        if (!"CONTRACT".equalsIgnoreCase(material.getMaterialType())) {
+            Matcher uscc = USCC.matcher(text.replace(" ", "").toUpperCase());
+            if (uscc.find()) result.setBuyerUscc(uscc.group());
+            if (uscc.find()) result.setSellerUscc(uscc.group());
+        }
         Matcher amount = AMOUNT.matcher(text);
         if (amount.find()) result.setAmount(new BigDecimal(amount.group(1).replace(",", "")));
         Matcher transactionNo = TRANSACTION_NO.matcher(text);
@@ -130,7 +133,7 @@ public class OcrRecognitionService {
             Matcher invoiceDate = INVOICE_DATE.matcher(text);
             if (invoiceDate.find()) result.setInvoiceDate(parseDate(invoiceDate.group(1)));
         }
-        applyExtracted(result, extracted);
+        applyExtracted(result, extracted, material.getMaterialType());
 
         Map<String, Object> fieldConfidence = new HashMap<>();
         fieldConfidence.put("overall", confidence * 100D);
@@ -188,17 +191,22 @@ public class OcrRecognitionService {
     private double box(Map<String,Object> item, int index) { return numberD(((List<?>)item.get("box")).get(index),0); }
     private int number(Object value, int fallback) { return value instanceof Number n ? n.intValue() : fallback; }
     private double numberD(Object value, double fallback) { return value instanceof Number n ? n.doubleValue() : fallback; }
-    private void applyExtracted(MaterialRecognitionResult result, Map<String,Object> values) {
+    private void applyExtracted(MaterialRecognitionResult result, Map<String,Object> values, String materialType) {
         if (values.containsKey("buyerName")) result.setBuyerName(String.valueOf(values.get("buyerName")));
         if (values.containsKey("sellerName")) result.setSellerName(String.valueOf(values.get("sellerName")));
-        if (values.containsKey("buyerUscc")) result.setBuyerUscc(String.valueOf(values.get("buyerUscc")));
-        if (values.containsKey("sellerUscc")) result.setSellerUscc(String.valueOf(values.get("sellerUscc")));
+        if (!"CONTRACT".equalsIgnoreCase(materialType)) {
+            if (values.containsKey("buyerUscc")) result.setBuyerUscc(String.valueOf(values.get("buyerUscc")));
+            if (values.containsKey("sellerUscc")) result.setSellerUscc(String.valueOf(values.get("sellerUscc")));
+        }
         if (values.containsKey("commodity")) result.setCommodity(String.valueOf(values.get("commodity")));
         if (values.containsKey("amountInWords")) result.setAmountInWords(String.valueOf(values.get("amountInWords")));
         if (values.containsKey("transactionNo")) result.setTransactionNo(String.valueOf(values.get("transactionNo")));
         if (values.containsKey("contractPeriod")) result.setContractPeriod(String.valueOf(values.get("contractPeriod")));
         if (values.containsKey("paymentTerm")) result.setPaymentTerm(String.valueOf(values.get("paymentTerm")));
-        if (values.containsKey("amount")) try { result.setAmount(new BigDecimal(String.valueOf(values.get("amount")).replace(",", ""))); } catch (NumberFormatException ignored) { }
+        if (values.containsKey("amount")) {
+            BigDecimal amount = parseAmount(values.get("amount"));
+            if (amount != null) result.setAmount(amount);
+        }
         result.setContractDate(parseDate(values.get("contractDate")));
         result.setOrderDate(parseDate(values.get("orderDate")));
         LocalDate invoiceDate = parseDate(values.get("invoiceDate"));
@@ -219,5 +227,25 @@ public class OcrRecognitionService {
             catch (DateTimeParseException ignored) { }
         }
         return null;
+    }
+
+    /** Converts OCR region text such as “合同金额：￥ 1,234.56 元” to a database decimal. */
+    private BigDecimal parseAmount(Object value) {
+        if (value == null) return null;
+        // OCR may insert spaces inside a number, e.g. "4,854,00 0.00".
+        String compact = String.valueOf(value).replaceAll("[\\s\\u00A0]+", "");
+        Matcher matcher = DECIMAL_AMOUNT.matcher(compact);
+        if (!matcher.find()) return null;
+        String normalized = matcher.group()
+                .replace(",", "")
+                .replace("，", "")
+                .replace(" ", "")
+                .replace("．", ".");
+        try {
+            return new BigDecimal(normalized);
+        } catch (NumberFormatException e) {
+            log.warn("[PaddleOCR] 金额格式无法转换: value={}", value);
+            return null;
+        }
     }
 }

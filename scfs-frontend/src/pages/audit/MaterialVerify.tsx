@@ -264,8 +264,8 @@ const MaterialVerify: React.FC = () => {
         {recognition && <Descriptions bordered column={2} size="small">
           <Descriptions.Item label="买方名称">{recognition.buyerName || '-'}</Descriptions.Item>
           <Descriptions.Item label="卖方名称">{recognition.sellerName || '-'}</Descriptions.Item>
-          <Descriptions.Item label="买方信用代码">{recognition.buyerUscc || '-'}</Descriptions.Item>
-          <Descriptions.Item label="卖方信用代码">{recognition.sellerUscc || '-'}</Descriptions.Item>
+          {viewingMaterial?.materialType !== 'CONTRACT' && <Descriptions.Item label="买方信用代码">{recognition.buyerUscc || '-'}</Descriptions.Item>}
+          {viewingMaterial?.materialType !== 'CONTRACT' && <Descriptions.Item label="卖方信用代码">{recognition.sellerUscc || '-'}</Descriptions.Item>}
           <Descriptions.Item label={documentDateLabel()}>{formatDate(documentDate(), 'YYYY-MM-DD')}</Descriptions.Item>
           <Descriptions.Item label="金额">{recognition.amount ?? '-'}</Descriptions.Item>
           <Descriptions.Item label={documentNoLabel()}>{recognition.transactionNo || '-'}</Descriptions.Item>

@@ -12,6 +12,9 @@ const fields = [
   ['contractDate','合同日期'],['orderDate','订单日期'],['invoiceDate','开票时间'],['logisticsDate','物流日期'],
   ['acceptanceDate','验收日期'],['paymentDate','付款日期'],['contractPeriod','合同期限'],['paymentTerm','付款条件'],
 ].map(([value,label])=>({value,label}));
+const fieldsFor = (materialType?: string) => materialType === 'CONTRACT'
+  ? fields.filter(field => !['buyerUscc','sellerUscc'].includes(field.value))
+  : fields;
 const modes = [{value:'ANCHOR_REGION',label:'锚点相对区域'},{value:'ABSOLUTE_REGION',label:'固定坐标区域'},{value:'FULL_TEXT',label:'全文正则'}];
 const empty: OcrTemplate = { templateCode:'', templateName:'', materialType:'CONTRACT', priority:0, enabled:true, matchAnchors:[], fieldRules:[] };
 
@@ -21,6 +24,9 @@ const SampleDesigner: React.FC<{form:any}> = ({form}) => {
   const [uploadKey,setUploadKey]=useState(0);
   const current=sample?.pages?.find((p:any)=>p.page===page);
   const rules=Form.useWatch('fieldRules',form)||[];
+  const materialType=Form.useWatch('materialType',form);
+  const availableFields=fieldsFor(materialType);
+  useEffect(()=>{if(!availableFields.some(field=>field.value===fieldCode))setFieldCode('buyerName');},[materialType]);
   const point=(e:React.MouseEvent<HTMLDivElement>)=>{const r=e.currentTarget.getBoundingClientRect();return{x:Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))};};
   const finish=(e:React.MouseEvent<HTMLDivElement>)=>{if(!drawing)return;const end=point(e),x=Math.min(drawing.x,end.x),y=Math.min(drawing.y,end.y),width=Math.abs(end.x-drawing.x),height=Math.abs(end.y-drawing.y);setDrawing(undefined);if(width<.005||height<.005)return;
     form.setFieldValue('fieldRules',[...rules,{fieldCode,extractMode:'ABSOLUTE_REGION',page,region:{x:+x.toFixed(4),y:+y.toFixed(4),width:+width.toFixed(4),height:+height.toFixed(4)},required:true}]);message.success('框选区域已换算为比例坐标并添加字段规则');};
@@ -29,7 +35,7 @@ const SampleDesigner: React.FC<{form:any}> = ({form}) => {
   const test=async()=>{if(!sample)return;setTesting(true);try{setTestResult(await testOcrSample(form.getFieldValue('fieldRules')||[],sample));}catch(e:any){message.error(e.message);}finally{setTesting(false);}};
   return <Card size="small" title="标准样本可视化配置" style={{marginBottom:16}} extra={<Space><Upload key={uploadKey} accept=".pdf,.png,.jpg,.jpeg" disabled={analyzing} showUploadList={false} beforeUpload={upload}><Button loading={analyzing} disabled={analyzing}>{sample?'重新上传样本':'上传标准材料样本'}</Button></Upload>{sample&&<Popconfirm title="清除当前样本？" description="同时移除该样本产生的固定坐标区域规则。" onConfirm={clearSample}><Button danger icon={<CloseCircleOutlined/>} disabled={analyzing}>清除样本</Button></Popconfirm>}<Button type="primary" disabled={!sample||analyzing} loading={testing} onClick={test}>测试识别</Button></Space>}>
     <Alert showIcon type="info" message={analyzing?'正在进行 PDF 分页渲染和 OCR 识别，请勿重复上传…':'上传样本后选择字段，在页面图片上拖拽矩形框；系统自动保存为 0～1 比例坐标。'} style={{marginBottom:12}}/>
-    {sample&&<><Space style={{marginBottom:12}} wrap><Tag color="blue">样本：{sample.fileName||'标准样本'}</Tag><span>当前字段：</span><Select value={fieldCode} onChange={setFieldCode} options={fields} style={{width:180}}/><span>页面：</span><Select value={page} onChange={setPage} options={(sample.pages||[]).map((p:any)=>({value:p.page,label:`第 ${p.page} 页`}))} style={{width:110}}/><Tag>原始尺寸 {current?.width} × {current?.height}</Tag></Space>
+    {sample&&<><Space style={{marginBottom:12}} wrap><Tag color="blue">样本：{sample.fileName||'标准样本'}</Tag><span>当前字段：</span><Select value={fieldCode} onChange={setFieldCode} options={availableFields} style={{width:180}}/><span>页面：</span><Select value={page} onChange={setPage} options={(sample.pages||[]).map((p:any)=>({value:p.page,label:`第 ${p.page} 页`}))} style={{width:110}}/><Tag>原始尺寸 {current?.width} × {current?.height}</Tag></Space>
       <div style={{display:'grid',gridTemplateColumns:'minmax(500px, 2fr) minmax(260px, 1fr)',gap:16}}>
         <div onMouseDown={e=>setDrawing(point(e))} onMouseUp={finish} style={{position:'relative',cursor:'crosshair',userSelect:'none',border:'1px solid #d9d9d9',lineHeight:0}}>
           {current&&<img src={current.image} draggable={false} style={{width:'100%',display:'block'}}/>}
@@ -44,10 +50,14 @@ const OcrTemplateList: React.FC = () => {
   const [data,setData]=useState<OcrTemplate[]>([]), [loading,setLoading]=useState(false), [editing,setEditing]=useState<OcrTemplate>();
   const [designerKey,setDesignerKey]=useState(0);
   const [form]=Form.useForm();
+  const materialType=Form.useWatch('materialType',form);
+  const availableFields=fieldsFor(materialType);
   const dictionary = useCodeDictionary();
   const load=async()=>{setLoading(true);try{setData(await listOcrTemplates()||[]);}catch(e:any){message.error(e.message);}finally{setLoading(false);}};
   useEffect(()=>{load();},[]);
-  const open=(value:OcrTemplate)=>{setDesignerKey(v=>v+1);setEditing(value);form.setFieldsValue(value);};
+  const open=(value:OcrTemplate)=>{const normalized=value.materialType==='CONTRACT'
+    ? {...value,fieldRules:(value.fieldRules||[]).filter(rule=>!['buyerUscc','sellerUscc'].includes(rule.fieldCode))}
+    : value;setDesignerKey(v=>v+1);setEditing(normalized);form.setFieldsValue(normalized);};
   const save=async()=>{const value=await form.validateFields();try{editing?.id?await updateOcrTemplate(editing.id,value):await createOcrTemplate(value);message.success('保存成功');setEditing(undefined);form.resetFields();load();}catch(e:any){message.error(e.message);}};
   const remove=async(id:number)=>{try{await deleteOcrTemplate(id);message.success('删除成功');load();}catch(e:any){message.error(e.message);}};
   const columns=[
@@ -69,7 +79,9 @@ const OcrTemplateList: React.FC = () => {
         <Space align="start" wrap>
           <Form.Item name="templateCode" label="唯一模板编号" rules={[{required:true},{pattern:/^[A-Za-z0-9_-]{2,64}$/,message:'仅支持字母、数字、下划线和短横线'}]}><Input placeholder="如 OCR_CONTRACT_STANDARD" style={{width:220}} onInput={e=>{e.currentTarget.value=e.currentTarget.value.toUpperCase();}}/></Form.Item>
           <Form.Item name="templateName" label="模板名称" rules={[{required:true}]}><Input style={{width:220}}/></Form.Item>
-          <Form.Item name="materialType" label="材料类型" rules={[{required:true}]}><Select style={{width:180}} options={dictionary.options('MATERIAL_TYPE')}/></Form.Item>
+          <Form.Item name="materialType" label="材料类型" rules={[{required:true}]}><Select style={{width:180}} options={dictionary.options('MATERIAL_TYPE')} onChange={type=>{
+            if(type==='CONTRACT')form.setFieldValue('fieldRules',(form.getFieldValue('fieldRules')||[]).filter((rule:any)=>!['buyerUscc','sellerUscc'].includes(rule.fieldCode)));
+          }}/></Form.Item>
           <Form.Item name="priority" label="优先级"><InputNumber min={0}/></Form.Item>
           <Form.Item name="enabled" label="启用" valuePropName="checked"><Switch/></Form.Item>
         </Space>
@@ -78,7 +90,7 @@ const OcrTemplateList: React.FC = () => {
         <Form.List name="fieldRules">
           {(items,{add,remove})=><>
             <Table pagination={false} dataSource={items} rowKey="key" columns={[
-              {title:'字段',render:(_:any,f:any)=><Form.Item name={[f.name,'fieldCode']} rules={[{required:true}]}><Select style={{width:140}} options={fields}/></Form.Item>},
+              {title:'字段',render:(_:any,f:any)=><Form.Item name={[f.name,'fieldCode']} rules={[{required:true}]}><Select style={{width:140}} options={availableFields}/></Form.Item>},
               {title:'提取方式',render:(_:any,f:any)=><Form.Item name={[f.name,'extractMode']} rules={[{required:true}]}><Select style={{width:140}} options={modes}/></Form.Item>},
               {title:'页',render:(_:any,f:any)=><Form.Item name={[f.name,'page']}><InputNumber min={1} style={{width:55}}/></Form.Item>},
               {title:'关键词/正则/校验',render:(_:any,f:any)=><Space direction="vertical"><Form.Item name={[f.name,'anchors']}><Select mode="tags" style={{width:190}} placeholder="定位关键词"/></Form.Item><Form.Item name={[f.name,'pattern']}><Input style={{width:190}} placeholder="提取或校验正则"/></Form.Item><Space><Form.Item name={[f.name,'required']} valuePropName="checked"><Switch size="small"/></Form.Item><span>必填</span><Form.Item name={[f.name,'minConfidence']}><InputNumber min={0} max={100} placeholder="最低置信度" style={{width:100}}/></Form.Item></Space></Space>},
