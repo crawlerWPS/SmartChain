@@ -16,6 +16,10 @@ public class ApplicationMaterial extends com.scfs.common.entity.BaseEntity {
 
     private Long applicationId;
     private Long fileObjectId;
+    /** 上传时指定的 OCR 识别模板。 */
+    private Long ocrTemplateId;
+    private String ocrTemplateCode;
+    private String ocrTemplateName;
     /** 关联文件对象，仅用于查询展示。 */
     private String fileName;
     private String fileType;

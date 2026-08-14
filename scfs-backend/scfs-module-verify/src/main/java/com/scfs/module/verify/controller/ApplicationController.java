@@ -10,6 +10,7 @@ import com.scfs.module.verify.entity.FinancingApplication;
 import com.scfs.module.verify.entity.MaterialRecognitionResult;
 import com.scfs.module.verify.entity.VerifyCheckResult;
 import com.scfs.module.verify.entity.VerifyReport;
+import com.scfs.module.verify.entity.OcrRecognitionTemplate;
 import com.scfs.module.verify.service.ApplicationMaterialService;
 import com.scfs.module.verify.service.FinancingApplicationService;
 import com.scfs.module.verify.service.VerifyService;
@@ -184,8 +185,15 @@ public class ApplicationController {
     @PostMapping("/{id}/materials")
     public Result<Long> uploadMaterial(@PathVariable Long id,
                                         @RequestParam("file") MultipartFile file,
-                                        @RequestParam String materialType) {
-        return Result.success(materialService.uploadMaterial(id, file, materialType));
+                                        @RequestParam String materialType,
+                                        @RequestParam(required = false) Long ocrTemplateId) {
+        return Result.success(materialService.uploadMaterial(id, file, materialType, ocrTemplateId));
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "create")
+    @GetMapping("/materials/ocr-templates")
+    public Result<List<OcrRecognitionTemplate>> selectableOcrTemplates(@RequestParam String materialType) {
+        return Result.success(materialService.listSelectableOcrTemplates(materialType));
     }
 
     @RequirePermission(module = "VERIFY", permission = "update")
@@ -212,6 +220,13 @@ public class ApplicationController {
     @PutMapping("/materials/{id}/recognition")
     public Result<Void> updateRecognition(@PathVariable Long id, @RequestBody MaterialRecognitionResult result) {
         materialService.updateRecognitionResult(id, result);
+        return Result.success();
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "delete")
+    @DeleteMapping("/materials/{id}")
+    public Result<Void> deleteMaterial(@PathVariable Long id) {
+        materialService.deleteMaterial(id);
         return Result.success();
     }
 

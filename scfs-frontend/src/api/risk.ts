@@ -73,7 +73,7 @@ export async function listTemplates(): Promise<MaterialChecklistTemplate[]> {
   return request('/templates', { method: 'GET' });
 }
 
-/** IF-TPL-002 创建模板草稿 */
+/** IF-TPL-002 创建并启用模板 */
 export async function createTemplate(data: { businessType: string; requiredMaterials: string[] }) {
   return request('/templates', { method: 'POST', data });
 }
@@ -84,19 +84,4 @@ export async function updateTemplate(id: number, data: { businessType: string; r
 
 export async function deleteTemplate(id: number) {
   return request(`/templates/${id}`, { method: 'DELETE' });
-}
-
-/** IF-TPL-003 提交模板 */
-export async function submitTemplate(id: number) {
-  return request(`/templates/${id}/review`, { method: 'POST', data: { approved: false, rejectReason: '退回修改' } });
-}
-
-/** IF-TPL-004 审批模板 */
-export async function approveTemplate(id: number, remark?: string) {
-  return request(`/templates/${id}/review`, { method: 'POST', data: { approved: true, remark } });
-}
-
-/** IF-TPL-005 驳回模板 */
-export async function rejectTemplate(id: number, reason: string) {
-  return request(`/templates/${id}/review`, { method: 'POST', data: { approved: false, rejectReason: reason } });
 }

@@ -1,14 +1,13 @@
 /**
- * 材料清单模板页 - 双岗
+ * 材料清单模板维护页
  */
 import React, { useEffect, useState } from 'react';
 import { Card, Table, Button, Modal, Form, Select, message, Popconfirm, Space } from 'antd';
 import { PlusOutlined, ReloadOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { listTemplates, createTemplate, updateTemplate, deleteTemplate, approveTemplate, rejectTemplate } from '@/api/risk';
+import { listTemplates, createTemplate, updateTemplate, deleteTemplate } from '@/api/risk';
 import { Permission } from '@/components/common/Permission';
 import { formatDate } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
-import { CodeTag } from '@/components/common/CodeTag';
 
 const TemplateList: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
@@ -30,22 +29,11 @@ const TemplateList: React.FC = () => {
 
   useEffect(() => { load(); }, []);
 
-  const handleApprove = async (id: number) => {
-    try { await approveTemplate(id); message.success('已通过'); load(); }
-    catch (e: any) { message.error(e.message); }
-  };
-  const handleReject = async (id: number) => {
-    const reason = window.prompt('驳回原因');
-    if (!reason) return;
-    try { await rejectTemplate(id, reason); message.success('已驳回'); load(); }
-    catch (e: any) { message.error(e.message); }
-  };
-
   const handleCreate = async () => {
     const values = await createForm.validateFields();
     try {
       await createTemplate({ ...values, requiredMaterials: values.requiredMaterials });
-      message.success('已创建草稿');
+      message.success('模板已创建并生效');
       setCreateVisible(false);
       createForm.resetFields();
       load();
@@ -61,7 +49,7 @@ const TemplateList: React.FC = () => {
     const values = await editForm.validateFields();
     try {
       await updateTemplate(editing.id, values);
-      message.success('修改成功');
+      message.success('修改成功，模板已生效');
       setEditing(undefined);
       editForm.resetFields();
       load();
@@ -77,9 +65,6 @@ const TemplateList: React.FC = () => {
     { title: '业务类型', dataIndex: 'businessType', key: 'businessType', render: (v: string) => dictionary.label('BUSINESS_TYPE', v) },
     { title: '必需材料', dataIndex: 'requiredMaterials', key: 'requiredMaterials', render: (v: string[]) => v?.map((x) => dictionary.label('MATERIAL_TYPE', x)).join('、') },
     { title: '版本', dataIndex: 'version', key: 'version', render: (v: number) => `v${v}` },
-    { title: '状态', dataIndex: 'status', key: 'status', render: (v: string) => {
-      return <CodeTag type="DUAL_CONTROL_STATUS" code={v} />;
-    }},
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
@@ -91,12 +76,6 @@ const TemplateList: React.FC = () => {
             <a style={{ color: '#ff4d4f' }}><DeleteOutlined /> 删除</a>
           </Popconfirm>
         </Permission>
-        {r.status === 'PENDING' && (
-          <Permission perm={['RULE', 'approve']}>
-            <a onClick={() => handleApprove(r.id)}>通过</a>
-            <a style={{ color: '#ff4d4f' }} onClick={() => handleReject(r.id)}>驳回</a>
-          </Permission>
-        )}
       </Space>
     )},
   ];

@@ -67,6 +67,8 @@ public interface VerifyMapper {
 
     int insertMaterial(ApplicationMaterial material);
 
+    int deleteMaterial(@Param("id") Long id);
+
     int updateMaterialType(@Param("id") Long id,
                            @Param("materialType") String materialType,
                            @Param("identifiedBy") String identifiedBy);
@@ -86,6 +88,8 @@ public interface VerifyMapper {
 
     List<OcrRecognitionTemplate> selectOcrTemplates(@Param("materialType") String materialType);
     OcrRecognitionTemplate selectOcrTemplateById(@Param("id") Long id);
+    long countOcrTemplateByCode(@Param("templateCode") String templateCode,
+                                @Param("excludeId") Long excludeId);
     OcrRecognitionTemplate selectEnabledOcrTemplate(@Param("materialType") String materialType,
                                                      @Param("enterpriseId") Long enterpriseId);
     int insertOcrTemplate(OcrRecognitionTemplate template);
@@ -111,4 +115,7 @@ public interface VerifyMapper {
     // 重复融资查询
     long countApprovedApplicationsByEnterprise(@Param("enterpriseId") Long enterpriseId,
                                                 @Param("businessType") String businessType);
+    List<FinancingApplication> selectApprovedApplicationsByEnterprise(@Param("enterpriseId") Long enterpriseId,
+                                                                       @Param("businessType") String businessType,
+                                                                       @Param("excludeApplicationId") Long excludeApplicationId);
 }

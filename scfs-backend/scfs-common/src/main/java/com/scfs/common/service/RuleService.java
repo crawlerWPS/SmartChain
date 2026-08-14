@@ -293,7 +293,7 @@ public class RuleService {
         }
     }
 
-    // ========== 材料清单模板（双岗）==========
+    // ========== 材料清单模板（维护后直接生效）==========
 
     public MaterialChecklistTemplate getTemplateByBusinessType(String businessType) {
         return weightConfigMapper.selectTemplateByBusinessType(businessType);
@@ -303,18 +303,15 @@ public class RuleService {
         return weightConfigMapper.selectAllTemplates();
     }
 
-    /**
-     * 经办创建模板（status=PENDING）
-     */
     @Audit(module = "RULE", action = "CREATE", targetType = "MATERIAL_TEMPLATE", targetIdExpr = "#result")
     @Transactional
     public Long createTemplate(MaterialChecklistTemplate template) {
         Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
-        template.setStatus(DualControlStatus.PENDING.name());
+        template.setStatus(DualControlStatus.ENABLED.name());
         template.setVersion(1);
         template.setMakerId(currentUserId);
         weightConfigMapper.insertTemplate(template);
-        log.info("[Rule] 材料模板创建待复核: templateId={}, makerId={}", template.getId(), currentUserId);
+        log.info("[Rule] 材料模板已创建并启用: templateId={}, operatorId={}", template.getId(), currentUserId);
         return template.getId();
     }
 
@@ -324,6 +321,8 @@ public class RuleService {
         MaterialChecklistTemplate template = findTemplateById(templateId);
         template.setBusinessType(changes.getBusinessType());
         template.setRequiredMaterials(changes.getRequiredMaterials());
+        template.setVersion((template.getVersion() == null ? 0 : template.getVersion()) + 1);
+        template.setStatus(DualControlStatus.ENABLED.name());
         if (weightConfigMapper.updateTemplate(template) == 0) {
             throw new IllegalArgumentException("材料模板不存在");
         }
@@ -345,38 +344,4 @@ public class RuleService {
                 .orElseThrow(() -> new IllegalArgumentException("材料模板不存在"));
     }
 
-    /**
-     * 复核审批材料模板
-     */
-    @Audit(module = "RULE", action = "APPROVE", targetType = "MATERIAL_TEMPLATE", targetIdExpr = "#templateId")
-    @Transactional
-    public void reviewTemplate(Long templateId, boolean approved, String rejectReason) {
-        Long currentUserId = securityContextHelper.getCurrentUserIdOrThrow();
-        MaterialChecklistTemplate template = findTemplateById(templateId);
-
-        if (!DualControlStatus.PENDING.name().equals(template.getStatus())) {
-            throw new IllegalStateException("该模板已处理");
-        }
-        if (template.getMakerId().equals(currentUserId)) {
-            throw new IllegalStateException("经办人与复核人不能为同一人");
-        }
-
-        if (approved) {
-            template.setStatus(DualControlStatus.ENABLED.name());
-            template.setCheckerId(currentUserId);
-            template.setCheckedAt(Instant.now());
-            weightConfigMapper.updateTemplate(template);
-            log.info("[Rule] 材料模板已批准并启用: templateId={}, checkerId={}", templateId, currentUserId);
-        } else {
-            if (rejectReason == null || rejectReason.trim().isEmpty()) {
-                throw new IllegalArgumentException("拒绝时必须填写原因");
-            }
-            template.setStatus(DualControlStatus.REJECTED.name());
-            template.setCheckerId(currentUserId);
-            template.setCheckedAt(Instant.now());
-            weightConfigMapper.updateTemplate(template);
-            log.info("[Rule] 材料模板已拒绝: templateId={}, checkerId={}, reason={}",
-                    templateId, currentUserId, rejectReason);
-        }
-    }
 }

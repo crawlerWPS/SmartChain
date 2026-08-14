@@ -83,7 +83,6 @@ export default function access(initialState: { currentUser?: CurrentUser }) {
     'weight:approve': () => can('RULE', 'approve'),
     'template:view': () => can('RULE', 'view'),
     'template:submit': () => can('RULE', 'create'),
-    'template:approve': () => can('RULE', 'approve'),
     'audit:view': () => can('AUDIT', 'view'),
     'audit:export': () => can('AUDIT', 'export'),
     'system:user:view': () => can('USER', 'view'),

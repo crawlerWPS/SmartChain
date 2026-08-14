@@ -7,6 +7,7 @@ import com.scfs.common.service.RuleService;
 import com.scfs.module.preaudit.entity.*;
 import com.scfs.module.preaudit.mapper.PreAuditMapper;
 import com.scfs.module.verify.entity.ApplicationMaterial;
+import com.scfs.module.verify.entity.FinancingApplication;
 import com.scfs.module.verify.entity.MaterialRecognitionResult;
 import com.scfs.module.verify.mapper.VerifyMapper;
 import lombok.RequiredArgsConstructor;
@@ -101,40 +102,53 @@ public class PreAuditService {
         List<ApplicationMaterial> materials = verifyMapper.selectMaterialsByApplication(applicationId);
         int expiredCount = 0;
         int incompleteCount = 0;
-        int abnormalCount = 0;
-        Map<String, Object> details = new HashMap<>();
         List<Map<String, Object>> abnormalItems = new ArrayList<>();
+        List<Map<String, Object>> materialResults = new ArrayList<>();
 
         LocalDate now = LocalDate.now();
         for (ApplicationMaterial material : materials) {
-            MaterialRecognitionResult result = verifyMapper.selectRecognitionResult(material.getId());
-            if (result == null) {
+            MaterialRecognitionResult recognition = verifyMapper.selectRecognitionResult(material.getId());
+            List<String> issues = new ArrayList<>();
+            List<String> missingFields = new ArrayList<>();
+            boolean expired = false;
+            if (recognition == null) {
+                issues.add("尚未完成OCR识别");
                 incompleteCount++;
-                continue;
+            } else {
+                collectMissingFields(material.getMaterialType(), recognition, missingFields);
+                if (!missingFields.isEmpty()) {
+                    issues.add("缺少关键字段：" + String.join("、", missingFields));
+                    incompleteCount++;
+                }
+                LocalDate documentDate = documentDate(material.getMaterialType(), recognition);
+                if (documentDate != null && documentDate.plusYears(1).isBefore(now)) {
+                    expired = true;
+                    expiredCount++;
+                    issues.add("材料日期超过一年");
+                }
             }
-            // 字段缺失
-            if (result.getBuyerName() == null || result.getSellerName() == null || result.getAmount() == null) {
-                incompleteCount++;
-                Map<String, Object> item = new HashMap<>();
-                item.put("materialId", material.getId());
-                item.put("type", material.getMaterialType());
-                item.put("issue", "字段缺失");
-                abnormalItems.add(item);
-            }
-            // 过期：合同日期超过 1 年
-            if (result.getContractDate() != null && result.getContractDate().plusYears(1).isBefore(now)) {
-                expiredCount++;
-                Map<String, Object> item = new HashMap<>();
-                item.put("materialId", material.getId());
-                item.put("type", material.getMaterialType());
-                item.put("issue", "合同已过期");
-                abnormalItems.add(item);
-            }
-        }
-        abnormalCount = expiredCount + incompleteCount;
 
-        Map<String, Object> detailMap = new HashMap<>();
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("materialId", material.getId());
+            item.put("fileName", material.getFileName());
+            item.put("materialType", material.getMaterialType());
+            item.put("type", material.getMaterialType());
+            item.put("recognitionStatus", material.getStatus());
+            item.put("recognized", recognition != null);
+            item.put("expired", expired);
+            item.put("missingFields", missingFields);
+            item.put("issues", issues);
+            item.put("issue", String.join("；", issues));
+            item.put("valid", issues.isEmpty());
+            materialResults.add(item);
+            if (!issues.isEmpty()) abnormalItems.add(item);
+        }
+        int abnormalCount = abnormalItems.size();
+
+        Map<String, Object> detailMap = new LinkedHashMap<>();
         detailMap.put("abnormalItems", abnormalItems);
+        detailMap.put("materialResults", materialResults);
+        detailMap.put("allValid", abnormalCount == 0);
 
         MaterialValidityResult existing = preAuditMapper.selectValidity(applicationId);
         MaterialValidityResult result = existing != null ? existing : new MaterialValidityResult();
@@ -155,6 +169,56 @@ public class PreAuditService {
         return result;
     }
 
+    private void collectMissingFields(String materialType, MaterialRecognitionResult result, List<String> missing) {
+        switch (materialType == null ? "" : materialType.toUpperCase(Locale.ROOT)) {
+            case "CONTRACT" -> {
+                requireText(result.getBuyerName(), "买方名称", missing);
+                requireText(result.getSellerName(), "卖方名称", missing);
+                requireValue(result.getAmount(), "合同金额", missing);
+                requireValue(result.getContractDate(), "合同日期", missing);
+            }
+            case "INVOICE" -> {
+                requireText(result.getBuyerName(), "购买方名称", missing);
+                requireText(result.getSellerName(), "销售方名称", missing);
+                requireValue(result.getAmount(), "发票金额", missing);
+                requireValue(result.getInvoiceDate(), "开票日期", missing);
+                requireText(result.getTransactionNo(), "发票号码", missing);
+            }
+            case "ORDER" -> {
+                requireValue(result.getAmount(), "订单金额", missing);
+                requireValue(result.getOrderDate(), "订单日期", missing);
+                requireText(result.getTransactionNo(), "订单编号", missing);
+            }
+            case "LOGISTICS" -> requireValue(result.getLogisticsDate(), "物流日期", missing);
+            case "ACCEPTANCE" -> requireValue(result.getAcceptanceDate(), "验收日期", missing);
+            case "PAYMENT" -> {
+                requireValue(result.getPaymentDate(), "付款日期", missing);
+                requireValue(result.getAmount(), "付款金额", missing);
+            }
+            default -> { }
+        }
+    }
+
+    private LocalDate documentDate(String materialType, MaterialRecognitionResult result) {
+        return switch (materialType == null ? "" : materialType.toUpperCase(Locale.ROOT)) {
+            case "CONTRACT" -> result.getContractDate();
+            case "INVOICE" -> result.getInvoiceDate();
+            case "ORDER" -> result.getOrderDate();
+            case "LOGISTICS" -> result.getLogisticsDate();
+            case "ACCEPTANCE" -> result.getAcceptanceDate();
+            case "PAYMENT" -> result.getPaymentDate();
+            default -> null;
+        };
+    }
+
+    private void requireText(String value, String label, List<String> missing) {
+        if (value == null || value.isBlank()) missing.add(label);
+    }
+
+    private void requireValue(Object value, String label, List<String> missing) {
+        if (value == null) missing.add(label);
+    }
+
     // ========== 企业信息一致性 ==========
 
     public EnterpriseInfoConsistencyResult getConsistency(Long applicationId) {
@@ -163,45 +227,40 @@ public class PreAuditService {
 
     @Transactional
     public EnterpriseInfoConsistencyResult checkConsistency(Long applicationId) {
+        FinancingApplication application = verifyMapper.selectApplicationById(applicationId);
+        if (application == null) throw new IllegalArgumentException("融资申请不存在");
         List<ApplicationMaterial> materials = verifyMapper.selectMaterialsByApplication(applicationId);
         Map<String, Map<Long, String>> nameValues = new HashMap<>();
         Map<String, Map<Long, String>> usccValues = new HashMap<>();
-        Map<String, Map<Long, String>> legalPersonValues = new HashMap<>();
-        Map<String, Map<Long, String>> addressValues = new HashMap<>();
+
+        putValue(nameValues, "BUYER_NAME", -1L, application.getBuyerName());
+        putValue(nameValues, "SELLER_NAME", -2L, application.getSellerName());
+        putValue(usccValues, "BUYER_USCC", -1L, application.getBuyerUscc());
+        putValue(usccValues, "SELLER_USCC", -2L, application.getSellerUscc());
 
         for (ApplicationMaterial material : materials) {
             MaterialRecognitionResult result = verifyMapper.selectRecognitionResult(material.getId());
             if (result == null) continue;
             Long materialId = material.getId();
-            if (result.getBuyerName() != null) {
-                nameValues.computeIfAbsent("BUYER_NAME", k -> new HashMap<>()).put(materialId, result.getBuyerName());
-            }
-            if (result.getBuyerUscc() != null) {
-                usccValues.computeIfAbsent("BUYER_USCC", k -> new HashMap<>()).put(materialId, result.getBuyerUscc());
-            }
-            if (result.getSellerName() != null) {
-                nameValues.computeIfAbsent("SELLER_NAME", k -> new HashMap<>()).put(materialId, result.getSellerName());
-            }
-            if (result.getSellerUscc() != null) {
-                usccValues.computeIfAbsent("SELLER_USCC", k -> new HashMap<>()).put(materialId, result.getSellerUscc());
-            }
+            putValue(nameValues, "BUYER_NAME", materialId, result.getBuyerName());
+            putValue(usccValues, "BUYER_USCC", materialId, result.getBuyerUscc());
+            putValue(nameValues, "SELLER_NAME", materialId, result.getSellerName());
+            putValue(usccValues, "SELLER_USCC", materialId, result.getSellerUscc());
         }
 
         boolean nameConsistent = isConsistent(nameValues);
         boolean usccConsistent = isConsistent(usccValues);
-        boolean legalPersonConsistent = true;  // 简化
-        boolean addressConsistent = true;       // 简化
-        boolean overall = nameConsistent && usccConsistent && legalPersonConsistent && addressConsistent;
-        int mismatchCount = (nameConsistent ? 0 : 1) + (usccConsistent ? 0 : 1) +
-                (legalPersonConsistent ? 0 : 1) + (addressConsistent ? 0 : 1);
+        boolean overall = nameConsistent && usccConsistent;
+        int mismatchCount = (nameConsistent ? 0 : 1) + (usccConsistent ? 0 : 1);
 
         EnterpriseInfoConsistencyResult result = new EnterpriseInfoConsistencyResult();
         result.setApplicationId(applicationId);
         result.setOverallConsistent(overall);
         result.setNameConsistent(nameConsistent);
         result.setUsccConsistent(usccConsistent);
-        result.setLegalPersonConsistent(legalPersonConsistent);
-        result.setAddressConsistent(addressConsistent);
+        // 当前 OCR 结构不提供法人和地址，兼容保留数据库字段，但不参与总体结论。
+        result.setLegalPersonConsistent(true);
+        result.setAddressConsistent(true);
         result.setMismatchCount(mismatchCount);
         result.setCheckedAt(Instant.now());
         preAuditMapper.insertConsistency(result);
@@ -221,12 +280,29 @@ public class PreAuditService {
 
     private boolean isConsistent(Map<String, Map<Long, String>> valuesByField) {
         for (Map<Long, String> values : valuesByField.values()) {
-            Set<String> distinct = new HashSet<>(values.values());
+            // 每个角色至少需要“申请登记值 + 一份材料识别值”才能得出一致结论。
+            if (values.size() < 2) return false;
+            Set<String> distinct = values.values().stream()
+                    .map(this::normalizeComparisonValue)
+                    .collect(Collectors.toSet());
             if (distinct.size() > 1) {
                 return false;
             }
         }
-        return true;
+        return !valuesByField.isEmpty();
+    }
+
+    private void putValue(Map<String, Map<Long, String>> valuesByField, String field,
+                          Long sourceId, String value) {
+        if (value != null && !value.isBlank()) {
+            valuesByField.computeIfAbsent(field, k -> new LinkedHashMap<>()).put(sourceId, value.trim());
+        } else {
+            valuesByField.computeIfAbsent(field, k -> new LinkedHashMap<>());
+        }
+    }
+
+    private String normalizeComparisonValue(String value) {
+        return value.replaceAll("[\\s（）()·]", "").toUpperCase(Locale.ROOT);
     }
 
     private EnterpriseInfoMismatchDetail buildMismatch(Long resultId, String fieldType, String fieldName,
@@ -240,14 +316,18 @@ public class PreAuditService {
         for (Map.Entry<String, Map<Long, String>> entry : valuesByField.entrySet()) {
             for (Map.Entry<Long, String> e : entry.getValue().entrySet()) {
                 Map<String, Object> sv = new HashMap<>();
-                sv.put("materialId", e.getKey());
+                if (e.getKey() > 0) sv.put("materialId", e.getKey());
+                sv.put("source", e.getKey() == -1L ? "融资申请登记买方"
+                        : e.getKey() == -2L ? "融资申请登记卖方" : "OCR材料");
                 sv.put("context", entry.getKey());
                 sv.put("value", e.getValue());
                 sourceValues.add(sv);
             }
         }
         detail.setSourceValues(sourceValues);
-        detail.setMismatchDetail("同一字段在不同材料中值不一致");
+        boolean insufficient = valuesByField.values().stream().anyMatch(values -> values.size() < 2);
+        detail.setMismatchDetail(insufficient ? "缺少可用于比对的申请登记信息或OCR识别值"
+                : "融资申请登记信息与不同材料中的识别值不一致");
         return detail;
     }
 

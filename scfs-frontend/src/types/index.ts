@@ -252,6 +252,9 @@ export interface ApplicationStatusHistory {
 export interface ApplicationMaterial extends BaseEntity {
   applicationId: number;
   fileObjectId: number;
+  ocrTemplateId?: number;
+  ocrTemplateCode?: string;
+  ocrTemplateName?: string;
   fileName?: string;
   fileType?: string;
   fileSize?: number;
@@ -290,7 +293,7 @@ export interface VerifyCheckResult {
   id: number;
   applicationId: number;
   checkType: CheckType;
-  result: 'PASS' | 'FAIL' | 'WARN';
+    result: 'PASS' | 'ABNORMAL' | 'MISSING' | 'FAIL' | 'WARN';
   details?: Record<string, any>;
   executedRules?: string[];
   executedAt: string;
@@ -327,8 +330,24 @@ export interface MaterialValidityResult {
   expiredCount: number;
   incompleteCount: number;
   abnormalCount: number;
-  details?: Record<string, any>;
+  details?: {
+    allValid?: boolean;
+    abnormalItems?: MaterialValidityItem[];
+    materialResults?: MaterialValidityItem[];
+  };
   checkedAt: string;
+}
+
+export interface MaterialValidityItem {
+  materialId: number;
+  fileName?: string;
+  materialType: string;
+  recognitionStatus?: string;
+  recognized: boolean;
+  expired: boolean;
+  missingFields: string[];
+  issues: string[];
+  valid: boolean;
 }
 
 export interface EnterpriseInfoConsistencyResult {
@@ -349,7 +368,12 @@ export interface EnterpriseInfoMismatchDetail {
   fieldType: 'NAME' | 'USCC' | 'LEGAL_PERSON' | 'ADDRESS';
   fieldName: string;
   consistent: boolean;
-  sourceValues?: string[];
+  sourceValues?: Array<{
+    materialId?: number;
+    source: string;
+    context: string;
+    value: string;
+  }>;
   mismatchDetail?: string;
 }
 
@@ -432,6 +456,10 @@ export enum CheckType {
   VALIDITY = 'VALIDITY',
   CONSISTENCY = 'CONSISTENCY',
   LOGIC_CHECK = 'LOGIC_CHECK',
+  SUBJECT = 'SUBJECT',
+  AMOUNT = 'AMOUNT',
+  TIME = 'TIME',
+  REPEAT = 'REPEAT',
 }
 
 export enum RiskLevel {

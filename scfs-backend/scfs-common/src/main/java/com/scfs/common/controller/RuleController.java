@@ -154,12 +154,4 @@ public class RuleController {
         return Result.success();
     }
 
-    @RequirePermission(module = "RULE", permission = "approve")
-    @PostMapping("/templates/{id}/review")
-    public Result<Void> reviewTemplate(@PathVariable Long id, @RequestBody Map<String, Object> body) {
-        boolean approved = (boolean) body.get("approved");
-        String rejectReason = (String) body.get("rejectReason");
-        ruleService.reviewTemplate(id, approved, rejectReason);
-        return Result.success();
-    }
 }

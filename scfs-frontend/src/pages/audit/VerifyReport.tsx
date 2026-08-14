@@ -2,26 +2,22 @@
  * 核验报告页
  */
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Descriptions, Tag, message, Empty, Typography, Table } from 'antd';
-import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
+import { Card, Button, Descriptions, Tag, message, Empty, Typography, Row, Col, Statistic, Alert, Space, Divider } from 'antd';
+import { ArrowLeftOutlined, ExportOutlined, FileTextOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
 import { history, useParams } from '@umijs/max';
 import { getReport, generateReport, exportReportPdf } from '@/api/verify';
 import { formatDate, downloadBlob } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
+import { CodeTag } from '@/components/common/CodeTag';
+import type { VerifyCheckResult, VerifyReport as VerifyReportType } from '@/types';
 
-const { Paragraph } = Typography;
+const { Paragraph, Text, Title } = Typography;
 
 const checkTypeLabels: Record<string, string> = {
   SUBJECT: '主体一致性',
   AMOUNT: '金额一致性',
   TIME: '时间逻辑',
   REPEAT: '重复融资',
-};
-
-const resultLabels: Record<string, string> = {
-  PASS: '通过',
-  ABNORMAL: '异常',
-  MISSING: '缺失',
 };
 
 const conclusionLabels: Record<string, string> = {
@@ -34,9 +30,13 @@ const conclusionLabels: Record<string, string> = {
 const VerifyReport: React.FC = () => {
   const params = useParams();
   const appId = Number(params?.appId || 0);
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<VerifyReportType | null>(null);
   const [loading, setLoading] = useState(false);
   const dictionary = useCodeDictionary();
+  const results = (report?.contentSnapshot?.results || []) as VerifyCheckResult[];
+  const passedCount = results.filter(item => item.result === 'PASS').length;
+  const assessmentColor = report?.overallAssessment === 'HIGH' ? '#cf1322'
+    : report?.overallAssessment === 'MID' ? '#d46b08' : '#389e0d';
 
   const load = async () => {
     if (!appId) return;
@@ -87,41 +87,69 @@ const VerifyReport: React.FC = () => {
       </div>
     }>
       {report ? (
-        <>
-          <Descriptions bordered column={2}>
-            <Descriptions.Item label="报告编号">{report.reportNo}</Descriptions.Item>
-            <Descriptions.Item label="版本">v{report.version}</Descriptions.Item>
-            <Descriptions.Item label="异常数" span={2}>
-              <Tag color={report.abnormalCount > 0 ? 'red' : 'green'}>{report.abnormalCount}</Tag>
-            </Descriptions.Item>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <Card
+            bordered={false}
+            style={{ background: 'linear-gradient(135deg, #f0f5ff 0%, #ffffff 70%)', border: '1px solid #d6e4ff' }}
+          >
+            <Row gutter={[24, 20]} align="middle">
+              <Col xs={24} lg={10}>
+                <Space align="start">
+                  <FileTextOutlined style={{ fontSize: 34, color: '#1677ff', marginTop: 4 }} />
+                  <div>
+                    <Title level={3} style={{ margin: 0 }}>真实性核验报告</Title>
+                    <Text type="secondary">报告编号：{report.reportNo} · 版本 v{report.version}</Text>
+                  </div>
+                </Space>
+              </Col>
+              <Col xs={12} sm={8} lg={5}><Statistic title="总体评估" value={dictionary.label('REPORT_ASSESSMENT', report.overallAssessment)} valueStyle={{ color: assessmentColor }} /></Col>
+              <Col xs={12} sm={8} lg={4}><Statistic title="核验通过" value={passedCount} suffix={`/ ${results.length}`} prefix={<CheckCircleOutlined />} valueStyle={{ color: '#389e0d' }} /></Col>
+              <Col xs={12} sm={8} lg={5}><Statistic title="异常项目" value={report.abnormalCount} prefix={<WarningOutlined />} valueStyle={{ color: report.abnormalCount ? '#cf1322' : '#389e0d' }} /></Col>
+            </Row>
+          </Card>
+
+          <Descriptions bordered size="small" column={{ xs: 1, sm: 2, lg: 3 }} style={{ marginTop: 16 }}>
+            <Descriptions.Item label="申请编号">#{report.applicationId}</Descriptions.Item>
+            <Descriptions.Item label="报告版本">v{report.version}</Descriptions.Item>
             <Descriptions.Item label="生成时间">{formatDate(report.generatedAt)}</Descriptions.Item>
           </Descriptions>
-          <Card size="small" title="总体评估" style={{ marginTop: 16 }}>
-            <Paragraph>{dictionary.label('REPORT_ASSESSMENT', report.overallAssessment)}</Paragraph>
-          </Card>
-          {report.riskHints?.length > 0 && (
-            <Card size="small" title="风险提示" style={{ marginTop: 12 }}>
-              <ul>
-                {report.riskHints.map((h: string, i: number) => <li key={i}>{h}</li>)}
-              </ul>
-            </Card>
-          )}
-          <Card size="small" title="核验内容" style={{ marginTop: 12 }}>
-            <Table
-              size="small"
-              pagination={false}
-              rowKey={(row: any) => row.id || row.checkType}
-              dataSource={report.contentSnapshot?.results || []}
-              locale={{ emptyText: '暂无核验明细' }}
-              columns={[
-                { title: '核验项目', dataIndex: 'checkType', render: (value: string) => checkTypeLabels[value] || value },
-                { title: '结果', dataIndex: 'result', render: (value: string) => <Tag color={value === 'PASS' ? 'green' : 'red'}>{resultLabels[value] || value}</Tag> },
-                { title: '核验结论', dataIndex: 'checkType', render: (value: string, row: any) => row.result === 'PASS' ? conclusionLabels[value] || '该核验项目已通过。' : '该核验项目存在异常，请人工复核。' },
-                { title: '核验时间', dataIndex: 'executedAt', render: (value: string) => formatDate(value) },
-              ]}
-            />
-          </Card>
-        </>
+
+          {report.riskHints?.length ? <Alert
+            style={{ marginTop: 16 }}
+            type={report.abnormalCount ? 'warning' : 'success'}
+            showIcon
+            message={report.abnormalCount ? '风险提示' : '核验结论'}
+            description={<ul style={{ margin: 0, paddingLeft: 20 }}>{report.riskHints.map((hint, index) => <li key={index}>{hint}</li>)}</ul>}
+          /> : null}
+
+          <Title level={4} style={{ marginTop: 24 }}>核验结果</Title>
+          {results.length ? <Row gutter={[16, 16]}>
+            {results.map((item, index) => {
+              const hints = (item.details?.hints || []) as string[];
+              const passed = item.result === 'PASS';
+              return <Col xs={24} md={12} key={item.id || `${item.checkType}-${index}`}>
+                <Card
+                  size="small"
+                  title={<Space><span>{checkTypeLabels[item.checkType] || item.checkType}</span><CodeTag type="VERIFY_RESULT" code={item.result} /></Space>}
+                  style={{ height: '100%', borderTop: `3px solid ${passed ? '#52c41a' : '#ff4d4f'}` }}
+                >
+                  <Paragraph style={{ minHeight: 44, marginBottom: 8 }}>
+                    {passed ? conclusionLabels[item.checkType] || '该核验项目已通过。' : hints[0] || '该核验项目存在异常，请人工复核。'}
+                  </Paragraph>
+                  {hints.length > 0 && <>
+                    <Divider style={{ margin: '10px 0' }} />
+                    <Text type="secondary">检查说明</Text>
+                    <ul style={{ margin: '6px 0 8px', paddingLeft: 20 }}>{hints.map((hint, i) => <li key={i}>{hint}</li>)}</ul>
+                  </>}
+                  <Space size={[4, 4]} wrap>
+                    {item.executedRules?.map(rule => <Tag key={rule}>{rule}</Tag>)}
+                  </Space>
+                  <div style={{ marginTop: 10 }}><Text type="secondary">核验时间：{formatDate(item.executedAt)}</Text></div>
+                </Card>
+              </Col>;
+            })}
+          </Row> : <Empty description="暂无核验明细" />}
+        </div>
       ) : (
         <Empty description="尚未生成报告，请点击「生成报告」按钮" />
       )}

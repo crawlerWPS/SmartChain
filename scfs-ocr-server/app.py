@@ -1,6 +1,8 @@
 import json
 import os
 import tempfile
+import base64
+import threading
 from pathlib import Path
 
 import pypdfium2 as pdfium
@@ -8,12 +10,22 @@ from flask import Flask, jsonify, request
 from paddleocr import PaddleOCR
 
 app = Flask(__name__)
-ocr = PaddleOCR(
-    lang=os.getenv("PADDLEOCR_LANG", "ch"),
-    use_doc_orientation_classify=True,
-    use_doc_unwarping=True,
-    use_textline_orientation=True,
-)
+
+
+def create_ocr():
+    # Contracts and electronic invoices are already upright documents. The
+    # PaddleX orientation/unwarping classifiers consume substantial memory and
+    # have proved unstable in the CPU-only container (RuntimeError: std::exception).
+    return PaddleOCR(
+        lang=os.getenv("PADDLEOCR_LANG", "ch"),
+        use_doc_orientation_classify=False,
+        use_doc_unwarping=False,
+        use_textline_orientation=False,
+    )
+
+
+ocr = create_ocr()
+ocr_lock = threading.Lock()
 
 
 def normalize_result(result):
@@ -33,9 +45,22 @@ def normalize_result(result):
 
 
 def recognize_image(path):
+    global ocr
     items = []
-    for result in ocr.predict(str(path)):
-        items.extend(normalize_result(result))
+    # Paddle predictor is not thread-safe. Concurrent requests can corrupt its
+    # internal tensor state and fail with "Tensor holds no memory".
+    with ocr_lock:
+        try:
+            for result in ocr.predict(str(path)):
+                items.extend(normalize_result(result))
+        except RuntimeError:
+            # A native Paddle failure can leave predictor state unusable. Rebuild
+            # it once and retry the current page instead of returning a 500.
+            app.logger.warning("Paddle predictor failed; rebuilding and retrying once", exc_info=True)
+            ocr = create_ocr()
+            items = []
+            for result in ocr.predict(str(path)):
+                items.extend(normalize_result(result))
     return items
 
 
@@ -50,29 +75,44 @@ def recognize():
     if not uploaded:
         return jsonify({"success": False, "message": "file is required"}), 400
     suffix = Path(uploaded.filename or "material").suffix.lower()
-    with tempfile.TemporaryDirectory() as folder:
-        source = Path(folder) / ("source" + suffix)
-        uploaded.save(source)
-        items = []
-        if suffix == ".pdf":
-            document = pdfium.PdfDocument(str(source))
-            for page_no, page in enumerate(document):
-                image_path = Path(folder) / f"page-{page_no}.png"
-                page.render(scale=2).to_pil().save(image_path)
-                for item in recognize_image(image_path):
-                    item["page"] = page_no + 1
-                    items.append(item)
-        else:
-            items = recognize_image(source)
-        confidence = sum(item["confidence"] for item in items) / len(items) if items else 0.0
-        return jsonify({
-            "success": bool(items),
-            "fileName": uploaded.filename,
-            "text": "\n".join(item["text"] for item in items),
-            "confidence": confidence,
-            "items": items,
-            "source": "PADDLEOCR",
-        })
+    include_pages = request.form.get("includePages", "false").lower() == "true"
+    try:
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / ("source" + suffix)
+            uploaded.save(source)
+            items = []
+            pages = []
+            if suffix == ".pdf":
+                document = pdfium.PdfDocument(str(source))
+                for page_no, page in enumerate(document):
+                    image_path = Path(folder) / f"page-{page_no}.png"
+                    # 1.5x is sufficient for field selection and uses materially less memory.
+                    page_image = page.render(scale=1.5).to_pil().convert("RGB")
+                    page_image.save(image_path, format="PNG", optimize=True)
+                    pages.append({"page": page_no + 1, "width": page_image.width, "height": page_image.height,
+                                  "image": "data:image/png;base64," + base64.b64encode(image_path.read_bytes()).decode("ascii")})
+                    for item in recognize_image(image_path):
+                        item["page"] = page_no + 1
+                        item["imageWidth"] = page_image.width
+                        item["imageHeight"] = page_image.height
+                        items.append(item)
+            else:
+                items = recognize_image(source)
+                from PIL import Image
+                with Image.open(source) as image:
+                    pages.append({"page": 1, "width": image.width, "height": image.height,
+                                  "image": "data:image/png;base64," + base64.b64encode(source.read_bytes()).decode("ascii")})
+                    for item in items:
+                        item["page"] = 1
+                        item["imageWidth"] = image.width
+                        item["imageHeight"] = image.height
+            confidence = sum(item["confidence"] for item in items) / len(items) if items else 0.0
+            return jsonify({"success": bool(items), "fileName": uploaded.filename,
+                            "text": "\n".join(item["text"] for item in items), "confidence": confidence,
+                            "items": items, "pages": pages if include_pages else [], "source": "PADDLEOCR"})
+    except Exception as error:
+        app.logger.exception("OCR recognition failed")
+        return jsonify({"success": False, "message": f"OCR recognition failed: {error}"}), 500
 
 
 if __name__ == "__main__":

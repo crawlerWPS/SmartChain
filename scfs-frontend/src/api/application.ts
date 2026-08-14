@@ -10,6 +10,7 @@ import type {
   MaterialRecognitionResult,
   ApplicationStatusHistory,
 } from '@/types';
+import type { OcrTemplate } from './ocrTemplate';
 
 export interface ApplicationQuery extends PageQuery {
   status?: string;
@@ -109,21 +110,27 @@ export async function uploadMaterial(
   applicationId: number,
   file: File,
   materialType: string,
+  ocrTemplateId: number,
   onProgress?: (percent: number) => void
 ) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('materialType', materialType);
+  formData.append('ocrTemplateId', String(ocrTemplateId));
   return request(`/applications/${applicationId}/materials`, {
     method: 'POST',
     data: formData,
     requestType: 'form',
-    onUploadProgress: (e) => {
+    onUploadProgress: (e: { total?: number; loaded: number }) => {
       if (onProgress && e.total) {
         onProgress(Math.round((e.loaded / e.total) * 100));
       }
     },
   });
+}
+
+export async function listSelectableOcrTemplates(materialType: string): Promise<OcrTemplate[]> {
+  return request('/applications/materials/ocr-templates', { method: 'GET', params: { materialType } });
 }
 
 /** IF-MAT-003 手动指定材料类型 */
@@ -148,5 +155,5 @@ export async function updateRecognitionResult(materialId: number, data: Partial<
 
 /** IF-MAT-007 删除材料 */
 export async function deleteMaterial(materialId: number) {
-  return request(`/materials/${materialId}`, { method: 'DELETE' });
+  return request(`/applications/materials/${materialId}`, { method: 'DELETE' });
 }

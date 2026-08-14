@@ -38,6 +38,9 @@
         <id column="id" property="id"/>
         <result column="application_id" property="applicationId"/>
         <result column="file_object_id" property="fileObjectId"/>
+        <result column="ocr_template_id" property="ocrTemplateId"/>
+        <result column="ocr_template_code" property="ocrTemplateCode"/>
+        <result column="ocr_template_name" property="ocrTemplateName"/>
         <result column="file_name" property="fileName"/>
         <result column="file_type" property="fileType"/>
         <result column="file_size" property="fileSize"/>
@@ -245,25 +248,33 @@
 
     <!-- 材料 -->
     <select id="selectMaterialsByApplication" resultMap="MaterialMap">
-        SELECT m.*, f.file_name, f.file_type, f.file_size
+        SELECT m.*, f.file_name, f.file_type, f.file_size,
+               t.template_code AS ocr_template_code, t.template_name AS ocr_template_name
         FROM schema_verify.application_material m
         JOIN schema_common.file_object f ON f.id = m.file_object_id
+        LEFT JOIN schema_verify.ocr_recognition_template t ON t.id = m.ocr_template_id
         WHERE m.application_id = #{applicationId}
         ORDER BY m.created_at DESC
     </select>
 
     <select id="selectMaterialById" resultMap="MaterialMap">
-        SELECT m.*, f.file_name, f.file_type, f.file_size
+        SELECT m.*, f.file_name, f.file_type, f.file_size,
+               t.template_code AS ocr_template_code, t.template_name AS ocr_template_name
         FROM schema_verify.application_material m
         JOIN schema_common.file_object f ON f.id = m.file_object_id
+        LEFT JOIN schema_verify.ocr_recognition_template t ON t.id = m.ocr_template_id
         WHERE m.id = #{id}
     </select>
 
     <insert id="insertMaterial" parameterType="com.scfs.module.verify.entity.ApplicationMaterial" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO schema_verify.application_material (application_id, file_object_id, material_type,
+        INSERT INTO schema_verify.application_material (application_id, file_object_id, ocr_template_id, material_type,
             identified_by, confidence, status)
-        VALUES (#{applicationId}, #{fileObjectId}, #{materialType}, #{identifiedBy}, #{confidence}, #{status})
+        VALUES (#{applicationId}, #{fileObjectId}, #{ocrTemplateId}, #{materialType}, #{identifiedBy}, #{confidence}, #{status})
     </insert>
+
+    <delete id="deleteMaterial">
+        DELETE FROM schema_verify.application_material WHERE id = #{id}
+    </delete>
 
     <update id="updateMaterialType">
         UPDATE schema_verify.application_material
@@ -289,7 +300,7 @@
     </delete>
 
     <resultMap id="OcrTemplateMap" type="com.scfs.module.verify.entity.OcrRecognitionTemplate">
-        <id property="id" column="id"/><result property="templateName" column="template_name"/>
+        <id property="id" column="id"/><result property="templateCode" column="template_code"/><result property="templateName" column="template_name"/>
         <result property="materialType" column="material_type"/><result property="enterpriseId" column="enterprise_id"/>
         <result property="priority" column="priority"/><result property="enabled" column="enabled"/>
         <result property="matchAnchors" column="match_anchors" typeHandler="com.scfs.common.mybatis.JsonListTypeHandler"/>
@@ -303,19 +314,24 @@
         ORDER BY material_type, priority DESC, id DESC
     </select>
     <select id="selectOcrTemplateById" resultMap="OcrTemplateMap">SELECT * FROM schema_verify.ocr_recognition_template WHERE id=#{id}</select>
+    <select id="countOcrTemplateByCode" resultType="long">
+        SELECT COUNT(*) FROM schema_verify.ocr_recognition_template
+        WHERE template_code = #{templateCode}
+        <if test="excludeId != null">AND id != #{excludeId}</if>
+    </select>
     <select id="selectEnabledOcrTemplate" resultMap="OcrTemplateMap">
         SELECT * FROM schema_verify.ocr_recognition_template
         WHERE material_type=#{materialType} AND enabled=TRUE AND (enterprise_id=#{enterpriseId} OR enterprise_id IS NULL)
         ORDER BY CASE WHEN enterprise_id=#{enterpriseId} THEN 0 ELSE 1 END, priority DESC LIMIT 1
     </select>
     <insert id="insertOcrTemplate" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO schema_verify.ocr_recognition_template(template_name,material_type,enterprise_id,priority,enabled,match_anchors,field_rules)
-        VALUES(#{templateName},#{materialType},#{enterpriseId},#{priority},#{enabled},
+        INSERT INTO schema_verify.ocr_recognition_template(template_code,template_name,material_type,enterprise_id,priority,enabled,match_anchors,field_rules)
+        VALUES(#{templateCode},#{templateName},#{materialType},#{enterpriseId},#{priority},#{enabled},
         CAST(#{matchAnchors,typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
         CAST(#{fieldRules,typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb))
     </insert>
     <update id="updateOcrTemplate">
-        UPDATE schema_verify.ocr_recognition_template SET template_name=#{templateName},material_type=#{materialType},enterprise_id=#{enterpriseId},
+        UPDATE schema_verify.ocr_recognition_template SET template_code=#{templateCode},template_name=#{templateName},material_type=#{materialType},enterprise_id=#{enterpriseId},
         priority=#{priority},enabled=#{enabled},match_anchors=CAST(#{matchAnchors,typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),
         field_rules=CAST(#{fieldRules,typeHandler=com.scfs.common.mybatis.JsonListTypeHandler} AS jsonb),updated_at=NOW() WHERE id=#{id}
     </update>
@@ -392,6 +408,16 @@
     <select id="countApprovedApplicationsByEnterprise" resultType="long">
         SELECT COUNT(*) FROM schema_verify.financing_application
         WHERE enterprise_id = #{enterpriseId} AND business_type = #{businessType} AND status = 'APPROVED'
+    </select>
+    <select id="selectApprovedApplicationsByEnterprise" resultMap="ApplicationMap">
+        SELECT a.*, buyer.name AS buyer_name, buyer.uscc AS buyer_uscc,
+               seller.name AS seller_name, seller.uscc AS seller_uscc
+        FROM schema_verify.financing_application a
+        LEFT JOIN schema_graph.enterprise buyer ON buyer.id = a.buyer_enterprise_id
+        LEFT JOIN schema_graph.enterprise seller ON seller.id = a.seller_enterprise_id
+        WHERE a.enterprise_id = #{enterpriseId} AND a.business_type = #{businessType}
+          AND a.status = 'APPROVED' AND a.id != #{excludeApplicationId}
+        ORDER BY a.approved_at DESC, a.id DESC
     </select>
 
 </mapper>

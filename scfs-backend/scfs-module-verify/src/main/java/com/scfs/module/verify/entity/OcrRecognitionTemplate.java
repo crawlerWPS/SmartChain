@@ -9,6 +9,7 @@ import java.util.Map;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class OcrRecognitionTemplate extends BaseEntity {
+    private String templateCode;
     private String templateName;
     private String materialType;
     private Long enterpriseId;

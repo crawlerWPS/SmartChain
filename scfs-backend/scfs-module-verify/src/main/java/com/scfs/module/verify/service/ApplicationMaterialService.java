@@ -5,6 +5,7 @@ import com.scfs.common.service.FileStorageService;
 import com.scfs.common.security.SecurityContextHelper;
 import com.scfs.module.verify.entity.ApplicationMaterial;
 import com.scfs.module.verify.entity.MaterialRecognitionResult;
+import com.scfs.module.verify.entity.OcrRecognitionTemplate;
 import com.scfs.module.verify.mapper.VerifyMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,16 +49,33 @@ public class ApplicationMaterialService {
         return verifyMapper.selectRecognitionResult(material.getId());
     }
 
+    public List<OcrRecognitionTemplate> listSelectableOcrTemplates(String materialType) {
+        if (materialType == null || materialType.isBlank()) return List.of();
+        return verifyMapper.selectOcrTemplates(materialType).stream()
+                .filter(t -> Boolean.TRUE.equals(t.getEnabled()))
+                .toList();
+    }
+
     /**
      * 上传材料文件
      */
     @Transactional
-    public Long uploadMaterial(Long applicationId, MultipartFile file, String materialType) {
+    public Long uploadMaterial(Long applicationId, MultipartFile file, String materialType, Long ocrTemplateId) {
         if (verifyMapper.selectApplicationById(applicationId) == null) {
             throw new IllegalArgumentException("融资申请不存在");
         }
         if (materialType == null || materialType.isBlank()) {
             throw new IllegalArgumentException("请选择材料类型");
+        }
+        OcrRecognitionTemplate template = null;
+        if (ocrTemplateId != null) {
+            template = verifyMapper.selectOcrTemplateById(ocrTemplateId);
+            if (template == null || !Boolean.TRUE.equals(template.getEnabled())) {
+                throw new IllegalArgumentException("所选OCR模板不存在或未启用");
+            }
+            if (!materialType.equalsIgnoreCase(template.getMaterialType())) {
+                throw new IllegalArgumentException("所选OCR模板与材料类型不匹配");
+            }
         }
         Long fileObjectId = fileStorageService.upload(file, securityContextHelper.getCurrentUserIdOrThrow());
         FileObject fileObject = fileStorageService.getFileInfo(fileObjectId);
@@ -65,6 +83,7 @@ public class ApplicationMaterialService {
         ApplicationMaterial material = new ApplicationMaterial();
         material.setApplicationId(applicationId);
         material.setFileObjectId(fileObjectId);
+        material.setOcrTemplateId(template == null ? null : template.getId());
         material.setMaterialType(materialType);
         material.setIdentifiedBy("AUTO");
         material.setConfidence(BigDecimal.ZERO);
@@ -87,6 +106,18 @@ public class ApplicationMaterialService {
         verifyMapper.deleteRecognitionResult(id);
         verifyMapper.updateMaterialType(id, material.getMaterialType(), "AUTO");
         ocrRecognitionService.recognizeAsync(id, fileObject);
+    }
+
+    /**
+     * 删除申请材料及其 OCR 识别结果，并清除已经失效的核验结果。
+     * 文件对象可能被内容去重机制复用，因此不直接删除 MinIO 文件。
+     */
+    @Transactional
+    public void deleteMaterial(Long id) {
+        ApplicationMaterial material = requireMaterial(id);
+        verifyMapper.deleteRecognitionResult(id);
+        verifyMapper.deleteMaterial(id);
+        verifyMapper.deleteCheckResultsByApplication(material.getApplicationId());
     }
 
     private ApplicationMaterial requireMaterial(Long id) {
