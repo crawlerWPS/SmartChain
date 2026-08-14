@@ -156,43 +156,94 @@ public class GraphService {
     public Map<String, Object> recalculateAllAnalysis() {
         List<Enterprise> enterprises = graphMapper.searchEnterprises(null, 0, 10000);
         List<SupplyChainRelation> relations = graphMapper.selectAllRelations();
-        // 先读取企业角色中明确标记的 CORE，避免旧关系记录中的 core_enterprise_id 覆盖人工确认的核心企业。
-        Long coreEnterpriseId = enterprises.stream()
-                        .map(Enterprise::getId)
-                        .filter(id -> {
-                            EnterpriseRole role = graphMapper.selectRoleByEnterprise(id);
-                            return role != null && "CORE".equals(role.getRole());
-                        })
-                        .findFirst()
-                        .orElseGet(() -> relations.stream()
-                                .map(SupplyChainRelation::getCoreEnterpriseId)
-                                .filter(java.util.Objects::nonNull)
-                                .findFirst()
-                                .orElse(null));
+        Map<Long, Set<Long>> adjacency = new HashMap<>();
+        for (SupplyChainRelation relation : relations) {
+            adjacency.computeIfAbsent(relation.getFromEnterpriseId(), ignored -> new HashSet<>())
+                    .add(relation.getToEnterpriseId());
+            adjacency.computeIfAbsent(relation.getToEnterpriseId(), ignored -> new HashSet<>())
+                    .add(relation.getFromEnterpriseId());
+        }
 
+        Set<Long> visited = new HashSet<>();
+        List<Long> coreEnterpriseIds = new ArrayList<>();
         int calculated = 0;
-        if (coreEnterpriseId != null) {
-            Set<Long> linkedEnterpriseIds = new HashSet<>();
-            linkedEnterpriseIds.add(coreEnterpriseId);
-            for (SupplyChainRelation relation : relations) {
-                linkedEnterpriseIds.add(relation.getFromEnterpriseId());
-                linkedEnterpriseIds.add(relation.getToEnterpriseId());
+        int componentCount = 0;
+        for (Long startId : adjacency.keySet()) {
+            if (!visited.add(startId)) {
+                continue;
             }
-            for (Enterprise enterprise : enterprises) {
-                if (!linkedEnterpriseIds.contains(enterprise.getId())) {
-                    continue;
+            componentCount++;
+            List<Long> component = new ArrayList<>();
+            List<Long> queue = new ArrayList<>();
+            queue.add(startId);
+            for (int i = 0; i < queue.size(); i++) {
+                Long current = queue.get(i);
+                component.add(current);
+                for (Long next : adjacency.getOrDefault(current, Set.of())) {
+                    if (visited.add(next)) {
+                        queue.add(next);
+                    }
                 }
-                calculateEnterpriseRole(enterprise.getId(), coreEnterpriseId);
-                analyzeEnterprisePosition(enterprise.getId(), coreEnterpriseId);
+            }
+
+            Long coreEnterpriseId = resolveComponentCore(component, relations);
+            if (coreEnterpriseId == null) {
+                continue;
+            }
+            coreEnterpriseIds.add(coreEnterpriseId);
+            for (Long enterpriseId : component) {
+                calculateEnterpriseRole(enterpriseId, coreEnterpriseId);
+                analyzeEnterprisePosition(enterpriseId, coreEnterpriseId);
                 calculated++;
             }
         }
         Map<String, Object> result = new HashMap<>();
         result.put("enterpriseCount", enterprises.size());
         result.put("calculatedCount", calculated);
-        result.put("coreEnterpriseId", coreEnterpriseId);
-        result.put("message", coreEnterpriseId == null ? "未找到核心企业，请先设置核心企业" : "预计算完成");
+        result.put("componentCount", componentCount);
+        result.put("coreEnterpriseIds", coreEnterpriseIds);
+        result.put("coreEnterpriseId", coreEnterpriseIds.isEmpty() ? null : coreEnterpriseIds.get(0));
+        result.put("message", coreEnterpriseIds.isEmpty() ? "未找到可计算的供应链分组" : "多核心分组预计算完成");
         return result;
+    }
+
+    /**
+     * 为一个连通分组选择核心企业：人工标记 CORE 优先，其次使用关系上的核心 ID，最后按买方入度推断。
+     */
+    private Long resolveComponentCore(List<Long> component, List<SupplyChainRelation> relations) {
+        Set<Long> componentSet = new HashSet<>(component);
+        for (Long enterpriseId : component) {
+            EnterpriseRole role = graphMapper.selectRoleByEnterprise(enterpriseId);
+            if (role != null && "CORE".equals(role.getRole())) {
+                return enterpriseId;
+            }
+        }
+
+        Map<Long, Integer> declaredCoreCounts = new HashMap<>();
+        for (SupplyChainRelation relation : relations) {
+            Long declaredCore = relation.getCoreEnterpriseId();
+            if (declaredCore != null && componentSet.contains(declaredCore)) {
+                declaredCoreCounts.merge(declaredCore, 1, Integer::sum);
+            }
+        }
+        Long declaredCore = declaredCoreCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+        if (declaredCore != null) {
+            return declaredCore;
+        }
+
+        Map<Long, Integer> buyerInDegree = new HashMap<>();
+        for (SupplyChainRelation relation : relations) {
+            if (componentSet.contains(relation.getFromEnterpriseId())
+                    && componentSet.contains(relation.getToEnterpriseId())) {
+                buyerInDegree.merge(relation.getToEnterpriseId(), 1, Integer::sum);
+            }
+        }
+        return component.stream()
+                .max(java.util.Comparator.comparingInt(id -> buyerInDegree.getOrDefault(id, 0)))
+                .orElse(null);
     }
 
     /** 导入买卖方关系：卖方作为起点，买方作为终点。 */
@@ -424,12 +475,16 @@ public class GraphService {
         analysis.setEnterpriseId(enterpriseId);
 
         List<SupplyChainRelation> relations = graphMapper.selectRelationsByEnterprise(enterpriseId, 2);
-        boolean inCoreChain = relations.stream()
-                .anyMatch(r -> coreEnterpriseId.equals(r.getFromEnterpriseId()) || coreEnterpriseId.equals(r.getToEnterpriseId()));
+        Integer relationDistance = relations.stream()
+                .filter(r -> coreEnterpriseId.equals(r.getFromEnterpriseId()) || coreEnterpriseId.equals(r.getToEnterpriseId()))
+                .map(r -> r.getLevel() == null ? 1 : r.getLevel())
+                .min(Integer::compareTo)
+                .orElse(null);
+        boolean inCoreChain = enterpriseId.equals(coreEnterpriseId) || relationDistance != null;
         analysis.setInCoreChain(inCoreChain);
 
-        // 距核心企业层级（简化）
-        analysis.setDistanceToCore(inCoreChain ? 1 : 2);
+        // 关系 level 已由图谱导入/计算维护：核心企业为 0，直接关系为 1，间接关系为 2。
+        analysis.setDistanceToCore(enterpriseId.equals(coreEnterpriseId) ? 0 : (relationDistance == null ? 2 : relationDistance));
 
         // 上下游稳定性
         boolean hasUpstream = relations.stream().anyMatch(r -> r.getRelationType().equals("SUPPLY") && r.getToEnterpriseId().equals(enterpriseId));

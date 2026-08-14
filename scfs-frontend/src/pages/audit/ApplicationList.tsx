@@ -7,6 +7,7 @@ import {
   pageApplications,
   createApplication,
   listApplicationCustomers,
+  listApplicationSellers,
   type ApplicationCustomer,
 } from '@/api/application';
 import { ApplicationStatusTag } from '@/components/common/StatusTag';
@@ -21,10 +22,12 @@ const ApplicationList: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState({ page: 1, size: 10, keyword: '', status: undefined });
   const [createVisible, setCreateVisible] = useState(false);
-  const [customers, setCustomers] = useState<ApplicationCustomer[]>([]);
   const [buyerCustomers, setBuyerCustomers] = useState<ApplicationCustomer[]>([]);
+  const [sellerCustomers, setSellerCustomers] = useState<ApplicationCustomer[]>([]);
   const [customerLoading, setCustomerLoading] = useState(false);
+  const [sellerLoading, setSellerLoading] = useState(false);
   const [createForm] = Form.useForm();
+  const buyerEnterpriseId = Form.useWatch('buyerEnterpriseId', createForm);
   const dictionary = useCodeDictionary();
 
   const load = async () => {
@@ -43,12 +46,7 @@ const ApplicationList: React.FC = () => {
   const loadCustomers = async () => {
     setCustomerLoading(true);
     try {
-      const [all, buyers] = await Promise.all([
-        listApplicationCustomers(),
-        listApplicationCustomers(undefined, true),
-      ]);
-      setCustomers(all);
-      setBuyerCustomers(buyers);
+      setBuyerCustomers(await listApplicationCustomers(undefined, true));
     } catch (e: any) {
       message.error(e.message);
     } finally {
@@ -56,15 +54,27 @@ const ApplicationList: React.FC = () => {
     }
   };
 
+  const loadSellers = async (buyerId: number) => {
+    setSellerLoading(true);
+    try {
+      setSellerCustomers(await listApplicationSellers(buyerId));
+    } catch (e: any) {
+      setSellerCustomers([]);
+      message.error(e.message);
+    } finally {
+      setSellerLoading(false);
+    }
+  };
+
   useEffect(() => {
     load();
   }, [query.page, query.size, query.status]);
 
-  const customerOptions = useMemo(() => customers.map((customer) => ({
-    value: customer.enterpriseId,
-    label: `${customer.name}（客户号：${customer.enterpriseId}）`,
-    searchText: `${customer.name} ${customer.enterpriseId} ${customer.uscc}`,
-  })), [customers]);
+  useEffect(() => {
+    createForm.setFieldValue('sellerEnterpriseId', undefined);
+    setSellerCustomers([]);
+    if (buyerEnterpriseId) loadSellers(buyerEnterpriseId);
+  }, [buyerEnterpriseId]);
 
   const buyerOptions = useMemo(() => buyerCustomers.map((customer) => ({
     value: customer.enterpriseId,
@@ -72,9 +82,15 @@ const ApplicationList: React.FC = () => {
     searchText: `${customer.name} ${customer.enterpriseId} ${customer.uscc}`,
   })), [buyerCustomers]);
 
+  const sellerOptions = useMemo(() => sellerCustomers.map((customer) => ({
+    value: customer.enterpriseId,
+    label: `${customer.name}（客户号：${customer.enterpriseId}）`,
+    searchText: `${customer.name} ${customer.enterpriseId} ${customer.uscc}`,
+  })), [sellerCustomers]);
+
   const openCreate = () => {
     setCreateVisible(true);
-    if (customers.length === 0) loadCustomers();
+    if (buyerCustomers.length === 0) loadCustomers();
   };
 
   const handleCreate = async () => {
@@ -94,7 +110,6 @@ const ApplicationList: React.FC = () => {
   const customerSelectProps = {
     showSearch: true,
     loading: customerLoading,
-    options: customerOptions,
     optionFilterProp: 'searchText',
     placeholder: '请选择或搜索客户名称/客户号/信用代码',
   } as const;
@@ -144,7 +159,7 @@ const ApplicationList: React.FC = () => {
                   ? Promise.resolve() : Promise.reject(new Error('买方和卖方不能相同'));
               },
             })]}>
-            <Select {...customerSelectProps} />
+            <Select {...customerSelectProps} options={sellerOptions} loading={sellerLoading} disabled={!buyerEnterpriseId} placeholder={buyerEnterpriseId ? '请选择该买方的供应商' : '请先选择买方企业'} notFoundContent="暂无该买方的供应商" />
           </Form.Item>
           <Form.Item name="businessType" label="业务类型" rules={[{ required: true, message: '请选择业务类型' }]}>
             <Select options={dictionary.options('BUSINESS_TYPE')} />

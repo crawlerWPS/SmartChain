@@ -201,6 +201,23 @@
         ORDER BY id
     </select>
 
+    <select id="selectSellerCustomersByBuyer" resultType="com.scfs.module.verify.entity.ApplicationCustomer">
+        SELECT DISTINCT e.id AS enterpriseId, e.name, e.uscc, e.industry,
+               e.legal_person AS legalPerson, e.address
+        FROM schema_graph.enterprise e
+        INNER JOIN schema_graph.supply_chain_relation r
+            ON r.from_enterprise_id = e.id
+           AND r.to_enterprise_id = #{buyerEnterpriseId}
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (CAST(e.id AS VARCHAR) LIKE '%' || #{keyword} || '%'
+                OR e.name ILIKE '%' || #{keyword} || '%'
+                OR e.uscc ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY e.id
+    </select>
+
     <insert id="insertApplicationCustomer" parameterType="com.scfs.module.verify.entity.ApplicationCustomer" useGeneratedKeys="true" keyProperty="enterpriseId" keyColumn="id">
         INSERT INTO schema_graph.enterprise (name, uscc, industry, legal_person, address, data_source)
         VALUES (#{name}, #{uscc}, #{industry}, #{legalPerson}, #{address}, 'MANUAL')

@@ -48,6 +48,10 @@ export async function listApplicationCustomers(keyword?: string, buyerOnly = fal
   return request('/applications/customers', { method: 'GET', params: { keyword, buyerOnly } });
 }
 
+export async function listApplicationSellers(buyerEnterpriseId: number, keyword?: string): Promise<ApplicationCustomer[]> {
+  return request('/applications/customers/sellers', { method: 'GET', params: { buyerEnterpriseId, keyword } });
+}
+
 export async function createApplicationCustomer(data: Omit<ApplicationCustomer, 'enterpriseId'>): Promise<number> {
   return request('/applications/customers', { method: 'POST', data });
 }

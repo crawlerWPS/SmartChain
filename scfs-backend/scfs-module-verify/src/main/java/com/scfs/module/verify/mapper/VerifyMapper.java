@@ -37,6 +37,9 @@ public interface VerifyMapper {
     List<ApplicationCustomer> selectApplicationCustomers(@Param("keyword") String keyword,
                                                           @Param("buyerOnly") Boolean buyerOnly);
 
+    List<ApplicationCustomer> selectSellerCustomersByBuyer(@Param("buyerEnterpriseId") Long buyerEnterpriseId,
+                                                           @Param("keyword") String keyword);
+
     int insertApplicationCustomer(ApplicationCustomer customer);
     int updateApplicationCustomer(ApplicationCustomer customer);
     int insertTradeRelation(@Param("buyerEnterpriseId") Long buyerEnterpriseId,

@@ -53,6 +53,13 @@ public class ApplicationController {
                 : applicationService.searchCustomers(keyword));
     }
 
+    @RequirePermission(module = "VERIFY", permission = "view")
+    @GetMapping("/customers/sellers")
+    public Result<List<ApplicationCustomer>> sellers(@RequestParam Long buyerEnterpriseId,
+                                                     @RequestParam(required = false) String keyword) {
+        return Result.success(applicationService.searchSellerCustomers(buyerEnterpriseId, keyword));
+    }
+
     @RequirePermission(module = "VERIFY", permission = "create")
     @PostMapping("/customers")
     public Result<Long> createCustomer(@RequestBody ApplicationCustomer customer) {
