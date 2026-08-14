@@ -3,8 +3,8 @@
 | 项 | 内容 |
 |----|------|
 | 文档名称 | 供应链金融智能风控与尽调辅助平台 RFC |
-| 文档版本 | V1.0 |
-| 编写日期 | 2026-07-13 |
+| 文档版本 | V1.1 |
+| 编写日期 | 2026-08-14 |
 | 关联文档 | [PRD](../prd/scfs_platform_prd.md) |
 
 ---
@@ -605,13 +605,16 @@ PostgreSQL (scfs_db)
 | id | BIGSERIAL | PK | |
 | application_id | BIGINT | NOT NULL | 关联申请 |
 | file_object_id | BIGINT | NOT NULL | 关联文件 |
+| ocr_template_id | BIGINT | FK，可空，ON DELETE SET NULL | 用户上传时指定的 OCR 模板；为空时自动匹配模板 |
 | material_type | VARCHAR(32) | NOT NULL | CONTRACT/INVOICE/ORDER/LOGISTICS/ACCEPTANCE/PAYMENT/QUALIFICATION |
 | identified_by | VARCHAR(16) | NOT NULL DEFAULT 'AUTO' | AUTO/MANUAL 识别方式 |
 | confidence | DECIMAL(5,2) | | 置信度（0-100） |
 | status | VARCHAR(16) | NOT NULL DEFAULT 'IDENTIFIED' | IDENTIFIED/PENDING_MANUAL/UNRECOGNIZED |
 | created_at | TIMESTAMP | NOT NULL DEFAULT NOW() | |
 
-**索引**：idx_app_material_app(application_id), idx_app_material_type(material_type)
+**索引**：idx_app_material_app(application_id), idx_app_material_type(material_type), idx_application_material_ocr_template(ocr_template_id)
+
+**删除策略**：删除材料时先删除对应 `material_recognition_result`，再删除 `application_material`，同时清除该申请已失效的 `verify_check_result`；底层文件对象可能被内容去重复用，不直接删除 MinIO 对象。
 
 #### 表 17：material_recognition_result（材料识别结构化结果）
 
@@ -628,13 +631,13 @@ PostgreSQL (scfs_db)
 | amount_in_words | VARCHAR(128) | | 金额大写 |
 | contract_date | DATE | | 合同日期 |
 | order_date | DATE | | 订单日期 |
-| invoice_date | DATE | | 发票日期 |
+| invoice_date | DATE | | 开票时间 |
 | logistics_date | DATE | | 物流日期 |
 | acceptance_date | DATE | | 验收日期 |
 | payment_date | DATE | | 付款日期 |
 | contract_period | VARCHAR(64) | | 合同期限 |
 | payment_term | VARCHAR(64) | | 付款期限 |
-| transaction_no | VARCHAR(64) | | 交易编号 |
+| transaction_no | VARCHAR(64) | | 单据编号；发票材料展示为“发票号码”，合同/订单分别展示为合同编号/订单编号 |
 | field_confidence | JSONB | | 各字段置信度 {field: confidence} |
 | raw_ocr_result | JSONB | | 原始 OCR 结果 |
 | field_positions | JSONB | | 字段位置标注 |
@@ -642,13 +645,16 @@ PostgreSQL (scfs_db)
 
 **索引**：idx_recog_material(application_material_id)
 
+**展示映射**：结构化字段保持通用存储模型，前端按材料类型显示业务名称。发票的 `transaction_no` 显示为“发票号码”，`invoice_date` 显示为“开票时间”；合同和订单分别显示合同编号/日期、订单编号/日期。发票结果页不再以“商品”占用开票时间展示位。
+
 #### 表 17a：ocr_recognition_template（OCR结构化识别模板）
 
 | 字段 | 类型 | 约束 | 说明 |
 |------|------|------|------|
 | id | BIGSERIAL | PK | 模板主键 |
+| template_code | VARCHAR(64) | UNIQUE NOT NULL | 唯一模板编号，仅允许字母、数字、下划线和短横线 |
 | template_name | VARCHAR(128) | NOT NULL | 模板名称 |
-| material_type | VARCHAR(32) | NOT NULL | 当前支持 CONTRACT/INVOICE |
+| material_type | VARCHAR(32) | NOT NULL | 支持全部材料清单类型：CONTRACT/INVOICE/ORDER/LOGISTICS/ACCEPTANCE/PAYMENT/QUALIFICATION 等 |
 | enterprise_id | BIGINT | 可空 | 指定企业模板；空表示通用模板 |
 | priority | INT | NOT NULL DEFAULT 0 | 匹配优先级，数值越大越优先 |
 | enabled | BOOLEAN | NOT NULL DEFAULT TRUE | 启停状态 |
@@ -657,9 +663,9 @@ PostgreSQL (scfs_db)
 | created_at | TIMESTAMP | NOT NULL DEFAULT NOW() | 创建时间 |
 | updated_at | TIMESTAMP | NOT NULL DEFAULT NOW() | 更新时间 |
 
-**索引**：idx_ocr_template_match(material_type, enterprise_id, enabled, priority DESC)
+**索引**：uk_ocr_template_code(template_code), idx_ocr_template_match(material_type, enterprise_id, enabled, priority DESC)
 
-**迁移归属**：V8 创建表、索引，并预置“标准贸易合同”和“标准增值税发票”模板。
+**迁移归属**：V8 创建表、匹配索引及标准模板；V10 增加唯一模板编号，并在材料表增加所选模板外键；V12 为标准发票模板增加 `invoiceDate`（开票时间）提取规则。
 
 **field_rules 结构**：
 
@@ -715,7 +721,9 @@ PostgreSQL (scfs_db)
 
 ### 2.5 Schema: schema_preaudit（M3 材料预审）
 
-#### 表 20：material_checklist_template（材料清单模板 — 双岗）
+#### 表 20：material_checklist_template（材料清单模板）
+
+> 物理表位于 `schema_common`，M3 预审模块通过共享规则服务读取。
 
 | 字段 | 类型 | 约束 | 说明 |
 |------|------|------|------|
@@ -723,15 +731,15 @@ PostgreSQL (scfs_db)
 | business_type | VARCHAR(32) | UNIQUE NOT NULL | AR_FINANCING/FACTORING/ORDER_FINANCING |
 | required_materials | JSONB | NOT NULL | 必备材料列表 |
 | version | INT | NOT NULL DEFAULT 1 | |
-| status | VARCHAR(16) | NOT NULL DEFAULT 'PENDING' | PENDING/APPROVED/REJECTED/ENABLED/DISABLED |
-| maker_id | BIGINT | NOT NULL | 经办人 (R-03a) |
-| checker_id | BIGINT | | 复核人 (R-03b) |
-| checked_at | TIMESTAMP | | 复核时间 |
-| reject_reason | TEXT | | 拒绝原因 |
+| status | VARCHAR(16) | NOT NULL DEFAULT 'ENABLED' | ENABLED/DISABLED；新建、修改后直接启用 |
+| maker_id | BIGINT | NOT NULL | 最近维护人 |
+| checker_id | BIGINT | 可空 | 历史兼容字段，取消审核流程后不再写入 |
+| checked_at | TIMESTAMP | 可空 | 历史兼容字段，取消审核流程后不再写入 |
+| reject_reason | TEXT | 可空 | 历史兼容字段，取消审核流程后不再写入 |
 | created_at | TIMESTAMP | NOT NULL DEFAULT NOW() | |
 | updated_at | TIMESTAMP | NOT NULL DEFAULT NOW() | |
 
-**约束**：CHECK (maker_id <> checker_id)
+**维护规则**：材料清单模板不再走经办/复核流程，创建、修改、删除在权限校验和审计留痕后立即生效。V11 将历史 DRAFT/PENDING/REJECTED/APPROVED 数据统一置为 ENABLED，清空复核信息，并删除 `template:approve` 菜单授权。
 
 #### 表 21：material_completeness_result（完整性检查结果）
 
@@ -757,7 +765,7 @@ PostgreSQL (scfs_db)
 | expired_count | INT | NOT NULL DEFAULT 0 | 过期数 |
 | incomplete_count | INT | NOT NULL DEFAULT 0 | 缺页/信息不全数 |
 | abnormal_count | INT | NOT NULL DEFAULT 0 | 明显异常数 |
-| details | JSONB | | 异常项详情 |
+| details | JSONB | | `abnormalItems` 异常材料、`materialResults` 全部材料逐项结果、`allValid` 总体有效标识 |
 | checked_at | TIMESTAMP | NOT NULL DEFAULT NOW() | |
 
 #### 表 23a：enterprise_info_consistency_result（企业信息一致性检查-主表）
@@ -769,8 +777,8 @@ PostgreSQL (scfs_db)
 | overall_consistent | BOOLEAN | NOT NULL | 总体是否一致 |
 | name_consistent | BOOLEAN | NOT NULL | 企业名称一致 |
 | uscc_consistent | BOOLEAN | NOT NULL | 信用代码一致 |
-| legal_person_consistent | BOOLEAN | NOT NULL | 法定代表人一致 |
-| address_consistent | BOOLEAN | NOT NULL | 地址一致 |
+| legal_person_consistent | BOOLEAN | NOT NULL | 兼容字段；当前 OCR 未提供法人，固定为 true 且不参与总体结论 |
+| address_consistent | BOOLEAN | NOT NULL | 兼容字段；当前 OCR 未提供地址，固定为 true 且不参与总体结论 |
 | mismatch_count | INT | NOT NULL DEFAULT 0 | 不一致项数 |
 | checked_at | TIMESTAMP | NOT NULL DEFAULT NOW() | |
 
@@ -1299,7 +1307,8 @@ http://{host}:8080/api/v1
 - **Method**：`POST /applications/{id}/materials`
 - **权限**：RM
 - **Content-Type**：`multipart/form-data`
-- **Request**：`file`（文件）、`materialType`（材料类型）
+- **Request**：`file`（文件）、`materialType`（材料类型）、`ocrTemplateId?`（所选 OCR 模板，可空）
+- **模板校验**：指定模板时必须存在、已启用且与材料类型一致；未指定时由系统按材料类型、锚点和优先级自动匹配。
 - **Response**：
 
 ```json
@@ -1325,7 +1334,7 @@ http://{host}:8080/api/v1
 - **Method**：`GET /applications/{id}/materials`
 - **权限**：RM/RCO/OPS/AUDIT
 - **Query**：`materialType?`
-- **Response**：材料列表（含识别状态、置信度）
+- **Response**：材料列表（含识别状态、置信度、`ocrTemplateId`、`ocrTemplateCode`、`ocrTemplateName`）
 
 #### IF-019：手动指定材料类型
 
@@ -1359,6 +1368,19 @@ http://{host}:8080/api/v1
 - **权限**：已认证用户
 - **Response**：内联文件流（Content-Disposition=inline），PDF/PNG/JPEG 返回对应媒体类型，其余返回 application/octet-stream
 - **错误处理**：文件元数据或 MinIO 对象不存在时返回“文件内容不存在或已被清理”
+
+#### IF-022b：查询可选 OCR 模板
+
+- **Method**：`GET /applications/materials/ocr-templates?materialType={type}`
+- **权限**：VERIFY.create
+- **Response**：与材料类型匹配且已启用的模板列表，上传控件以“模板编号｜模板名称”展示。
+
+#### IF-022c：删除申请材料
+
+- **Method**：`DELETE /applications/materials/{id}`
+- **权限**：VERIFY.delete
+- **效果**：删除材料及其 OCR 识别结果，清除该申请的历史核验结果；之后允许重新选择文件、材料类型和 OCR 模板上传。
+- **存储策略**：不直接删除可能被内容去重机制复用的文件对象和 MinIO 内容。
 
 ### 3.5 供应链图谱模块（M1）
 
@@ -1480,9 +1502,9 @@ http://{host}:8080/api/v1
 
 #### IF-029：下载核验报告 PDF
 
-- **Method**：`GET /verify-reports/{reportId}/pdf`
+- **Method**：`GET /reports/{reportNo}/export-pdf`
 - **权限**：RM/RCO/OPS/AUDIT
-- **Response**：PDF 文件流
+- **Response**：PDF 文件流；版式与报告页面一致，包含报告头、综合统计卡片、基础信息、风险提示、核验结果卡片、自动换行、分页及页码。
 
 #### IF-030：获取核验项详情
 
@@ -1537,12 +1559,14 @@ http://{host}:8080/api/v1
 
 - **Method**：`GET /applications/{id}/preaudit/validity`
 - **权限**：RM/RCO/OPS/AUDIT
+- **结果语义**：返回汇总计数和 `details.materialResults` 全量逐材料结果；每项包含文件名、材料类型、OCR 状态、是否过期、缺失字段、问题说明和有效标识。结果由当前材料数据实时计算，不使用固定值。
 
 #### IF-034：获取企业信息一致性检查结果
 
 - **Method**：`GET /applications/{id}/preaudit/consistency`
 - **权限**：RM/RCO/OPS/AUDIT
 - **Response**：主表 + 明细列表
+- **结果语义**：当前比较买卖方企业名称与统一社会信用代码；明细保留各申请登记值和材料识别值的来源。法人、地址为兼容字段，不参与当前总体结论。
 
 #### IF-035：获取/生成补正清单
 
@@ -1737,17 +1761,17 @@ http://{host}:8080/api/v1
 - **权限**：R-03b（审批通过后）
 - **效果**：将该配置置为 ENABLED，其余置为 DISABLED
 
-### 3.12 材料清单模板模块（双岗）
+### 3.12 材料清单模板模块
 
 #### IF-052：模板列表
 
 - **Method**：`GET /templates`
-- **权限**：R-03a/R-03b/AUDIT
+- **权限**：RULE.view
 
-#### IF-053：创建模板变更（经办）
+#### IF-053：创建材料清单模板
 
 - **Method**：`POST /templates`
-- **权限**：R-03a
+- **权限**：RULE.create
 - **Request**：
 
 ```json
@@ -1756,19 +1780,14 @@ http://{host}:8080/api/v1
   "requiredMaterials": ["CONTRACT_SALE", "INVOICE", "AR_CONFIRMATION", "PAYMENT_CONFIRMATION"]
 }
 ```
-
-#### IF-054：审批模板变更（复核）
-
-- **Method**：`POST /templates/{id}/review`
-- **权限**：R-03b
-- **Request**：`{"approved": true, "remark": "..."}` 或 `{"approved": false, "rejectReason": "..."}`
+- **效果**：版本初始化为 1、状态设为 ENABLED，记录创建审计日志并立即生效；不进入审批流程。
 
 #### IF-054a：修改材料清单模板
 
 - **Method**：`PUT /templates/{id}`
 - **权限**：RULE.update
 - **Request**：`{"businessType":"FACTORING","requiredMaterials":["CONTRACT","INVOICE"]}`
-- **效果**：更新业务类型和必需材料 JSONB，记录 UPDATE 审计日志
+- **效果**：更新业务类型和必需材料 JSONB，版本号递增，状态保持 ENABLED，记录 UPDATE 审计日志并立即生效
 
 #### IF-054b：删除材料清单模板
 
@@ -1780,16 +1799,16 @@ http://{host}:8080/api/v1
 
 #### IF-054c：OCR模板列表
 
-- **Method**：`GET /ocr-templates?materialType=CONTRACT|INVOICE`
+- **Method**：`GET /ocr-templates?materialType={type}`
 - **权限**：RULE.view
-- **Response**：按材料类型、优先级降序返回模板及 fieldRules
+- **Response**：按材料类型、优先级降序返回模板编号、名称及 fieldRules；材料类型支持完整材料清单枚举。
 
 #### IF-054d：创建OCR模板
 
 - **Method**：`POST /ocr-templates`
 - **权限**：RULE.create
-- **Request**：模板名称、材料类型、适用企业、优先级、enabled、matchAnchors、fieldRules
-- **校验**：模板名称不能为空；当前材料类型仅允许 CONTRACT/INVOICE
+- **Request**：唯一模板编号、模板名称、材料类型、适用企业、优先级、enabled、matchAnchors、fieldRules
+- **校验**：模板编号全局唯一且符合 `[A-Za-z0-9_-]{2,64}`；模板名称和材料类型不能为空；材料类型支持完整材料清单枚举。
 
 #### IF-054e：修改OCR模板
 
@@ -1803,14 +1822,28 @@ http://{host}:8080/api/v1
 - **权限**：RULE.delete
 - **效果**：删除指定模板；前端必须二次确认
 
+#### IF-054g：解析 OCR 模板样本
+
+- **Method**：`POST /ocr-templates/sample/analyze`
+- **权限**：RULE.create
+- **Content-Type**：`multipart/form-data`
+- **效果**：OCR 解析样本文件并返回文本、置信度、位置和页码，供可视化样本设计器配置字段规则。
+
+#### IF-054h：测试 OCR 模板规则
+
+- **Method**：`POST /ocr-templates/sample/test`
+- **权限**：RULE.create
+- **Request**：`fieldRules` + `sample`
+- **效果**：不保存模板，直接返回当前规则对样本的字段提取结果。
+
 #### OCR结构化提取顺序
 
 1. PaddleOCR 服务对图片或 PDF 各页执行方向分类、页面矫正、文字行方向识别，返回文本、置信度、坐标框和页码。
-2. 后端按 application_material.material_type 查询启用模板，校验 matchAnchors 并选择优先级最高的模板。
+2. 上传时指定 `ocr_template_id` 则直接使用该模板；否则按 `application_material.material_type` 查询启用模板，校验 matchAnchors 并选择优先级最高的模板。
 3. `FULL_TEXT` 对全文执行正则；`ABSOLUTE_REGION` 将归一化区域换算为实际坐标；`ANCHOR_REGION` 先定位锚点文本框再计算相对区域。
 4. 区域内 OCR 项按 y、x 排序后拼接，映射到 MaterialRecognitionResult 字段。
 5. 模板未命中的字段继续使用通用信用代码、金额和交易编号正则兜底。
-6. field_confidence 保存 overall 和 templateId，raw_ocr_result/field_positions 保存原始证据。
+6. field_confidence 保存 overall、templateId 和 templateCode，raw_ocr_result/field_positions 保存原始证据。
 
 ### 3.13 审计日志模块
 
@@ -1840,7 +1873,7 @@ http://{host}:8080/api/v1
 | 认证与用户 | 9 (IF-001~009) | 登录/登出/用户CRUD/角色权限 |
 | 菜单管理 | 8 (IF-009a~009h) | 菜单树CRUD/角色菜单配置/当前用户菜单/权限复制 |
 | 融资申请 | 7 (IF-010~016) | 申请CRUD/状态流转/决策/撤销 |
-| 材料管理 | 6 (IF-017~022) | 上传/列表/类型/识别/修正/下载 |
+| 材料管理 | 9 (IF-017~022c) | 上传/列表/类型/识别/修正/下载/预览/选模/删除重传 |
 | 供应链图谱 | 4 (IF-023~026) | 图谱/角色/位置/异常 |
 | 核验 | 4 (IF-027~030) | 触发/报告/PDF/详情 |
 | 预审 | 6 (IF-031~036) | 触发/完整/有效/一致/补正/导出 |
@@ -1848,9 +1881,10 @@ http://{host}:8080/api/v1
 | 企业查询 | 2 (IF-040~041) | 搜索/详情 |
 | 规则配置 | 5 (IF-042~046) + IF-047 | 列表/变更/审批/历史/待办 |
 | 风险权重 | 4 (IF-048~051) | 列表/变更/审批/启用 |
-| 材料模板 | 3 (IF-052~054) | 列表/变更/审批 |
+| 材料模板 | 4 (IF-052~054b) | 列表/创建/修改/删除，维护后直接生效 |
+| OCR 模板 | 6 (IF-054c~054h) | 列表/增改删/样本解析/规则测试 |
 | 审计日志 | 3 (IF-055~057) | 查询/详情/导出 |
-| **合计** | **65** | |
+| **合计** | **75** | |
 
 ---
 
@@ -2379,13 +2413,14 @@ public interface SupplementListService {
 ```
 输入：application_id
 流程：
-1. 查询所有材料文件
+1. 查询所有申请材料和对应 OCR 识别结果
 2. 对每份文件：
-   a. 过期检查：营业执照类文件检查有效期（基于 OCR 识别的到期日期）
-   b. 缺页检查：PDF 页数检查 + 关键字段完整性
-   c. 异常检查：OCR 置信度 < 60% 或字段明显异常（金额为 0、日期为未来等）
+   a. OCR 检查：未完成识别记为信息不完整
+   b. 关键字段检查：按 CONTRACT/INVOICE/ORDER/LOGISTICS/ACCEPTANCE/PAYMENT 分别检查必填主体、金额、单据编号和日期
+   c. 过期检查：材料业务日期早于当前日期一年以上记为过期
 3. 汇总 expired_count / incomplete_count / abnormal_count
-4. 保存 material_validity_result
+4. details 同时保存 abnormalItems 和 materialResults，保证前端可展示全部材料的有效/异常结论
+5. 已有结果执行更新，否则新增 material_validity_result
 ```
 
 #### 4.4.5 企业信息一致性检查算法
@@ -2394,17 +2429,12 @@ public interface SupplementListService {
 输入：application_id
 流程：
 1. 查询申请企业 enterprise（基准信息）
-2. 查询所有材料的识别结果 material_recognition_result
-3. 对 4 个要素分别比对：
-   a. NAME：各材料中的买方/卖方名称 vs enterprise.name
-   b. USCC：各材料中的信用代码 vs enterprise.uscc
-   c. LEGAL_PERSON：合同法人 vs enterprise.legal_person
-   d. ADDRESS：合同地址 vs enterprise.address
-4. 对每个要素：
-   - 收集所有材料中的值 source_values[]
-   - 判断一致 consistent = (所有值相同)
+2. 读取申请登记的买方/卖方名称及统一社会信用代码，作为基准来源
+3. 查询所有材料识别结果，分别收集 BUYER_NAME/SELLER_NAME/BUYER_USCC/SELLER_USCC
+4. 对 NAME 和 USCC 分组比较：每个角色至少需要“申请登记值 + 一份材料识别值”；标准化后所有值相同才判定一致
 5. 保存 enterprise_info_consistency_result（主表）
-6. 保存 enterprise_info_mismatch_detail（明细，每个要素一行）
+6. 保存 enterprise_info_mismatch_detail（明细及各来源值）；检查前删除该申请旧结果，避免历史数据干扰
+7. LEGAL_PERSON/ADDRESS 因当前 OCR 结构无对应字段，仅兼容保留，不参与 overall_consistent
 ```
 
 #### 4.4.6 补正清单生成算法
@@ -4517,7 +4547,7 @@ mc mirror --overwrite /data/backups/minio/materials_20240101 minio/scfs-material
 | 认证与用户 | IF-001 ~ IF-009 | 9 |
 | 菜单管理 | IF-009a ~ IF-009h | 8 |
 | 融资申请 | IF-010 ~ IF-016 | 7 |
-| 材料管理 | IF-017 ~ IF-022 | 6 |
+| 材料管理 | IF-017 ~ IF-022c | 9 |
 | 供应链图谱 | IF-023 ~ IF-026 | 4 |
 | 核验 | IF-027 ~ IF-030 | 4 |
 | 预审 | IF-031 ~ IF-036 | 6 |
@@ -4525,27 +4555,29 @@ mc mirror --overwrite /data/backups/minio/materials_20240101 minio/scfs-material
 | 企业查询 | IF-040 ~ IF-041 | 2 |
 | 规则配置 | IF-042 ~ IF-047 | 6 |
 | 风险权重 | IF-048 ~ IF-051 | 4 |
-| 材料模板 | IF-052 ~ IF-054 | 3 |
+| 材料模板 | IF-052 ~ IF-054b | 4 |
+| OCR 模板 | IF-054c ~ IF-054h | 6 |
 | 审计日志 | IF-055 ~ IF-057 | 3 |
-| **合计** | | **65** |
+| **合计** | | **75** |
 
 ### 10.6 数据模型汇总
 
 | Schema | 表数 | 表清单 |
 |--------|------|--------|
-| common | 8 | sys_user, sys_role, sys_role_permission, sys_menu, sys_role_menu, file_object, audit_log, data_source_config |
+| common | 9 | sys_user, sys_role, sys_role_permission, sys_menu, sys_role_menu, file_object, audit_log, data_source_config, material_checklist_template |
 | graph | 5 | enterprise, supply_chain_relation, enterprise_role, enterprise_position_analysis, abnormal_relation |
-| verify | 5 | application_material, material_recognition_result, verify_check_result, verify_report, verify_report_snapshot |
-| preaudit | 6 | material_completeness_result, material_validity_result, enterprise_info_consistency_result, enterprise_info_mismatch_detail, material_checklist_template, supplement_list |
+| verify | 6 | application_material, material_recognition_result, ocr_recognition_template, verify_check_result, verify_report, verify_report_snapshot |
+| preaudit | 5 | material_completeness_result, material_validity_result, enterprise_info_consistency_result, enterprise_info_mismatch_detail, supplement_list |
 | risk | 4 | risk_profile, risk_profile_snapshot, risk_weight_config, rule_change_log |
 | 跨 schema | 2 | financing_application, application_status_history |
-| **合计** | **30** | |
+| **合计** | **31** | |
 
 ### 10.7 文档变更记录
 
 | 版本 | 日期 | 变更内容 | 作者 |
 |------|------|---------|------|
 | 1.0.0 | 2026-07-14 | 初始版本，包含 Section 1-10 | 架构师 |
+| 1.1.0 | 2026-08-14 | 增加材料删除重传、OCR 全材料类型/唯一编号/上传选模、样本设计器、预审真实结果展示、材料模板取消复核、发票字段展示映射及页面一致的 PDF 导出；同步 V10-V12 数据库变更 | Codex |
 
 ### 10.8 待确认事项
 
@@ -4563,8 +4595,8 @@ mc mirror --overwrite /data/backups/minio/materials_20240101 minio/scfs-material
 
 本 RFC 涵盖供应链金融智能风控与材料辅助平台的完整技术设计，包括：
 - **Section 1**：架构设计（模块化单体）
-- **Section 2**：数据模型（5 schema 30 表）
-- **Section 3**：API 设计（65 个接口）
+- **Section 2**：数据模型（5 schema 31 表）
+- **Section 3**：API 设计（75 个接口）
 - **Section 4**：模块详细设计（含算法）
 - **Section 5**：关键流程时序图（7 个）
 - **Section 6**：实现步骤（10 阶段）
