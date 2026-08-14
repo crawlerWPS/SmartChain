@@ -5,6 +5,8 @@ import com.scfs.module.graph.entity.AbnormalRelation;
 import com.scfs.module.graph.entity.Enterprise;
 import com.scfs.module.graph.entity.EnterprisePositionAnalysis;
 import com.scfs.module.graph.entity.EnterpriseRole;
+import com.scfs.module.graph.entity.RelationImportResult;
+import com.scfs.module.graph.entity.RelationImportRow;
 import com.scfs.module.graph.entity.SupplyChainRelation;
 import com.scfs.module.graph.mapper.GraphMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * 图谱服务 - 对应 RFC 4.2.1 GraphService
@@ -41,6 +45,8 @@ import java.util.Set;
 public class GraphService {
 
     private final GraphMapper graphMapper;
+    private static final Pattern USCC_PATTERN = Pattern.compile("^[0-9A-Z]{18}$");
+    private static final Set<String> IMPORT_RELATION_TYPES = Set.of("SUPPLY", "PURCHASE", "LOGISTICS", "FINANCING", "CUSTOMER", "OTHER");
 
     // ========== 企业 ==========
 
@@ -145,6 +151,173 @@ public class GraphService {
         return graphMapper.selectAllRelations();
     }
 
+    /** 全量预计算企业角色和位置分析，保证两个派生页面与图谱企业保持一致。 */
+    @Transactional
+    public Map<String, Object> recalculateAllAnalysis() {
+        List<Enterprise> enterprises = graphMapper.searchEnterprises(null, 0, 10000);
+        List<SupplyChainRelation> relations = graphMapper.selectAllRelations();
+        Map<Long, Set<Long>> adjacency = new HashMap<>();
+        for (SupplyChainRelation relation : relations) {
+            adjacency.computeIfAbsent(relation.getFromEnterpriseId(), ignored -> new HashSet<>())
+                    .add(relation.getToEnterpriseId());
+            adjacency.computeIfAbsent(relation.getToEnterpriseId(), ignored -> new HashSet<>())
+                    .add(relation.getFromEnterpriseId());
+        }
+
+        Set<Long> visited = new HashSet<>();
+        List<Long> coreEnterpriseIds = new ArrayList<>();
+        int calculated = 0;
+        int componentCount = 0;
+        for (Long startId : adjacency.keySet()) {
+            if (!visited.add(startId)) {
+                continue;
+            }
+            componentCount++;
+            List<Long> component = new ArrayList<>();
+            List<Long> queue = new ArrayList<>();
+            queue.add(startId);
+            for (int i = 0; i < queue.size(); i++) {
+                Long current = queue.get(i);
+                component.add(current);
+                for (Long next : adjacency.getOrDefault(current, Set.of())) {
+                    if (visited.add(next)) {
+                        queue.add(next);
+                    }
+                }
+            }
+
+            Long coreEnterpriseId = resolveComponentCore(component, relations);
+            if (coreEnterpriseId == null) {
+                continue;
+            }
+            coreEnterpriseIds.add(coreEnterpriseId);
+            for (Long enterpriseId : component) {
+                calculateEnterpriseRole(enterpriseId, coreEnterpriseId);
+                analyzeEnterprisePosition(enterpriseId, coreEnterpriseId);
+                calculated++;
+            }
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("enterpriseCount", enterprises.size());
+        result.put("calculatedCount", calculated);
+        result.put("componentCount", componentCount);
+        result.put("coreEnterpriseIds", coreEnterpriseIds);
+        result.put("coreEnterpriseId", coreEnterpriseIds.isEmpty() ? null : coreEnterpriseIds.get(0));
+        result.put("message", coreEnterpriseIds.isEmpty() ? "未找到可计算的供应链分组" : "多核心分组预计算完成");
+        return result;
+    }
+
+    /**
+     * 为一个连通分组选择核心企业：人工标记 CORE 优先，其次使用关系上的核心 ID，最后按买方入度推断。
+     */
+    private Long resolveComponentCore(List<Long> component, List<SupplyChainRelation> relations) {
+        Set<Long> componentSet = new HashSet<>(component);
+        for (Long enterpriseId : component) {
+            EnterpriseRole role = graphMapper.selectRoleByEnterprise(enterpriseId);
+            if (role != null && "CORE".equals(role.getRole())) {
+                return enterpriseId;
+            }
+        }
+
+        Map<Long, Integer> declaredCoreCounts = new HashMap<>();
+        for (SupplyChainRelation relation : relations) {
+            Long declaredCore = relation.getCoreEnterpriseId();
+            if (declaredCore != null && componentSet.contains(declaredCore)) {
+                declaredCoreCounts.merge(declaredCore, 1, Integer::sum);
+            }
+        }
+        Long declaredCore = declaredCoreCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+        if (declaredCore != null) {
+            return declaredCore;
+        }
+
+        Map<Long, Integer> buyerInDegree = new HashMap<>();
+        for (SupplyChainRelation relation : relations) {
+            if (componentSet.contains(relation.getFromEnterpriseId())
+                    && componentSet.contains(relation.getToEnterpriseId())) {
+                buyerInDegree.merge(relation.getToEnterpriseId(), 1, Integer::sum);
+            }
+        }
+        return component.stream()
+                .max(java.util.Comparator.comparingInt(id -> buyerInDegree.getOrDefault(id, 0)))
+                .orElse(null);
+    }
+
+    /** 导入买卖方关系：卖方作为起点，买方作为终点。 */
+    @Transactional
+    public RelationImportResult importRelations(List<RelationImportRow> rows) {
+        if (rows == null || rows.isEmpty()) {
+            throw new IllegalArgumentException("导入文件没有有效数据");
+        }
+        RelationImportResult result = new RelationImportResult();
+        result.setTotal(rows.size());
+        for (RelationImportRow row : rows) {
+            String error = validateImportRow(row);
+            if (error != null) {
+                result.getErrors().add("第" + (row == null || row.getRowNumber() == null ? "?" : row.getRowNumber()) + "行：" + error);
+            }
+        }
+        if (!result.getErrors().isEmpty()) {
+            return result;
+        }
+        for (RelationImportRow row : rows) {
+            String relationType = row.getRelationType().trim().toUpperCase(Locale.ROOT);
+            Enterprise buyer = findOrCreateImportedEnterprise(row.getBuyerName().trim(), row.getBuyerUscc().trim(), result);
+            Enterprise seller = findOrCreateImportedEnterprise(row.getSellerName().trim(), row.getSellerUscc().trim(), result);
+            SupplyChainRelation existing = graphMapper.selectRelation(seller.getId(), buyer.getId(), relationType);
+            SupplyChainRelation relation = new SupplyChainRelation();
+            relation.setFromEnterpriseId(seller.getId());
+            relation.setToEnterpriseId(buyer.getId());
+            relation.setRelationType(relationType);
+            relation.setFirstCoopDate(row.getTransactionDate());
+            relation.setLastCoopDate(row.getTransactionDate());
+            relation.setTotalTransactions(1);
+            relation.setTotalAmount(row.getAmount() == null ? BigDecimal.ZERO : row.getAmount());
+            relation.setLevel(1);
+            graphMapper.upsertRelation(relation);
+            if (existing == null) result.setCreatedRelations(result.getCreatedRelations() + 1);
+            else result.setUpdatedRelations(result.getUpdatedRelations() + 1);
+        }
+        recalculateAllAnalysis();
+        return result;
+    }
+
+    private String validateImportRow(RelationImportRow row) {
+        if (row == null) return "数据为空";
+        if (!StringUtils.hasText(row.getBuyerName()) || !StringUtils.hasText(row.getSellerName())) return "买方和卖方名称不能为空";
+        if (!StringUtils.hasText(row.getBuyerUscc()) || !USCC_PATTERN.matcher(row.getBuyerUscc().trim().toUpperCase(Locale.ROOT)).matches()) return "买方统一社会信用代码应为18位大写字母或数字";
+        if (!StringUtils.hasText(row.getSellerUscc()) || !USCC_PATTERN.matcher(row.getSellerUscc().trim().toUpperCase(Locale.ROOT)).matches()) return "卖方统一社会信用代码应为18位大写字母或数字";
+        if (!StringUtils.hasText(row.getRelationType()) || !IMPORT_RELATION_TYPES.contains(row.getRelationType().trim().toUpperCase(Locale.ROOT))) return "关系类型不支持";
+        if (row.getAmount() != null && row.getAmount().signum() < 0) return "交易金额不能为负数";
+        return null;
+    }
+
+    private Enterprise findOrCreateImportedEnterprise(String name, String uscc, RelationImportResult result) {
+        Enterprise enterprise = graphMapper.selectEnterpriseByUscc(uscc.toUpperCase(Locale.ROOT));
+        if (enterprise != null) {
+            if (!name.equals(enterprise.getName())) log.warn("导入企业名称与已有统一社会信用代码不一致: uscc={}, old={}, incoming={}", uscc, enterprise.getName(), name);
+            return enterprise;
+        }
+        // 模板中的统一社会信用代码可能来自外部系统；名称命中已有企业时复用系统节点，避免重复企业。
+        enterprise = graphMapper.selectEnterpriseByName(name);
+        if (enterprise != null) {
+            log.info("按企业名称复用已有节点: name={}, existingId={}, existingUscc={}, incomingUscc={}",
+                    name, enterprise.getId(), enterprise.getUscc(), uscc);
+            return enterprise;
+        }
+        enterprise = new Enterprise();
+        enterprise.setName(name);
+        enterprise.setUscc(uscc.toUpperCase(Locale.ROOT));
+        enterprise.setDataSource("IMPORT");
+        enterprise.setLastSyncedAt(Instant.now());
+        graphMapper.insertEnterprise(enterprise);
+        result.setCreatedEnterprises(result.getCreatedEnterprises() + 1);
+        return enterprise;
+    }
+
     /**
      * 获取全部企业与关系图谱（不指定起点企业）
      * @return 节点 + 边
@@ -168,6 +341,12 @@ public class GraphService {
             EnterpriseRole role = graphMapper.selectRoleByEnterprise(ent.getId());
             if (role != null && "CORE".equals(role.getRole())) {
                 coreIds.add(ent.getId());
+            }
+        }
+        // 关系数据中的核心企业标识作为兜底，避免核心企业因角色记录缺失而显示为普通节点。
+        for (SupplyChainRelation relation : allEdges) {
+            if (relation.getCoreEnterpriseId() != null) {
+                coreIds.add(relation.getCoreEnterpriseId());
             }
         }
 
@@ -296,12 +475,16 @@ public class GraphService {
         analysis.setEnterpriseId(enterpriseId);
 
         List<SupplyChainRelation> relations = graphMapper.selectRelationsByEnterprise(enterpriseId, 2);
-        boolean inCoreChain = relations.stream()
-                .anyMatch(r -> coreEnterpriseId.equals(r.getFromEnterpriseId()) || coreEnterpriseId.equals(r.getToEnterpriseId()));
+        Integer relationDistance = relations.stream()
+                .filter(r -> coreEnterpriseId.equals(r.getFromEnterpriseId()) || coreEnterpriseId.equals(r.getToEnterpriseId()))
+                .map(r -> r.getLevel() == null ? 1 : r.getLevel())
+                .min(Integer::compareTo)
+                .orElse(null);
+        boolean inCoreChain = enterpriseId.equals(coreEnterpriseId) || relationDistance != null;
         analysis.setInCoreChain(inCoreChain);
 
-        // 距核心企业层级（简化）
-        analysis.setDistanceToCore(inCoreChain ? 1 : 2);
+        // 关系 level 已由图谱导入/计算维护：核心企业为 0，直接关系为 1，间接关系为 2。
+        analysis.setDistanceToCore(enterpriseId.equals(coreEnterpriseId) ? 0 : (relationDistance == null ? 2 : relationDistance));
 
         // 上下游稳定性
         boolean hasUpstream = relations.stream().anyMatch(r -> r.getRelationType().equals("SUPPLY") && r.getToEnterpriseId().equals(enterpriseId));

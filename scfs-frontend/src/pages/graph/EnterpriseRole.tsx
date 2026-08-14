@@ -2,9 +2,10 @@
  * 企业角色识别页 - 列表展示 + 搜索过滤
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Input, Table, message } from 'antd';
+import { Card, Input, Table, message, Button } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { listEnterpriseRoles } from '@/api/graph';
+import { history } from '@umijs/max';
+import { listEnterpriseRoles, recalculateAnalysis } from '@/api/graph';
 import type { EnterpriseRole } from '@/types';
 import { CodeTag } from '@/components/common/CodeTag';
 
@@ -12,6 +13,7 @@ const EnterpriseRolePage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
   const [list, setList] = useState<EnterpriseRole[]>([]);
   const [loading, setLoading] = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -28,6 +30,19 @@ const EnterpriseRolePage: React.FC = () => {
   useEffect(() => {
     load();
   }, []);
+
+  const handleRecalculate = async () => {
+    setRecalculating(true);
+    try {
+      const result = await recalculateAnalysis();
+      message.success(`${result.message}，已处理 ${result.calculatedCount} 家企业`);
+      await load();
+    } catch (e: any) {
+      message.error(e.message || '预计算失败');
+    } finally {
+      setRecalculating(false);
+    }
+  };
 
   const filtered = list.filter(
     (r) =>
@@ -51,12 +66,14 @@ const EnterpriseRolePage: React.FC = () => {
     { title: '合作企业数', dataIndex: 'coopEnterpriseCount', key: 'coopEnterpriseCount' },
     { title: '影响力', dataIndex: 'influenceLevel', key: 'influenceLevel', render: (v: string) => <CodeTag type="INFLUENCE_LEVEL" code={v} /> },
     { title: '信誉等级', dataIndex: 'credibilityLevel', key: 'credibilityLevel', render: (v: string) => <CodeTag type="CREDIBILITY_LEVEL" code={v} /> },
+    { title: '操作', key: 'action', render: (_: unknown, record: EnterpriseRole) => <Button type="link" onClick={() => history.push(`/graph/relation?enterpriseId=${record.enterpriseId}`)}>查看图谱</Button> },
   ];
 
   return (
     <Card
       title="企业角色识别"
-      extra={
+      extra={<>
+        <Button loading={recalculating} onClick={handleRecalculate} style={{ marginRight: 12 }}>重新计算分析</Button>
         <Input.Search
           placeholder="搜索企业名称/ID"
           style={{ width: 240 }}
@@ -64,7 +81,7 @@ const EnterpriseRolePage: React.FC = () => {
           allowClear
           onChange={(e) => setKeyword(e.target.value)}
         />
-      }
+      </>}
     >
       <Table
         columns={columns}

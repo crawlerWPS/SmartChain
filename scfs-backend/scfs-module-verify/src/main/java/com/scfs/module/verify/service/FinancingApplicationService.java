@@ -91,7 +91,18 @@ public class FinancingApplicationService {
     }
 
     public List<ApplicationCustomer> searchCustomers(String keyword) {
-        return verifyMapper.selectApplicationCustomers(keyword);
+        return verifyMapper.selectApplicationCustomers(keyword, false);
+    }
+
+    public List<ApplicationCustomer> searchBuyerCustomers(String keyword) {
+        return verifyMapper.selectApplicationCustomers(keyword, true);
+    }
+
+    public List<ApplicationCustomer> searchSellerCustomers(Long buyerEnterpriseId, String keyword) {
+        if (buyerEnterpriseId == null) {
+            return List.of();
+        }
+        return verifyMapper.selectSellerCustomersByBuyer(buyerEnterpriseId, keyword);
     }
 
     @Transactional

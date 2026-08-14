@@ -47,8 +47,18 @@ public class ApplicationController {
 
     @RequirePermission(module = "VERIFY", permission = "view")
     @GetMapping("/customers")
-    public Result<List<ApplicationCustomer>> customers(@RequestParam(required = false) String keyword) {
-        return Result.success(applicationService.searchCustomers(keyword));
+    public Result<List<ApplicationCustomer>> customers(@RequestParam(required = false) String keyword,
+                                                       @RequestParam(required = false, defaultValue = "false") boolean buyerOnly) {
+        return Result.success(buyerOnly
+                ? applicationService.searchBuyerCustomers(keyword)
+                : applicationService.searchCustomers(keyword));
+    }
+
+    @RequirePermission(module = "VERIFY", permission = "view")
+    @GetMapping("/customers/sellers")
+    public Result<List<ApplicationCustomer>> sellers(@RequestParam Long buyerEnterpriseId,
+                                                     @RequestParam(required = false) String keyword) {
+        return Result.success(applicationService.searchSellerCustomers(buyerEnterpriseId, keyword));
     }
 
     @RequirePermission(module = "VERIFY", permission = "create")

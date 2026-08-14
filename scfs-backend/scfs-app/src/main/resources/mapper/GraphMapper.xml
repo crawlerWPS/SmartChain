@@ -82,6 +82,13 @@
         SELECT * FROM schema_graph.enterprise WHERE uscc = #{uscc}
     </select>
 
+    <select id="selectEnterpriseByName" resultMap="EnterpriseMap">
+        SELECT * FROM schema_graph.enterprise
+        WHERE LOWER(TRIM(name)) = LOWER(TRIM(#{name}))
+        ORDER BY CASE WHEN data_source = 'MOCK' THEN 0 ELSE 1 END, id
+        LIMIT 1
+    </select>
+
     <select id="searchEnterprises" resultMap="EnterpriseMap">
         SELECT * FROM schema_graph.enterprise
         <where>
@@ -126,7 +133,7 @@
     <select id="selectRelationsByEnterprise" resultMap="RelationMap">
         SELECT * FROM schema_graph.supply_chain_relation
         WHERE (from_enterprise_id = #{enterpriseId} OR to_enterprise_id = #{enterpriseId})
-        <if test="level != null">AND level = #{level}</if>
+        <if test="level != null">AND level &lt;= #{level}</if>
     </select>
 
     <select id="selectAllRelations" resultMap="RelationMap">
@@ -149,6 +156,40 @@
              #{item.firstCoopDate}, #{item.lastCoopDate}, #{item.totalTransactions},
              #{item.totalAmount}, #{item.coreEnterpriseId}, #{item.level})
         </foreach>
+    </insert>
+
+    <select id="selectRelation" resultMap="RelationMap">
+        SELECT * FROM schema_graph.supply_chain_relation
+        WHERE from_enterprise_id = #{fromEnterpriseId}
+          AND to_enterprise_id = #{toEnterpriseId}
+          AND relation_type = #{relationType}
+        LIMIT 1
+    </select>
+
+    <insert id="upsertRelation" parameterType="com.scfs.module.graph.entity.SupplyChainRelation">
+        INSERT INTO schema_graph.supply_chain_relation
+            (from_enterprise_id, to_enterprise_id, relation_type, first_coop_date,
+             last_coop_date, total_transactions, total_amount, core_enterprise_id, level)
+        VALUES (#{fromEnterpriseId}, #{toEnterpriseId}, #{relationType}, #{firstCoopDate},
+                #{lastCoopDate}, COALESCE(#{totalTransactions}, 0), COALESCE(#{totalAmount}, 0),
+                #{coreEnterpriseId}, COALESCE(#{level}, 1))
+        ON CONFLICT (from_enterprise_id, to_enterprise_id, relation_type)
+        DO UPDATE SET
+            first_coop_date = CASE
+                WHEN EXCLUDED.first_coop_date IS NULL THEN schema_graph.supply_chain_relation.first_coop_date
+                WHEN schema_graph.supply_chain_relation.first_coop_date IS NULL THEN EXCLUDED.first_coop_date
+                ELSE LEAST(schema_graph.supply_chain_relation.first_coop_date, EXCLUDED.first_coop_date)
+            END,
+            last_coop_date = CASE
+                WHEN EXCLUDED.last_coop_date IS NULL THEN schema_graph.supply_chain_relation.last_coop_date
+                WHEN schema_graph.supply_chain_relation.last_coop_date IS NULL THEN EXCLUDED.last_coop_date
+                ELSE GREATEST(schema_graph.supply_chain_relation.last_coop_date, EXCLUDED.last_coop_date)
+            END,
+            total_transactions = COALESCE(schema_graph.supply_chain_relation.total_transactions, 0)
+                + COALESCE(EXCLUDED.total_transactions, 0),
+            total_amount = COALESCE(schema_graph.supply_chain_relation.total_amount, 0)
+                + COALESCE(EXCLUDED.total_amount, 0),
+            updated_at = NOW()
     </insert>
 
     <!-- 角色 -->

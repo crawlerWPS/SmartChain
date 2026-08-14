@@ -2,9 +2,10 @@
  * 企业位置分析页 - 列表展示 + 搜索过滤
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Input, Table, Tag, message } from 'antd';
+import { Card, Input, Table, Tag, message, Button } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { listPositionAnalyses } from '@/api/graph';
+import { history } from '@umijs/max';
+import { listPositionAnalyses, recalculateAnalysis } from '@/api/graph';
 import type { EnterprisePositionAnalysis } from '@/types';
 import { CodeTag } from '@/components/common/CodeTag';
 
@@ -12,6 +13,7 @@ const PositionAnalysisPage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
   const [list, setList] = useState<EnterprisePositionAnalysis[]>([]);
   const [loading, setLoading] = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -28,6 +30,19 @@ const PositionAnalysisPage: React.FC = () => {
   useEffect(() => {
     load();
   }, []);
+
+  const handleRecalculate = async () => {
+    setRecalculating(true);
+    try {
+      const result = await recalculateAnalysis();
+      message.success(`${result.message}，已处理 ${result.calculatedCount} 家企业`);
+      await load();
+    } catch (e: any) {
+      message.error(e.message || '预计算失败');
+    } finally {
+      setRecalculating(false);
+    }
+  };
 
   const filtered = list.filter(
     (r) =>
@@ -66,12 +81,14 @@ const PositionAnalysisPage: React.FC = () => {
       render: (v: string) => <CodeTag type="CREDIBILITY_LEVEL" code={v} />,
     },
     { title: '分析原因', dataIndex: 'credibilityReason', key: 'credibilityReason', ellipsis: true },
+    { title: '操作', key: 'action', render: (_: unknown, record: EnterprisePositionAnalysis) => <Button type="link" onClick={() => history.push(`/graph/relation?enterpriseId=${record.enterpriseId}`)}>查看图谱</Button> },
   ];
 
   return (
     <Card
       title="企业位置分析"
-      extra={
+      extra={<>
+        <Button loading={recalculating} onClick={handleRecalculate} style={{ marginRight: 12 }}>重新计算分析</Button>
         <Input.Search
           placeholder="搜索企业名称/ID"
           style={{ width: 240 }}
@@ -79,7 +96,7 @@ const PositionAnalysisPage: React.FC = () => {
           allowClear
           onChange={(e) => setKeyword(e.target.value)}
         />
-      }
+      </>}
     >
       <Table
         columns={columns}

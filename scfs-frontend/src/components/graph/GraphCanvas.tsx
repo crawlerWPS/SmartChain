@@ -23,7 +23,8 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
   const graphRef = useRef<Graph | null>(null);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<GraphData>({ nodes: [], edges: [] });
-  const [layoutMode, setLayoutMode] = useState<'force' | 'radial'>('force');
+  // 默认采用径向布局，核心企业位于中心，便于快速识别上下游关系
+  const [layoutMode, setLayoutMode] = useState<'force' | 'radial'>('radial');
 
   const destroyGraph = () => {
     // 先清空引用，避免 effect 清理和下一次建图重复销毁同一个实例
@@ -75,6 +76,8 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
       width: containerWidth,
       height,
       autoFit: 'view',
+      // 明确设置画布背景，保证页面显示和导出图片均为白底
+      background: '#ffffff',
       // G6 v5 使用 drag-element 实现节点拖动，drag-node 是旧版本行为名
       behaviors: ['drag-canvas', 'zoom-canvas', 'drag-element', 'brush-select'],
       plugins: [
@@ -182,15 +185,24 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
   const handleZoomIn = () => graphRef.current?.zoomTo(1.5);
   const handleZoomOut = () => graphRef.current?.zoomTo(0.5);
   const handleReload = () => loadData();
-  const handleExport = () => {
-    if (!graphRef.current) return;
-    const url = (graphRef.current as any).toDataURL?.('image/png', 1);
-    if (url) {
+  const handleExport = async () => {
+    const graph = graphRef.current as any;
+    if (!graph) return;
+    try {
+      // G6 5.x 的 toDataURL 返回 Promise，并通过 options 指定导出范围和格式。
+      const dataUrl = await graph.toDataURL({ mode: 'overall', type: 'image/png' });
+      const blob = await fetch(dataUrl).then((response) => response.blob());
+      const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = downloadUrl;
       a.download = `graph_${enterpriseId || 'all'}.png`;
+      document.body.appendChild(a);
       a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
       message.success('图谱已导出');
+    } catch (e: any) {
+      message.error(e?.message || '图谱导出失败');
     }
   };
 
@@ -213,7 +225,7 @@ const GraphCanvas: React.FC<Props> = ({ enterpriseId, level = 2, height = 600 })
           共 {data.nodes.length} 个节点 / {data.edges.length} 条边
         </span>
       </div>
-      <div ref={containerRef} style={{ width: '100%', height, border: '1px solid #e8e8e8', borderRadius: 4 }} />
+      <div ref={containerRef} style={{ width: '100%', height, border: '1px solid #e8e8e8', borderRadius: 4, background: '#ffffff' }} />
     </Spin>
   );
 };
