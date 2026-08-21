@@ -30,6 +30,10 @@ public interface SysUserMapper {
 
     int updateStatus(@Param("id") Long id, @Param("status") Short status);
 
+    int deleteById(@Param("id") Long id);
+
+    long countByRoleCode(@Param("roleCode") String roleCode);
+
     /**
      * 查询用户角色的权限列表（module -> permissions[]）
      */

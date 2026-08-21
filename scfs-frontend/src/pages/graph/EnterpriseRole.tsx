@@ -8,6 +8,7 @@ import { history } from '@umijs/max';
 import { listEnterpriseRoles, recalculateAnalysis } from '@/api/graph';
 import type { EnterpriseRole } from '@/types';
 import { CodeTag } from '@/components/common/CodeTag';
+import { Permission } from '@/components/common/Permission';
 
 const EnterpriseRolePage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
@@ -73,7 +74,7 @@ const EnterpriseRolePage: React.FC = () => {
     <Card
       title="企业角色识别"
       extra={<>
-        <Button loading={recalculating} onClick={handleRecalculate} style={{ marginRight: 12 }}>重新计算分析</Button>
+        <Permission perm={['GRAPH', 'update']} menuCode="graph-role:recalculate"><Button loading={recalculating} onClick={handleRecalculate} style={{ marginRight: 12 }}>重新计算分析</Button></Permission>
         <Input.Search
           placeholder="搜索企业名称/ID"
           style={{ width: 240 }}

@@ -5,6 +5,7 @@ import com.scfs.common.core.PageQuery;
 import com.scfs.common.core.Result;
 import com.scfs.common.entity.SysUser;
 import com.scfs.common.security.RequirePermission;
+import com.scfs.common.security.SecurityContextHelper;
 import com.scfs.common.service.SysUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class SysUserController {
 
     private final SysUserService userService;
+    private final SecurityContextHelper securityContextHelper;
 
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping
@@ -53,6 +55,13 @@ public class SysUserController {
     @PutMapping("/{id}/toggle-status")
     public Result<Void> toggleStatus(@PathVariable Long id) {
         userService.toggleStatus(id);
+        return Result.success();
+    }
+
+    @RequirePermission(module = "USER", permission = "delete")
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
+        userService.deleteUser(id, securityContextHelper.getCurrentUserIdOrThrow());
         return Result.success();
     }
 }

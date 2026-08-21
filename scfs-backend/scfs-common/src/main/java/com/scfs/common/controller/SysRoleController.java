@@ -50,6 +50,13 @@ public class SysRoleController {
         return Result.success();
     }
 
+    @RequirePermission(module = "USER", permission = "delete")
+    @DeleteMapping("/roles/{id}")
+    public Result<Void> deleteRole(@PathVariable Long id) {
+        roleService.deleteRole(id);
+        return Result.success();
+    }
+
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping("/roles/{id}/permissions")
     public Result<List<SysRolePermission>> getRolePermissions(@PathVariable Long id) {
@@ -93,8 +100,8 @@ public class SysRoleController {
 
     @RequirePermission(module = "USER", permission = "view")
     @GetMapping("/roles/{id}/menus")
-    public Result<List<Map<String, Object>>> getRoleMenus(@PathVariable Long id) {
-        return Result.success(roleService.buildMenuTree(roleService.getMenusByRoleId(id)));
+    public Result<Map<String, Object>> getRoleMenus(@PathVariable Long id) {
+        return Result.success(Map.of("roleId", id, "menuIds", roleService.getMenuIdsByRoleId(id)));
     }
 
     @RequirePermission(module = "USER", permission = "update")

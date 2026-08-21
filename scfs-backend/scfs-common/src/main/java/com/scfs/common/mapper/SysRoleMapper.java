@@ -28,4 +28,6 @@ public interface SysRoleMapper {
     int insertPermission(SysRolePermission perm);
 
     int deletePermissionsByRoleId(@Param("roleId") Long roleId);
+
+    int deleteById(@Param("id") Long id);
 }

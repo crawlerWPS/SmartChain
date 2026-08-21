@@ -83,6 +83,14 @@
         UPDATE schema_common.sys_user SET status = #{status}, updated_at = NOW() WHERE id = #{id}
     </update>
 
+    <delete id="deleteById">
+        DELETE FROM schema_common.sys_user WHERE id = #{id}
+    </delete>
+
+    <select id="countByRoleCode" resultType="long">
+        SELECT COUNT(*) FROM schema_common.sys_user WHERE role_code = #{roleCode}
+    </select>
+
     <!-- 查询用户角色的权限列表（module -> permissions[]） -->
     <resultMap id="PermMap" type="java.util.LinkedHashMap">
         <result column="module" property="module"/>

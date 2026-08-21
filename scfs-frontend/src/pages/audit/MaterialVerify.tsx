@@ -216,10 +216,10 @@ const MaterialVerify: React.FC = () => {
               <a key="preview" onClick={() => handlePreview(item)}>在线预览</a>,
               <a key="download" onClick={() => handleDownload(item)}>下载</a>,
               <a key="view" onClick={() => handleView(item)}>查看</a>,
-              <a key="recognize" onClick={() => handleReRecognize(item.id)}>
-                {recognizingId === item.id ? '识别中...' : '重新识别'}
-              </a>,
-              <Permission key="delete" perm={['VERIFY', 'delete']}>
+              <Permission key="recognize" perm={['VERIFY', 'update']} menuCode="material:recognize">
+                <a onClick={() => handleReRecognize(item.id)}>{recognizingId === item.id ? '识别中...' : '重新识别'}</a>
+              </Permission>,
+              <Permission key="delete" perm={['VERIFY', 'delete']} menuCode="material:delete">
                 <Popconfirm
                   title="确认删除该材料？"
                   description="材料及其 OCR 识别结果将被清除，之后可以重新上传。"
@@ -248,7 +248,7 @@ const MaterialVerify: React.FC = () => {
             </List.Item>} />
         </div> },
         { key: 'verify', label: '真实性核验', children: <div>
-          <Button type="primary" loading={verifying} onClick={handleVerify} style={{ marginBottom: 16 }}>执行全部核验</Button>
+          <Permission perm={['VERIFY', 'update']} menuCode="material:verify"><Button type="primary" loading={verifying} onClick={handleVerify} style={{ marginBottom: 16 }}>执行全部核验</Button></Permission>
           {verifyResults.length === 0 ? <Empty description="暂无核验结果" /> : <Row gutter={16}>
             {verifyResults.map((result, index) => <Col xs={24} md={12} xl={8} key={result.id || index} style={{ marginBottom: 16 }}>
               <Card hoverable size="small" title={dictionary.label('VERIFY_CHECK_TYPE', result.checkType)} onClick={() => setSelectedVerifyResult(result)} style={{ cursor: 'pointer' }} actions={[<Button key="detail" type="link" icon={<EyeOutlined/>} onClick={e=>{e.stopPropagation();setSelectedVerifyResult(result);}}>查看对比明细</Button>]}>

@@ -65,4 +65,8 @@
         DELETE FROM schema_common.sys_role_permission WHERE role_id = #{roleId}
     </delete>
 
+    <delete id="deleteById">
+        DELETE FROM schema_common.sys_role WHERE id = #{id}
+    </delete>
+
 </mapper>

@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Table, Button, Space, Input, Modal, Form, Select, message } from 'antd';
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
-import { pageUsers, createUser, updateUser, toggleUserStatus } from '@/api/system';
+import { pageUsers, createUser, updateUser, toggleUserStatus, deleteUser } from '@/api/system';
 import { Permission } from '@/components/common/Permission';
 import { formatDate, maskPhone, maskName } from '@/utils';
 import { CodeTag } from '@/components/common/CodeTag';
@@ -67,6 +67,22 @@ const UserList: React.FC = () => {
     } catch (e: any) { message.error(e.message); }
   };
 
+  const handleDelete = (record: any) => {
+    Modal.confirm({
+      title: '确认删除用户？',
+      content: `用户“${record.username}”删除后无法恢复。`,
+      okText: '删除',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await deleteUser(record.id);
+          message.success('用户已删除');
+          load();
+        } catch (e: any) { message.error(e.message); }
+      },
+    });
+  };
+
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
     { title: '用户名', dataIndex: 'username', key: 'username' },
@@ -78,11 +94,10 @@ const UserList: React.FC = () => {
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
-        <Permission perm={['USER', 'update']}>
-          <a onClick={() => handleEdit(r)}>编辑</a>
-        </Permission>
-        <Permission perm={['USER', 'update']}>
-          <a onClick={() => handleToggle(r.id, r.status === 1 ? 0 : 1)}>{r.status === 1 ? '禁用' : '启用'}</a>
+        <Permission perm={['USER', 'update']} menuCode="system:user:edit"><a onClick={() => handleEdit(r)}>编辑</a></Permission>
+        <Permission perm={['USER', 'update']} menuCode={r.status === 1 ? 'system:user:disable' : 'system:user:enable'}><a onClick={() => handleToggle(r.id, r.status === 1 ? 0 : 1)}>{r.status === 1 ? '禁用' : '启用'}</a></Permission>
+        <Permission perm={['USER', 'delete']} menuCode="system:user:delete">
+          <a style={{ color: '#ff4d4f' }} onClick={() => handleDelete(r)}>删除</a>
         </Permission>
       </Space>
     )},
@@ -90,9 +105,7 @@ const UserList: React.FC = () => {
 
   return (
     <Card title="用户管理" extra={
-      <Permission perm={['USER', 'create']}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => handleEdit()}>新建用户</Button>
-      </Permission>
+      <Permission perm={['USER', 'create']} menuCode="system:user:create"><Button type="primary" icon={<PlusOutlined />} onClick={() => handleEdit()}>新建用户</Button></Permission>
     }>
       <Space style={{ marginBottom: 16 }}>
         <Input.Search placeholder="用户名/真实姓名" allowClear onSearch={(v) => setQuery({ ...query, keyword: v, page: 1 })} style={{ width: 240 }} />

@@ -68,11 +68,11 @@ const OcrTemplateList: React.FC = () => {
     {title:'字段数',dataIndex:'fieldRules',render:(v:any[])=>v?.length||0},
     {title:'状态',dataIndex:'enabled',render:(v:boolean)=><Tag color={v?'green':'default'}>{v?'启用':'停用'}</Tag>},
     {title:'操作',render:(_:any,r:OcrTemplate)=><Space>
-      <Permission perm={['RULE','update']}><a onClick={()=>open(r)}><EditOutlined/> 修改</a></Permission>
-      <Permission perm={['RULE','delete']}><Popconfirm title="确认删除该识别模板？" onConfirm={()=>remove(r.id!)}><a style={{color:'#ff4d4f'}}><DeleteOutlined/> 删除</a></Popconfirm></Permission>
+      <Permission perm={['RULE','update']} menuCode="ocr-template:update"><a onClick={()=>open(r)}><EditOutlined/> 修改</a></Permission>
+      <Permission perm={['RULE','delete']} menuCode="ocr-template:delete"><Popconfirm title="确认删除该识别模板？" onConfirm={()=>remove(r.id!)}><a style={{color:'#ff4d4f'}}><DeleteOutlined/> 删除</a></Popconfirm></Permission>
     </Space>},
   ];
-  return <Card title="OCR识别模板" extra={<Permission perm={['RULE','create']}><Button type="primary" icon={<PlusOutlined/>} onClick={()=>open({...empty})}>新建模板</Button></Permission>}>
+  return <Card title="OCR识别模板" extra={<Permission perm={['RULE','create']} menuCode="ocr-template:create"><Button type="primary" icon={<PlusOutlined/>} onClick={()=>open({...empty})}>新建模板</Button></Permission>}>
     <Table rowKey="id" loading={loading} dataSource={data} columns={columns}/>
     <Modal width={1100} title={editing?.id?'修改OCR识别模板':'新建OCR识别模板'} open={!!editing} onOk={save} onCancel={()=>{setEditing(undefined);form.resetFields();}}>
       <Form form={form} layout="vertical">

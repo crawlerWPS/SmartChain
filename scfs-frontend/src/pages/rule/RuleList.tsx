@@ -2,9 +2,9 @@
  * 规则管理页 - 双岗经办/复核
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Button, Space, Input, Select, Tag, message, Modal, Form, Descriptions, Typography } from 'antd';
+import { Card, Table, Button, Space, Input, Select, message, Modal, Form, Descriptions } from 'antd';
 import { PlusOutlined, ReloadOutlined, EyeOutlined } from '@ant-design/icons';
-import { pageRules, getRule, createRule, submitRuleChange, toggleRuleStatus, pagePendingChanges, approveRuleChange, rejectRuleChange } from '@/api/rule';
+import { pageRules, getRule, createRule, toggleRuleStatus, pagePendingChanges, approveRuleChange, rejectRuleChange } from '@/api/rule';
 import { Permission } from '@/components/common/Permission';
 import { formatDate } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
@@ -21,7 +21,6 @@ const RuleList: React.FC = () => {
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [selectedRule, setSelectedRule] = useState<any>(null);
-  const [submitMode, setSubmitMode] = useState(false);
   const [createForm] = Form.useForm();
   const dictionary = useCodeDictionary();
 
@@ -44,9 +43,8 @@ const RuleList: React.FC = () => {
 
   useEffect(() => { load(); }, [query.page, query.size]);
 
-  const openRuleDetail = async (id: number, forSubmit = false) => {
+  const openRuleDetail = async (id: number) => {
     setDetailLoading(true);
-    setSubmitMode(forSubmit);
     setDetailVisible(true);
     try {
       setSelectedRule(await getRule(id));
@@ -55,20 +53,6 @@ const RuleList: React.FC = () => {
       message.error(e.message);
     } finally {
       setDetailLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedRule) return;
-    try {
-      await submitRuleChange(selectedRule.id, 'UPDATE', { remark: '已查看完整规则内容，提交审核' });
-      message.success('已提交，等待复核');
-      setDetailVisible(false);
-      setSelectedRule(null);
-      setSubmitMode(false);
-      load();
-    } catch (e: any) {
-      message.error(e.message);
     }
   };
 
@@ -127,10 +111,7 @@ const RuleList: React.FC = () => {
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
         <a onClick={() => openRuleDetail(r.id)}><EyeOutlined /> 查看详情</a>
-        <Permission perm={['RULE', 'create']}>
-          <a onClick={() => openRuleDetail(r.id, true)}>提交</a>
-        </Permission>
-        <Permission perm={['RULE', 'update']}>
+        <Permission perm={['RULE', 'update']} menuCode={r.status === 1 ? 'rule:disable' : 'rule:enable'}>
           <a onClick={() => handleToggleStatus(r.id, r.status === 1 ? 0 : 1)}>{r.status === 1 ? '禁用' : '启用'}</a>
         </Permission>
       </Space>
@@ -145,10 +126,10 @@ const RuleList: React.FC = () => {
     { title: '经办人', dataIndex: 'makerId', key: 'makerId' },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
-        <Permission perm={['RULE', 'approve']}>
+        <Permission perm={['RULE', 'approve']} menuCode="rule:approve">
           <a onClick={() => handleApprove(r.id)}>通过</a>
         </Permission>
-        <Permission perm={['RULE', 'approve']}>
+        <Permission perm={['RULE', 'approve']} menuCode="rule:reject">
           <a style={{ color: '#ff4d4f' }} onClick={() => handleReject(r.id)}>驳回</a>
         </Permission>
       </Space>
@@ -157,7 +138,7 @@ const RuleList: React.FC = () => {
 
   return (
     <Card title="规则管理" extra={
-      <Permission perm={['RULE', 'create']}>
+      <Permission perm={['RULE', 'create']} menuCode="rule:create">
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>新建规则</Button>
       </Permission>
     }>
@@ -186,15 +167,12 @@ const RuleList: React.FC = () => {
       </Modal>
 
       <Modal
-        title={submitMode ? '提交前确认：完整规则内容' : '规则详情'}
+        title="规则详情"
         open={detailVisible}
         confirmLoading={detailLoading}
         width={900}
-        onCancel={() => { setDetailVisible(false); setSelectedRule(null); setSubmitMode(false); }}
-        footer={submitMode ? [
-          <Button key="cancel" onClick={() => { setDetailVisible(false); setSubmitMode(false); }}>取消</Button>,
-          <Button key="submit" type="primary" onClick={handleSubmit} disabled={!selectedRule}>确认提交审核</Button>,
-        ] : [<Button key="close" onClick={() => setDetailVisible(false)}>关闭</Button>]}
+        onCancel={() => { setDetailVisible(false); setSelectedRule(null); }}
+        footer={[<Button key="close" onClick={() => setDetailVisible(false)}>关闭</Button>]}
       >
         {selectedRule && <>
           <Descriptions bordered column={2} size="small">
@@ -215,9 +193,6 @@ const RuleList: React.FC = () => {
               {formatDrlContent(selectedRule.drlContent)}
             </pre>
           </Card>
-          {submitMode && <Typography.Text type="warning" style={{ display: 'block', marginTop: 16 }}>
-            请确认已查看规则编码、分类、版本、参数和完整 DRL 内容；确认后才会提交复核。
-          </Typography.Text>}
         </>}
       </Modal>
     </Card>

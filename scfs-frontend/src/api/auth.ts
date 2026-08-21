@@ -19,6 +19,7 @@ export interface LoginResult {
     realName: string;
     roleCode: string;
     permissions: Record<string, string[]>;
+    menuCodes: string[];
   };
 }
 

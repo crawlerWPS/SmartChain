@@ -10,6 +10,7 @@ import { formatDate, downloadBlob } from '@/utils';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 import { CodeTag } from '@/components/common/CodeTag';
 import type { VerifyCheckResult, VerifyReport as VerifyReportType } from '@/types';
+import { Permission } from '@/components/common/Permission';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -82,8 +83,8 @@ const VerifyReport: React.FC = () => {
       <span>核验报告 - 申请 #{appId}</span>
     </div>} extra={
       <div>
-        <Button type="primary" onClick={handleGenerate} loading={loading} style={{ marginRight: 8 }}>生成报告</Button>
-        {report && <Button icon={<ExportOutlined />} onClick={handleExport}>导出 PDF</Button>}
+        <Permission perm={['VERIFY', 'update']} menuCode="report:generate"><Button type="primary" onClick={handleGenerate} loading={loading} style={{ marginRight: 8 }}>生成报告</Button></Permission>
+        {report && <Permission perm={['VERIFY', 'view']} menuCode="report:export"><Button icon={<ExportOutlined />} onClick={handleExport}>导出 PDF</Button></Permission>}
       </div>
     }>
       {report ? (

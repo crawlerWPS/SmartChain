@@ -69,6 +69,7 @@ export interface SysMenu extends BaseEntity {
   sort: number;
   visible: number;
   status: number;
+  children?: SysMenu[];
 }
 
 export interface SysAuditLog {

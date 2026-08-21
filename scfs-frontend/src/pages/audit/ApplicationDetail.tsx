@@ -111,22 +111,22 @@ const ApplicationDetail: React.FC = () => {
 
         <Space style={{ marginTop: 16 }}>
           {canSubmit(detail.status) && (
-            <Permission perm={['VERIFY', 'create']}>
+            <Permission perm={['VERIFY', 'create']} menuCode="application:submit">
               <Button type="primary" onClick={handleSubmit}>提交申请</Button>
             </Permission>
           )}
           {canReview && (
-            <Permission perm={['VERIFY', 'reject']}>
+            <Permission perm={['VERIFY', 'reject']} menuCode="application:reject">
               <Button danger onClick={handleReject}>驳回</Button>
             </Permission>
           )}
           {canReview && (
-            <Permission perm={['VERIFY', 'approve']}>
+            <Permission perm={['VERIFY', 'approve']} menuCode="application:approve">
               <Button type="primary" onClick={() => openReview('approve')}>通过</Button>
             </Permission>
           )}
           {riskOfficer && detail.status === ApplicationStatus.SUBMITTED && (
-            <Permission perm={['VERIFY', 'approve']}>
+            <Permission perm={['VERIFY', 'approve']} menuCode="application:escalate">
               <Button onClick={() => openReview('escalate')}>无法判断，升级运营主管</Button>
             </Permission>
           )}

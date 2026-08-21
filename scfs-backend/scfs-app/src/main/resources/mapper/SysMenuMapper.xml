@@ -39,6 +39,22 @@
         SELECT menu_id FROM schema_common.sys_role_menu WHERE role_id = #{roleId}
     </select>
 
+    <select id="selectExistingIds" resultType="long">
+        SELECT id FROM schema_common.sys_menu
+        WHERE id IN
+        <foreach collection="menuIds" item="menuId" open="(" separator="," close=")">
+            #{menuId}
+        </foreach>
+    </select>
+
+    <select id="selectMenuCodesByRoleCode" resultType="string">
+        SELECT m.menu_code FROM schema_common.sys_menu m
+        INNER JOIN schema_common.sys_role_menu rm ON rm.menu_id = m.id
+        INNER JOIN schema_common.sys_role r ON r.id = rm.role_id
+        WHERE r.role_code = #{roleCode} AND m.status = 1
+        ORDER BY m.sort, m.id
+    </select>
+
     <select id="selectMenusByRoleId" resultMap="MenuResultMap">
         SELECT m.* FROM schema_common.sys_menu m
         INNER JOIN schema_common.sys_role_menu rm ON m.id = rm.menu_id

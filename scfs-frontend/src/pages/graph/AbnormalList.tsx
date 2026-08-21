@@ -8,6 +8,7 @@ import { listAbnormals, resolveAbnormal } from '@/api/graph';
 import { formatDate } from '@/utils';
 import { CodeTag } from '@/components/common/CodeTag';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
+import { Permission } from '@/components/common/Permission';
 
 const AbnormalList: React.FC = () => {
   const [list, setList] = useState<any[]>([]);
@@ -52,7 +53,7 @@ const AbnormalList: React.FC = () => {
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <>
         <a onClick={() => setDetail(r)} style={{ marginRight: 12 }}>详情</a>
-        {r.status === 'OPEN' && <a onClick={() => handleResolve(r.id)}>解除</a>}
+        {r.status === 'OPEN' && <Permission perm={['GRAPH', 'update']} menuCode="graph-abnormal:resolve"><a onClick={() => handleResolve(r.id)}>解除</a></Permission>}
       </>
     ) },
   ];

@@ -8,6 +8,7 @@ import { history } from '@umijs/max';
 import { listPositionAnalyses, recalculateAnalysis } from '@/api/graph';
 import type { EnterprisePositionAnalysis } from '@/types';
 import { CodeTag } from '@/components/common/CodeTag';
+import { Permission } from '@/components/common/Permission';
 
 const PositionAnalysisPage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
@@ -88,7 +89,7 @@ const PositionAnalysisPage: React.FC = () => {
     <Card
       title="企业位置分析"
       extra={<>
-        <Button loading={recalculating} onClick={handleRecalculate} style={{ marginRight: 12 }}>重新计算分析</Button>
+        <Permission perm={['GRAPH', 'update']} menuCode="graph-position:recalculate"><Button loading={recalculating} onClick={handleRecalculate} style={{ marginRight: 12 }}>重新计算分析</Button></Permission>
         <Input.Search
           placeholder="搜索企业名称/ID"
           style={{ width: 240 }}

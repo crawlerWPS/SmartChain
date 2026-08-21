@@ -9,6 +9,7 @@ import { checkCompleteness, checkValidity, checkConsistency, getCompletenessResu
 import { formatDate } from '@/utils';
 import { CodeTag } from '@/components/common/CodeTag';
 import type { EnterpriseInfoConsistencyResult, EnterpriseInfoMismatchDetail, MaterialCompletenessResult, MaterialValidityItem, MaterialValidityResult } from '@/types';
+import { Permission } from '@/components/common/Permission';
 
 const PreAuditCheck: React.FC = () => {
   const params = useParams();
@@ -75,7 +76,7 @@ const PreAuditCheck: React.FC = () => {
           label: '完整性',
           children: (
             <div>
-              <Button onClick={() => handleCheck('completeness')} loading={loading} style={{ marginBottom: 16 }}>执行检查</Button>
+              <Permission perm={['PREAUDIT', 'update']} menuCode="preaudit:completeness"><Button onClick={() => handleCheck('completeness')} loading={loading} style={{ marginBottom: 16 }}>执行检查</Button></Permission>
               {completeness ? (
                 <Descriptions bordered>
                   <Descriptions.Item label="需提交">{completeness.requiredCount}</Descriptions.Item>
@@ -96,7 +97,7 @@ const PreAuditCheck: React.FC = () => {
           label: '有效性',
           children: (
             <div>
-              <Button onClick={() => handleCheck('validity')} loading={loading} style={{ marginBottom: 16 }}>执行检查</Button>
+              <Permission perm={['PREAUDIT', 'update']} menuCode="preaudit:validity"><Button onClick={() => handleCheck('validity')} loading={loading} style={{ marginBottom: 16 }}>执行检查</Button></Permission>
               {validity ? (
                 <>
                   <Descriptions bordered style={{ marginBottom: 16 }}>
@@ -124,7 +125,7 @@ const PreAuditCheck: React.FC = () => {
           label: '一致性',
           children: (
             <div>
-              <Button onClick={() => handleCheck('consistency')} loading={loading} style={{ marginBottom: 16 }}>执行检查</Button>
+              <Permission perm={['PREAUDIT', 'update']} menuCode="preaudit:consistency"><Button onClick={() => handleCheck('consistency')} loading={loading} style={{ marginBottom: 16 }}>执行检查</Button></Permission>
               {consistency ? (
                 <>
                   <Alert showIcon type="info" message="当前对比融资申请登记信息与合同、发票等材料的 OCR 识别信息。" style={{ marginBottom: 16 }} />

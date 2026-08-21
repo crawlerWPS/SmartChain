@@ -9,6 +9,7 @@ import { getRiskProfileByApplication, calculateRiskScore } from '@/api/risk';
 import { RiskLevelTag } from '@/components/common/StatusTag';
 import { formatDate } from '@/utils';
 import { RiskLevel } from '@/types';
+import { Permission } from '@/components/common/Permission';
 
 const RiskProfile: React.FC = () => {
   const params = useParams();
@@ -47,7 +48,7 @@ const RiskProfile: React.FC = () => {
         返回申请详情
       </Button>
       <span>风险画像 - 申请 #{appId}</span>
-    </div>} extra={<Button type="primary" onClick={handleScore} loading={loading}>执行评分</Button>}>
+    </div>} extra={<Permission perm={['RISK', 'update']} menuCode="risk:score"><Button type="primary" onClick={handleScore} loading={loading}>执行评分</Button></Permission>}>
       {profile ? (
         <>
           <Descriptions bordered column={2}>

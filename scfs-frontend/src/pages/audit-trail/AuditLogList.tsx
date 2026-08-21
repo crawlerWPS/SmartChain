@@ -3,11 +3,11 @@
  */
 import React, { useEffect, useState } from 'react';
 import { Card, Table, Button, Space, Input, Select, DatePicker, Tag, message, Modal, Descriptions } from 'antd';
-import { ReloadOutlined, ExportOutlined } from '@ant-design/icons';
-import { pageAuditLogs, exportAuditLogs } from '@/api/audit';
+import { ReloadOutlined } from '@ant-design/icons';
+import { pageAuditLogs } from '@/api/audit';
 import { Permission } from '@/components/common/Permission';
 import { ExportXlsx } from '@/components/export/ExportBtn';
-import { formatDate, downloadBlob } from '@/utils';
+import { formatDate } from '@/utils';
 import dayjs from 'dayjs';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 
@@ -34,16 +34,16 @@ const AuditLogList: React.FC = () => {
   useEffect(() => { load(); }, [query.page, query.size]);
 
   const handleExportXlsx = () => {
-    const data = list.map((x) => [x.id, x.username, x.module, x.action, x.targetType, x.targetId, x.ipAddress, formatDate(x.createdAt)]);
-    return [{ name: '审计日志', data: [['ID', '用户', '模块', '操作', '对象类型', '对象ID', 'IP', '时间'], ...data] }];
-  };
-
-  const handleExportApi = async () => {
-    try {
-      const blob = await exportAuditLogs(query);
-      downloadBlob(blob, `audit_logs_${Date.now()}.xlsx`);
-      message.success('导出成功');
-    } catch (e: any) { message.error(e.message); }
+    const data = list.map((x) => [
+      x.id,
+      x.username,
+      dictionary.label('PERMISSION_MODULE', x.module),
+      dictionary.label('AUDIT_ACTION', x.action),
+      `${dictionary.label('AUDIT_TARGET_TYPE', x.targetType)}#${x.targetId || '-'}`,
+      x.ipAddress || '-',
+      formatDate(x.createdAt),
+    ]);
+    return [{ name: '审计日志', data: [['ID', '用户', '模块', '操作', '对象', 'IP', '时间'], ...data] }];
   };
 
   const columns = [
@@ -60,8 +60,12 @@ const AuditLogList: React.FC = () => {
   return (
     <Card title="审计日志查询" extra={
       <Space>
-        <Permission perm={['AUDIT', 'export']}>
-          <Button icon={<ExportOutlined />} onClick={handleExportApi}>导出 Excel</Button>
+        <Permission perm={['AUDIT', 'export']} menuCode="audit:export">
+          <ExportXlsx
+            filename={`audit_logs_${Date.now()}`}
+            sheets={handleExportXlsx()}
+            buttonText="导出 Excel"
+          />
         </Permission>
         <Button icon={<ReloadOutlined />} onClick={load}>刷新</Button>
       </Space>

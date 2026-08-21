@@ -8,6 +8,7 @@ import { SearchOutlined, ReloadOutlined, UploadOutlined, DownloadOutlined } from
 import * as XLSX from 'xlsx';
 import GraphCanvas from '@/components/graph/GraphCanvas';
 import { importRelations, pageEnterprises, type RelationImportRow } from '@/api/graph';
+import { Permission } from '@/components/common/Permission';
 
 const relationTypes = new Set(['SUPPLY', 'PURCHASE', 'LOGISTICS', 'FINANCING', 'CUSTOMER', 'OTHER']);
 const columns = [
@@ -137,7 +138,7 @@ const RelationGraph: React.FC = () => {
             <InputNumber min={1} max={2} value={level} onChange={(v) => setLevel(v || 2)} />
           </>
         ) : null}
-        <Button icon={<UploadOutlined />} onClick={() => setImportOpen(true)}>导入关系</Button>
+        <Permission perm={['GRAPH', 'update']} menuCode="graph:import"><Button icon={<UploadOutlined />} onClick={() => setImportOpen(true)}>导入关系</Button></Permission>
         <Button icon={<ReloadOutlined />} onClick={handleReset}>重置</Button>
       </Space>
     }>

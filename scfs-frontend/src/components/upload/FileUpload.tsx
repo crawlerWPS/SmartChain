@@ -5,6 +5,7 @@ import { listSelectableOcrTemplates, uploadMaterial } from '@/api/application';
 import type { OcrTemplate } from '@/api/ocrTemplate';
 import { isFileAllowed } from '@/api/file';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
+import { Permission } from '@/components/common/Permission';
 
 interface Props {
   applicationId: number;
@@ -89,7 +90,7 @@ const FileUpload: React.FC<Props> = ({ applicationId, onUploaded }) => {
       </Space>
       {materialType && !templateLoading && templates.length === 0 &&
         <Alert type="warning" showIcon message="该材料类型暂无启用的OCR模板，请先到规则配置中维护模板。" style={{ marginBottom: 12 }} />}
-      <Upload.Dragger
+      <Permission perm={['VERIFY', 'create']} menuCode="material:upload"><Upload.Dragger
         accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx"
         multiple={false}
         showUploadList={false}
@@ -99,7 +100,7 @@ const FileUpload: React.FC<Props> = ({ applicationId, onUploaded }) => {
         <p className="ant-upload-drag-icon"><InboxOutlined /></p>
         <p className="ant-upload-text">点击或拖拽文件上传</p>
         <p className="ant-upload-hint">支持 PDF / JPG / PNG / DOCX / XLSX，单文件不超过 50MB</p>
-      </Upload.Dragger>
+      </Upload.Dragger></Permission>
       {uploading && <Progress percent={progress} status="active" style={{ marginTop: 12 }} />}
     </div>
   );

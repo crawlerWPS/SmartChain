@@ -3,6 +3,7 @@ package com.scfs.common.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scfs.common.constant.ScfsConstants;
 import com.scfs.common.entity.SysUser;
+import com.scfs.common.mapper.SysMenuMapper;
 import com.scfs.common.mapper.SysUserMapper;
 import com.scfs.common.service.SysUserService;
 import io.jsonwebtoken.Claims;
@@ -44,6 +45,7 @@ public class JwtAuthService {
 
     private final SysUserService userService;
     private final SysUserMapper userMapper;
+    private final SysMenuMapper menuMapper;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final SecurityContextHelper securityContextHelper;
@@ -98,6 +100,7 @@ public class JwtAuthService {
         userInfo.put("permissions", permissions);
         // 同步写入 Redis 缓存，供 PermissionCheckerAspect 后续校验使用
         securityContextHelper.cacheRolePermissions(user.getRoleCode(), permissions);
+        userInfo.put("menuCodes", menuMapper.selectMenuCodesByRoleCode(user.getRoleCode()));
         result.put("userInfo", userInfo);
 
         return result;
@@ -119,6 +122,7 @@ public class JwtAuthService {
         Map<String, List<String>> permissions = loadPermissions(user.getId());
         userInfo.put("permissions", permissions);
         securityContextHelper.cacheRolePermissions(user.getRoleCode(), permissions);
+        userInfo.put("menuCodes", menuMapper.selectMenuCodesByRoleCode(user.getRoleCode()));
         return userInfo;
     }
 

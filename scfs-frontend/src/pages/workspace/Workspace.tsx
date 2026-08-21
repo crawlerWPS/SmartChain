@@ -2,7 +2,7 @@
  * 工作台 - 我的待办 + 运营统计
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Typography, Space, message } from 'antd';
+import { Button, Card, Row, Col, Statistic, Table, Typography, message } from 'antd';
 import { AuditOutlined, CheckCircleOutlined, ClockCircleOutlined, WarningOutlined } from '@ant-design/icons';
 import { history } from '@umijs/max';
 import { useModel } from '@umijs/max';
@@ -17,6 +17,8 @@ const { Title } = Typography;
 const Workspace: React.FC = () => {
   const { initialState } = useModel('@@initialState');
   const currentUser = initialState?.currentUser;
+  const canViewApplications = can('VERIFY', 'view');
+  const canViewRules = can('RULE', 'view');
   const [list, setList] = useState<any[]>([]);
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0, abnormal: 0 });
 
@@ -37,7 +39,9 @@ const Workspace: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
+    if (canViewApplications) {
+      loadData();
+    }
   }, []);
 
   const columns = [
@@ -59,6 +63,7 @@ const Workspace: React.FC = () => {
     <div>
       <Title level={4}>工作台 - 欢迎，{currentUser?.realName}</Title>
 
+      {canViewApplications ? <>
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
           <Card>
@@ -85,6 +90,16 @@ const Workspace: React.FC = () => {
       <Card title="最近申请" extra={<a onClick={() => history.push('/audit/application')}>查看全部</a>}>
         <Table columns={columns} dataSource={list} rowKey="id" pagination={false} />
       </Card>
+      </> : (
+        <Card title="我的工作台">
+          <Typography.Paragraph type="secondary">
+            当前角色没有融资申请查看权限，工作台不会加载融资申请数据。
+          </Typography.Paragraph>
+          {canViewRules && (
+            <Button type="primary" onClick={() => history.push('/rule/list')}>进入规则配置</Button>
+          )}
+        </Card>
+      )}
     </div>
   );
 };

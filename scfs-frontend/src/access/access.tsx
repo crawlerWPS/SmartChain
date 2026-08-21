@@ -10,6 +10,7 @@ export type CurrentUser = {
   realName: string;
   roleCode: string;
   permissions: Record<string, string[]>;
+  menuCodes?: string[];
 };
 
 let _currentUser: CurrentUser | null = null;
@@ -42,6 +43,12 @@ export function can(module: string, action: string): boolean {
   return perms.includes(action) || perms.includes('*');
 }
 
+export function hasMenu(code: string): boolean {
+  if (!_currentUser) return false;
+  if (isAdmin()) return true;
+  return _currentUser.menuCodes?.includes(code) ?? false;
+}
+
 /** access.ts 导出函数 - 用于路由守卫 */
 export default function access(initialState: { currentUser?: CurrentUser }) {
   const user = initialState?.currentUser;
@@ -49,12 +56,24 @@ export default function access(initialState: { currentUser?: CurrentUser }) {
 
   return {
     // 菜单可见权限 - 基于角色代码
-    canViewWorkspace: !!user,
-    canViewGraph: !!user && (isAdmin() || hasRole('RM') || hasRole('RCO') || hasRole('AUDIT')),
-    canViewAudit: !!user && (isAdmin() || hasRole('RM') || hasRole('RCO') || hasRole('OPS')),
-    canViewRule: !!user && (isAdmin() || hasRole('OPS_MAKER') || hasRole('OPS_CHECKER') || hasRole('OPS')),
-    canViewAuditTrail: !!user && (isAdmin() || hasRole('AUDIT') || hasRole('OPS')),
-    canViewSystem: !!user && isAdmin(),
+    canViewWorkspace: !!user && hasMenu('workspace'),
+    canViewGraph: !!user && hasMenu('graph'),
+    canViewAudit: !!user && hasMenu('audit'),
+    canViewRule: !!user && hasMenu('rule'),
+    canViewAuditTrail: !!user && hasMenu('audit-trail'),
+    canViewSystem: !!user && hasMenu('system'),
+    'menu:graph.relations': () => hasMenu('graph.relations'),
+    'menu:graph.role': () => hasMenu('graph.role'),
+    'menu:graph.position': () => hasMenu('graph.position'),
+    'menu:graph.abnormal': () => hasMenu('graph.abnormal'),
+    'menu:audit.application': () => hasMenu('audit.application'),
+    'menu:rule.definition': () => hasMenu('rule.definition'),
+    'menu:rule.weight': () => hasMenu('rule.weight'),
+    'menu:rule.template': () => hasMenu('rule.template'),
+    'menu:rule.ocr-template': () => hasMenu('rule.ocr-template'),
+    'menu:system.user': () => hasMenu('system.user'),
+    'menu:system.role': () => hasMenu('system.role'),
+    'menu:system.menu': () => hasMenu('system.menu'),
 
     // 按钮权限 - 严格匹配后端 @RequirePermission
     'graph:view': () => can('GRAPH', 'view'),

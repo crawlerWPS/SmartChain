@@ -68,10 +68,8 @@ const TemplateList: React.FC = () => {
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: any, r: any) => (
       <Space>
-        <Permission perm={['RULE', 'update']}>
-          <a onClick={() => openEdit(r)}><EditOutlined /> 修改</a>
-        </Permission>
-        <Permission perm={['RULE', 'delete']}>
+        <Permission perm={['RULE', 'update']} menuCode="template:update"><a onClick={() => openEdit(r)}><EditOutlined /> 修改</a></Permission>
+        <Permission perm={['RULE', 'delete']} menuCode="template:delete">
           <Popconfirm title="确认删除该材料清单模板？" description="删除后不可恢复" onConfirm={() => handleDelete(r.id)}>
             <a style={{ color: '#ff4d4f' }}><DeleteOutlined /> 删除</a>
           </Popconfirm>
@@ -84,7 +82,7 @@ const TemplateList: React.FC = () => {
 
   return (
     <Card title="材料清单模板" extra={
-      <Permission perm={['RULE', 'create']}>
+      <Permission perm={['RULE', 'create']} menuCode="template:create">
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>新建模板</Button>
       </Permission>
     }>

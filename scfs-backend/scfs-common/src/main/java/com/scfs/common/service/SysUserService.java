@@ -73,6 +73,18 @@ public class SysUserService {
         userMapper.updateStatus(id, (short) (user.getStatus() == 1 ? 0 : 1));
     }
 
+    @Transactional
+    public void deleteUser(Long id, Long currentUserId) {
+        SysUser user = userMapper.selectById(id);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+        if (id.equals(currentUserId)) {
+            throw new IllegalStateException("不能删除当前登录用户");
+        }
+        userMapper.deleteById(id);
+    }
+
     public boolean checkPassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }

@@ -80,19 +80,19 @@ const WeightConfig: React.FC = () => {
     { title: '复核人', dataIndex: 'checkerId', key: 'checkerId', render: (v: number) => v || '-' },
     { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (v: string) => formatDate(v) },
     { title: '操作', key: 'action', render: (_: unknown, record: RiskWeightConfig) => (
-      record.status === 'PENDING' ? <Permission perm={['RULE', 'approve']}>
+      record.status === 'PENDING' ? <Permission perm={['RULE', 'approve']} menuCode="weight:approve">
         <Space>
           <Popconfirm title="确认通过该权重配置并使其生效？" onConfirm={() => handleApprove(record.id)}>
             <a>通过</a>
           </Popconfirm>
-          <a style={{ color: '#ff4d4f' }} onClick={() => setRejecting(record)}>驳回</a>
+          <Permission perm={['RULE', 'approve']} menuCode="weight:reject"><a style={{ color: '#ff4d4f' }} onClick={() => setRejecting(record)}>驳回</a></Permission>
         </Space>
       </Permission> : '-'
     ) },
   ];
 
   return (
-    <Card title="风险权重配置" extra={<Permission perm={['RULE', 'create']}>
+    <Card title="风险权重配置" extra={<Permission perm={['RULE', 'create']} menuCode="weight:create">
       <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>新建权重</Button>
     </Permission>}>
       <Button icon={<ReloadOutlined />} onClick={load} style={{ marginBottom: 16 }}>刷新</Button>

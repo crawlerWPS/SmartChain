@@ -8,6 +8,7 @@ import { getMenuTree, createMenu, updateMenu, deleteMenu } from '@/api/system';
 import type { SysMenu } from '@/types';
 import { useCodeDictionary } from '@/hooks/useCodeDictionary';
 import { CodeTag } from '@/components/common/CodeTag';
+import { Permission } from '@/components/common/Permission';
 
 const MenuList: React.FC = () => {
   const [tree, setTree] = useState<SysMenu[]>([]);
@@ -94,9 +95,9 @@ const MenuList: React.FC = () => {
         <span>{node.menuName}</span>
         <CodeTag type="MENU_TYPE" code={node.menuType} />
         {node.path && <span style={{ color: '#999' }}>{node.path}</span>}
-        <a onClick={() => handleAdd(node)}><PlusOutlined /></a>
-        <a onClick={() => handleEdit(node)}><EditOutlined /></a>
-        <a style={{ color: '#ff4d4f' }} onClick={() => handleDelete(node.id)}><DeleteOutlined /></a>
+        <Permission perm={['USER', 'create']} menuCode="system:menu:add-child"><a onClick={() => handleAdd(node)}><PlusOutlined /></a></Permission>
+        <Permission perm={['USER', 'update']} menuCode="system:menu:edit"><a onClick={() => handleEdit(node)}><EditOutlined /></a></Permission>
+        <Permission perm={['USER', 'delete']} menuCode="system:menu:delete"><a style={{ color: '#ff4d4f' }} onClick={() => handleDelete(node.id)}><DeleteOutlined /></a></Permission>
       </Space>
     ),
     children: node.children?.map(renderNode),
@@ -105,7 +106,7 @@ const MenuList: React.FC = () => {
   return (
     <Card title="菜单管理" extra={
       <Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => handleAdd()}>新增根菜单</Button>
+        <Permission perm={['USER', 'create']} menuCode="system:menu:add-root"><Button type="primary" icon={<PlusOutlined />} onClick={() => handleAdd()}>新增根菜单</Button></Permission>
         <Button icon={<ReloadOutlined />} onClick={load}>刷新</Button>
       </Space>
     }>

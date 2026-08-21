@@ -25,6 +25,10 @@ public interface SysMenuMapper {
     /** 查询角色关联的菜单 ID 列表 */
     List<Long> selectMenuIdsByRoleId(@Param("roleId") Long roleId);
 
+    List<Long> selectExistingIds(@Param("menuIds") List<Long> menuIds);
+
+    List<String> selectMenuCodesByRoleCode(@Param("roleCode") String roleCode);
+
     /** 查询角色关联的菜单（含完整字段，用于构建菜单树） */
     List<SysMenu> selectMenusByRoleId(@Param("roleId") Long roleId);
 

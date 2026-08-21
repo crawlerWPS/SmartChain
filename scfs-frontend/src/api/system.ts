@@ -48,7 +48,7 @@ export async function listRoles(): Promise<SysRole[]> {
 }
 
 /** IF-ROLE-002 创建角色 */
-export async function createRole(data: { roleCode: string; roleName: string; description?: string }) {
+export async function createRole(data: { roleCode: string; roleName: string; roleType: string; description?: string }) {
   return request('/roles', { method: 'POST', data });
 }
 
@@ -60,6 +60,19 @@ export async function updateRolePermissions(roleId: number, permissions: Record<
 /** IF-ROLE-004 角色菜单授权 */
 export async function assignRoleMenus(roleId: number, menuIds: number[]) {
   return request(`/roles/${roleId}/menus`, { method: 'PUT', data: { menuIds } });
+}
+
+export async function deleteRole(id: number) {
+  return request(`/roles/${id}`, { method: 'DELETE' });
+}
+
+export interface RoleMenuAssignment {
+  roleId: number;
+  menuIds: number[];
+}
+
+export async function getRoleMenus(roleId: number): Promise<RoleMenuAssignment> {
+  return request(`/roles/${roleId}/menus`, { method: 'GET' });
 }
 
 /** IF-MENU-001 菜单树 */

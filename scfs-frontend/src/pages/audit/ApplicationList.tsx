@@ -141,7 +141,7 @@ const ApplicationList: React.FC = () => {
 
   return (
     <Card title="融资申请列表" extra={<Space>
-      <Permission perm={['VERIFY', 'create']}>
+      <Permission perm={['VERIFY', 'create']} menuCode="application:create">
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>新建申请</Button>
       </Permission>
       <Button icon={<ReloadOutlined />} onClick={load}>刷新</Button>

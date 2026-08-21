@@ -5,21 +5,22 @@
  *   const Btn = withPermission(() => <Button>审批</Button>, ['rule','approve']);
  */
 import React from 'react';
-import { can } from '@/access/access';
+import { can, hasMenu } from '@/access/access';
 
 interface PermProps {
   perm: [string, string];
   fallback?: React.ReactNode;
+  menuCode?: string;
 }
 
 /** 权限组件 - 包裹后无权限自动隐藏 */
 export const Permission: React.FC<React.PropsWithChildren<PermProps>> = ({
   perm,
   fallback = null,
-  children,
+  children, menuCode,
 }) => {
   const [module, action] = perm;
-  if (!can(module, action)) {
+  if (!can(module, action) || (menuCode && !hasMenu(menuCode))) {
     return <>{fallback}</>;
   }
   return <>{children}</>;
